@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2016 Kiall Mac Innes <kiall@macinnes.ie>
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may
+not use this file except in compliance with the License. You may obtain
+a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations
+under the License.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="ie.macinnes.tvheadend">
+
+    <!-- Required to play internet-based streaming contents. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Required to update or read existing channel and program information in TvProvider. -->
+    <uses-permission android:name="com.android.providers.tv.permission.READ_EPG_DATA" />
+
+    <!-- Required to update channel and program information in TvProvider. -->
+    <uses-permission android:name="com.android.providers.tv.permission.WRITE_EPG_DATA" />
+
+    <!-- Required to sync EPG data after reboot. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <uses-feature
+        android:name="android.software.leanback"
+        android:required="true" />
+
+    <!--
+         Required to expose this app in the store only when the device has TV input framework
+         with the TV app.
+    -->
+    <uses-feature
+        android:name="android.software.live_tv"
+        android:required="true" />
+
+    <!-- Required to use the android AccountManager -->
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Leanback">
+
+        <!--
+             Launched by the TV app before it uses RichTvInputService. This registers channels and
+             sets up SyncJobService to provide program information in the background.
+        -->
+        <activity android:name=".setup.TvInputSetupActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name=".TvheadendTvInputService"
+            android:permission="android.permission.BIND_TV_INPUT">
+
+            <!-- Required filter used by the system to launch our TV service. -->
+            <intent-filter>
+                <action android:name="android.media.tv.TvInputService" />
+            </intent-filter>
+
+            <!--
+                 An XML file which describes this input. This provides pointers to the
+                 TvInputSetupActivity to the system/TV app.
+            -->
+            <meta-data
+                android:name="android.media.tv.input"
+                android:resource="@xml/tvinputservice" />
+        </service>
+
+        <activity
+            android:name=".account.AuthenticatorActivity"
+            android:label="@string/title_activity_authenticator" />
+
+        <service android:name=".account.AuthenticatorService">
+            <intent-filter>
+                <action android:name="android.accounts.AccountAuthenticator" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.accounts.AccountAuthenticator"
+                android:resource="@xml/authenticatorservice" />
+        </service>
+
+        <activity
+            android:name=".dev.DevTestActivity"
+            android:label="@string/title_activity_dev_test">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- This service is for using JobScheduler to sync EPG data. -->
+        <service
+            android:name=".sync.SyncJobService"
+            android:exported="true"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+
+        <receiver
+            android:name=".sync.SyncBootReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+    </application>
+
+</manifest>
