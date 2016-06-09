@@ -38,7 +38,7 @@ under the License.
     -->
     <uses-feature
         android:name="android.software.live_tv"
-        android:required="true" />
+        android:required="false" />
 
     <!-- Required to use the android AccountManager -->
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
