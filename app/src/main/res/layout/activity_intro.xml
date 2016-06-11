@@ -31,7 +31,6 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Please add a TVHeadend account, then Scan for channels"
-        android:id="@+id/textView"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"/>
 </RelativeLayout>
