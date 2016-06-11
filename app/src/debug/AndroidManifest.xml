@@ -14,13 +14,18 @@ License for the specific language governing permissions and limitations
 under the License.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-feature
+        android:name="android.software.leanback"
+        android:required="false"/>
+
     <application>
         <activity
             android:name="ie.macinnes.tvheadend.dev.DevTestActivity"
-            android:label="@string/title_activity_dev_test">
+            android:label="@string/title_activity_dev_test"
+            android:banner="@drawable/banner_debug">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
         </activity>
