@@ -1,4 +1,5 @@
 language: android
+
 android:
   components:
     # Uncomment the lines below if you want to
@@ -21,3 +22,10 @@ android:
     # Specify at least one system image,
     # if you need to run emulator(s) during your tests
     - sys-img-x86-android-tv-l
+
+addons:
+  artifacts:
+    s3_region: "eu-west-1"
+    paths:
+      - app/build/outputs/
+      - app/build/reports/
