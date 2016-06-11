@@ -91,6 +91,10 @@ public class TvInputSetupFragment extends DetailsFragment {
                 // TODO: Show UI, and only finish when sync completes.
                 getActivity().setResult(Activity.RESULT_OK);
                 getActivity().finish();
+
+                // Force a EPG sync
+                SyncUtils.cancelAll(getActivity());
+                SyncUtils.requestSync(getActivity(), mInputId);
             }
         };
 
