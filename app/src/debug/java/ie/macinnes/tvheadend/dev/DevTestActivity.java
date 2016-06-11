@@ -81,7 +81,7 @@ public class DevTestActivity extends Activity {
         v.append(string + NEWLINE);
     }
 
-    public void accountInfo() {
+    public void accountInfo(View view) {
         setRunning();
 
         Account[] accounts = mAccountManager.getAccountsByType("ie.macinnes.tvheadend");
@@ -110,7 +110,7 @@ public class DevTestActivity extends Activity {
         setOk();
     }
 
-    public void serverInfo() {
+    public void serverInfo(View view) {
         setRunning();
 
         Response.Listener<JSONObject> listener = new Response.Listener<JSONObject>() {
@@ -133,7 +133,7 @@ public class DevTestActivity extends Activity {
         mClient.getServerInfo(listener, errorListener);
     }
 
-    public void channelGrid() {
+    public void channelGrid(View view) {
         setRunning();
 
         Response.Listener<TVHClient.ChannelList> listener = new Response.Listener<TVHClient.ChannelList>() {
@@ -158,7 +158,7 @@ public class DevTestActivity extends Activity {
         mClient.getChannelGrid(listener, errorListener);
     }
 
-    public void eventGrid() {
+    public void eventGrid(View view) {
         setRunning();
 
         Response.Listener<TVHClient.EventList> listener = new Response.Listener<TVHClient.EventList>() {
