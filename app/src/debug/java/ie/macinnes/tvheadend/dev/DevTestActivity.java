@@ -33,6 +33,7 @@ import ie.macinnes.tvheadend.R;
 import ie.macinnes.tvheadend.client.TVHClient;
 import ie.macinnes.tvheadend.setup.TvInputSetupActivity;
 import ie.macinnes.tvheadend.sync.SyncUtils;
+import ie.macinnes.tvheadend.utils.TvContractUtils;
 
 public class DevTestActivity extends Activity {
     private static final String TAG = DevTestActivity.class.getName();
@@ -48,42 +49,6 @@ public class DevTestActivity extends Activity {
 
         mAccountManager = AccountManager.get(getBaseContext());
         mClient = TVHClient.getInstance(getBaseContext());
-
-        setClickHandlers();
-    }
-
-    private void setClickHandlers() {
-        findViewById(R.id.serverInfoButton).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                setRunning();
-                serverInfo();
-            }
-        });
-
-        findViewById(R.id.accountInfoButton).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                setRunning();
-                accountInfo();
-            }
-        });
-
-        findViewById(R.id.channelGridButton).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                setRunning();
-                channelGrid();
-            }
-        });
-
-        findViewById(R.id.eventGridButton).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                setRunning();
-                eventGrid();
-            }
-        });
     }
 
     private void setRunning() {
@@ -117,6 +82,8 @@ public class DevTestActivity extends Activity {
     }
 
     public void accountInfo() {
+        setRunning();
+
         Account[] accounts = mAccountManager.getAccountsByType("ie.macinnes.tvheadend");
 
         appendDebugOutput("Number of Accounts: " + Integer.toString(accounts.length));
@@ -144,6 +111,8 @@ public class DevTestActivity extends Activity {
     }
 
     public void serverInfo() {
+        setRunning();
+
         Response.Listener<JSONObject> listener = new Response.Listener<JSONObject>() {
 
             @Override
@@ -165,6 +134,8 @@ public class DevTestActivity extends Activity {
     }
 
     public void channelGrid() {
+        setRunning();
+
         Response.Listener<TVHClient.ChannelList> listener = new Response.Listener<TVHClient.ChannelList>() {
 
             @Override
@@ -188,6 +159,8 @@ public class DevTestActivity extends Activity {
     }
 
     public void eventGrid() {
+        setRunning();
+
         Response.Listener<TVHClient.EventList> listener = new Response.Listener<TVHClient.EventList>() {
 
             @Override
@@ -208,16 +181,28 @@ public class DevTestActivity extends Activity {
         };
 
 //        mClient.getEventGrid(listener, errorListener);
+
+        setOk();
     }
 
     public void rescanChannels(View view) {
+        setRunning();
         Intent intent = new Intent(this, TvInputSetupActivity.class);
         intent.putExtra(TvInputInfo.EXTRA_INPUT_ID, "ie.macinnes.tvheadend/.TvheadendTvInputService");
         startActivity(intent);
+        setOk();
     }
 
     public void syncEpg(View view) {
+        setRunning();
         SyncUtils.requestSync(getBaseContext(), "ie.macinnes.tvheadend/.TvheadendTvInputService");
+        setOk();
+    }
+
+    public void removeChannels(View view) {
+        setRunning();
+        TvContractUtils.removeChannels(getBaseContext(), "ie.macinnes.tvheadend/.TvheadendTvInputService");
+        setOk();
     }
 
 }

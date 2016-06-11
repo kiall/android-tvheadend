@@ -41,36 +41,40 @@ under the License.
             android:textAlignment="center" />
 
         <Button
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text="Show Account Info"
             android:id="@+id/accountInfoButton"
-            android:nestedScrollingEnabled="true" />
+            android:nestedScrollingEnabled="true"
+            android:onClick="accountInfo" />
 
         <Button
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text="Show Server Info"
             android:id="@+id/serverInfoButton"
-            android:nestedScrollingEnabled="true" />
+            android:nestedScrollingEnabled="true"
+            android:onClick="serverInfo" />
 
         <Button
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text="Show Channel Grid"
             android:id="@+id/channelGridButton"
-            android:nestedScrollingEnabled="true" />
+            android:nestedScrollingEnabled="true"
+            android:onClick="channelGrid" />
 
         <Button
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text="Show Event Grid"
             android:id="@+id/eventGridButton"
             android:nestedScrollingEnabled="true"
-            android:layout_gravity="center_horizontal" />
+            android:layout_gravity="center_horizontal"
+            android:onClick="eventGrid" />
 
         <Button
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text="Rescan Channels"
             android:id="@+id/rescanButton"
@@ -79,13 +83,21 @@ under the License.
             android:onClick="rescanChannels" />
 
         <Button
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text="Sync EPG"
             android:id="@+id/syncEpg"
             android:nestedScrollingEnabled="true"
             android:layout_gravity="center_horizontal"
             android:onClick="syncEpg" />
+
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Remove Channels"
+            android:id="@+id/removeChannelsButton"
+            android:nestedScrollingEnabled="true"
+            android:onClick="removeChannels"/>
 
     </LinearLayout>
 

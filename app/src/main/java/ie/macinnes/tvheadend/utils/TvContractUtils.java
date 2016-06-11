@@ -30,6 +30,7 @@ import android.util.SparseArray;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 import ie.macinnes.tvheadend.client.TVHClient;
 import ie.macinnes.tvheadend.model.Channel;
@@ -59,8 +60,27 @@ public class TvContractUtils {
         }
     }
 
+
+    public static void removeChannels(Context context, String inputId) {
+        Uri channelsUri = TvContract.buildChannelsUriForInput(inputId);
+
+        ContentResolver resolver = context.getContentResolver();
+
+        String[] projection = {Channels._ID, Channels.COLUMN_ORIGINAL_NETWORK_ID};
+
+        try (Cursor cursor = resolver.query(channelsUri, projection, null, null, null)) {
+            while (cursor != null && cursor.moveToNext()) {
+                long rowId = cursor.getLong(0);
+                Log.d(TAG, "Deleting channel: " + rowId);
+                resolver.delete(TvContract.buildChannelUri(rowId), null, null);
+            }
+        }
+    }
+
     public static void updateChannels(Context context, String inputId, ChannelList channelList) {
         Log.d(TAG, "Updating channels for inputId: " + inputId);
+
+        Collections.sort(channelList);
 
         // Create a map from original network ID to channel row ID for existing channels.
         SparseArray<Long> channelMap = new SparseArray<>();

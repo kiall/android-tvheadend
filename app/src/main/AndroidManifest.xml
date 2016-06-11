@@ -75,6 +75,9 @@ under the License.
              sets up SyncJobService to provide program information in the background.
         -->
         <activity android:name=".setup.TvInputSetupActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
         </activity>
 
         <service
