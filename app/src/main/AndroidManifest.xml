@@ -93,16 +93,6 @@ under the License.
                 android:resource="@xml/authenticatorservice" />
         </service>
 
-        <activity
-            android:name=".dev.DevTestActivity"
-            android:label="@string/title_activity_dev_test">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
-            </intent-filter>
-        </activity>
-
         <!-- This service is for using JobScheduler to sync EPG data. -->
         <service
             android:name=".sync.SyncJobService"
