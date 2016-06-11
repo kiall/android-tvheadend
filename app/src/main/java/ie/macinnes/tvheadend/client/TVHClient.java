@@ -95,7 +95,18 @@ public class TVHClient {
         String url = "http://" + mAccountHostname + ":" + mAccountPort + "/api/channel/grid?limit=10000";
 
         GsonRequest<ChannelList> request = new GsonRequest<ChannelList>(
-                Request.Method.GET, url, ChannelList.class, listener, errorListener, mAccountName, mAccountPassword);
+                Request.Method.GET, url, ChannelList.class, listener, errorListener, mAccountName, mAccountPassword) {
+
+            @Override
+            protected TVHClient.ChannelList mutateResponse(TVHClient.ChannelList response) {
+                // TODO: Find a better way to include the prefix than iterating the list again..
+                // Prefix Icon URLs
+                for (Channel channel : response.entries) {
+                    channel.icon_url = "http://" + mAccountHostname + ":" + mAccountPort + "/" + channel.icon_url;
+                }
+                return response;
+            }
+        };
 
         getRequestQueue().add(request);
     }

@@ -66,7 +66,11 @@ public class GsonRequest<T> extends Request<T> {
 
     @Override
     protected void deliverResponse(T response) {
-        mListener.onResponse(response);
+        mListener.onResponse(mutateResponse(response));
+    }
+
+    protected T mutateResponse(T response) {
+        return response;
     }
 
     @Override

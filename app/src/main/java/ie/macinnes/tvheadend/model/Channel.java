@@ -31,6 +31,7 @@ public class Channel implements Comparable<Channel> {
     private String mDisplayNumber;
     private String mDisplayName;
     private String mDescription;
+    private String mIconUri;
     private int mOriginalNetworkId;
     private int mTransportStreamId = 0;
     private int mServiceId = 0;
@@ -82,6 +83,14 @@ public class Channel implements Comparable<Channel> {
 
     public void setDescription(String description) {
         mDescription = description;
+    }
+
+    public String getIconUri() {
+        return mIconUri;
+    }
+
+    public void setIconUri(String iconUri) {
+        mIconUri = iconUri;
     }
 
     public int getOriginalNetworkId() {
@@ -181,6 +190,7 @@ public class Channel implements Comparable<Channel> {
         // Copy values from the clientChannel
         channel.setDisplayNumber(Integer.toString(clientChannel.number));
         channel.setDisplayName(clientChannel.name);
+        channel.setIconUri(clientChannel.icon_url);
 
         // Set generated values
         channel.setOriginalNetworkId(clientChannel.uuid.hashCode());

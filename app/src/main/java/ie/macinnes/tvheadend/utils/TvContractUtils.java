@@ -23,13 +23,23 @@ import android.database.Cursor;
 import android.media.tv.TvContract;
 import android.media.tv.TvContract.Channels;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.RemoteException;
+import android.text.TextUtils;
 import android.util.Log;
 import android.util.SparseArray;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
+import ie.macinnes.tvheadend.client.TVHClient;
 import ie.macinnes.tvheadend.model.Channel;
 import ie.macinnes.tvheadend.model.ChannelList;
 import ie.macinnes.tvheadend.model.Program;
@@ -95,6 +105,7 @@ public class TvContractUtils {
 
         // If a channel exists, update it. If not, insert a new one.
         ContentValues values;
+        Map<Uri, String> logos = new HashMap<>();
 
         for (Channel channel : channelList) {
             values = channel.toContentValues();
@@ -111,6 +122,15 @@ public class TvContractUtils {
                 resolver.update(uri, values, null, null);
                 channelMap.remove(channel.getOriginalNetworkId());
             }
+
+            // Update the channel icon
+            if (channel.getIconUri() != null && !TextUtils.isEmpty(channel.getIconUri())) {
+                logos.put(TvContract.buildChannelLogoUri(uri), channel.getIconUri());
+            }
+        }
+
+        if (!logos.isEmpty()) {
+            new InsertLogosTask(context).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, logos);
         }
 
         // Deletes channels which don't exist in the new feed.
@@ -208,4 +228,64 @@ public class TvContractUtils {
                newProgram.getInternalProviderData().getEventId();
     }
 
+    public static void insertUrl(Context context, Uri contentUri, URL sourceUrl) {
+        Log.d(TAG, "Inserting logo " + sourceUrl + " to " + contentUri);
+
+        InputStream is = null;
+        OutputStream os = null;
+
+        try {
+            is = sourceUrl.openStream();
+            os = context.getContentResolver().openOutputStream(contentUri);
+            copy(is, os);
+        } catch (IOException ioe) {
+            Log.e(TAG, "Failed to copy " + sourceUrl + "  to " + contentUri, ioe);
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    // Ignore...
+                }
+            }
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (IOException e) {
+                    // Ignore...
+                }
+            }
+        }
+    }
+
+    public static void copy(InputStream is, OutputStream os) throws IOException {
+        byte[] buffer = new byte[1024];
+        int len;
+        while ((len = is.read(buffer)) != -1) {
+            os.write(buffer, 0, len);
+        }
+    }
+
+    public static class InsertLogosTask extends AsyncTask<Map<Uri, String>, Void, Void> {
+        private final Context mContext;;
+
+        InsertLogosTask(Context context) {
+            mContext = context;
+
+        }
+
+        @Override
+        public Void doInBackground(Map<Uri, String>... logosList) {
+            for (Map<Uri, String> logos : logosList) {
+                for (Uri uri : logos.keySet()) {
+                    try {
+                        insertUrl(mContext, uri, new URL(logos.get(uri)));
+                    } catch (MalformedURLException e) {
+                        Log.e(TAG, "Failed to load icon " + logos.get(uri), e);
+                    }
+                }
+            }
+            return null;
+        }
+    }
 }
