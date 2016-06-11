@@ -4,13 +4,12 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 23
     buildToolsVersion "23.0.3"
-
     defaultConfig {
         applicationId "ie.macinnes.tvheadend"
-        minSdkVersion 22
+        minSdkVersion 21
         targetSdkVersion 23
-        versionCode 1
-        versionName "1.0"
+        versionCode 3
+        versionName '0.0.1'
     }
     buildTypes {
         release {
@@ -18,13 +17,14 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    productFlavors {
+    }
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:recyclerview-v7:23.4.0'
-    compile 'com.android.support:leanback-v17:23.4.0'
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:support-v4:23.4.0'
+    compile 'com.android.support:leanback-v17:23.4.0'
+    compile 'com.android.support:preference-leanback-v17:23.4.0'
     compile 'com.google.code.gson:gson:2.6.2'
-    compile 'com.google.android.exoplayer:exoplayer:r1.5.6'
 }
