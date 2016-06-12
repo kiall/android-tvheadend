@@ -65,18 +65,12 @@ public class SyncJobService extends JobService {
     }
 
     private void setClientConnectionInfo() {
-        // TODO: Duplicated Code
         Account[] accounts = mAccountManager.getAccountsByType("ie.macinnes.tvheadend");
 
         // TODO: We should only every have one account.. Figure out how that works (or 1 account per
         //       hostname+port combo?)
         for (Account account : accounts) {
-            String username = account.name;
-            String password = mAccountManager.getPassword(account);
-            String hostname = mAccountManager.getUserData(account, Constants.KEY_HOSTNAME);
-            String port = mAccountManager.getUserData(account, Constants.KEY_PORT);
-
-            mClient.setConnectionInfo(hostname, port, username, password);
+            mClient.setConnectionInfo(account);
         }
     }
 

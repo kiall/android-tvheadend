@@ -14,6 +14,8 @@ under the License.
 */
 package ie.macinnes.tvheadend.client;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.content.Context;
 import android.util.Log;
 
@@ -27,6 +29,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import ie.macinnes.tvheadend.Constants;
+
 public class TVHClient {
     private static final String TAG = TVHClient.class.getName();
 
@@ -39,8 +43,25 @@ public class TVHClient {
     private String mAccountName;
     private String mAccountPassword;
 
+    public static synchronized TVHClient getInstance(Context context) {
+        if (mInstance == null) {
+            mInstance = new TVHClient(context);
+        }
+        return mInstance;
+    }
+
     public TVHClient(Context context) {
         mContext = context;
+    }
+
+    public void setConnectionInfo(Account account) {
+        AccountManager accountManager = AccountManager.get(mContext);
+
+        String password = accountManager.getPassword(account);
+        String hostname = accountManager.getUserData(account, Constants.KEY_HOSTNAME);
+        String port = accountManager.getUserData(account, Constants.KEY_PORT);
+
+        setConnectionInfo(hostname, port, account.name, password);
     }
 
     public void setConnectionInfo(String accountHostname, String accountPort, String accountName, String accountPassword) {
@@ -48,13 +69,6 @@ public class TVHClient {
         mAccountPort = accountPort;
         mAccountName = accountName;
         mAccountPassword = accountPassword;
-    }
-
-    public static synchronized TVHClient getInstance(Context context) {
-        if (mInstance == null) {
-            mInstance = new TVHClient(context);
-        }
-        return mInstance;
     }
 
     private RequestQueue getRequestQueue() {
