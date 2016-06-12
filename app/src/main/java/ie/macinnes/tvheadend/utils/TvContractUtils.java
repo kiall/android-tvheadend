@@ -25,14 +25,11 @@ import android.media.tv.TvContract.Channels;
 import android.net.Uri;
 import android.os.RemoteException;
 import android.util.Log;
-import android.util.LongSparseArray;
 import android.util.SparseArray;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 
-import ie.macinnes.tvheadend.client.TVHClient;
 import ie.macinnes.tvheadend.model.Channel;
 import ie.macinnes.tvheadend.model.ChannelList;
 import ie.macinnes.tvheadend.model.Program;

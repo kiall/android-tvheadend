@@ -19,8 +19,6 @@ package ie.macinnes.tvheadend;
 import android.app.Activity;
 import android.os.Bundle;
 
-import ie.macinnes.tvheadend.R;
-
 public class IntroActivity extends Activity {
 
     @Override

@@ -19,13 +19,8 @@ import android.media.MediaPlayer;
 import android.media.tv.TvInputManager;
 import android.media.tv.TvInputService;
 import android.net.Uri;
-import android.util.Base64;
 import android.util.Log;
 import android.view.Surface;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import ie.macinnes.tvheadend.player.PrepareVideoTask;
 

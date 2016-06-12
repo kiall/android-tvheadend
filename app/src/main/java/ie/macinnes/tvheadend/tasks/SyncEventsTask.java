@@ -17,7 +17,6 @@
 package ie.macinnes.tvheadend.tasks;
 
 
-import android.app.job.JobParameters;
 import android.content.Context;
 import android.media.tv.TvContract;
 import android.os.AsyncTask;

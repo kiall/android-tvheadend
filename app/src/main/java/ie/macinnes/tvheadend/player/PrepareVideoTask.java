@@ -20,16 +20,12 @@ package ie.macinnes.tvheadend.player;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
-import android.database.ContentObservable;
 import android.media.MediaPlayer;
-import android.media.PlaybackParams;
-import android.media.SyncParams;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Base64;
 import android.util.Log;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 

@@ -20,23 +20,15 @@ import android.app.job.JobParameters;
 import android.app.job.JobService;
 import android.content.Context;
 import android.content.Intent;
-import android.media.tv.TvContract;
 import android.os.AsyncTask;
 import android.os.PersistableBundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.util.SparseArray;
 
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.client.TVHClient;
-import ie.macinnes.tvheadend.model.Channel;
-import ie.macinnes.tvheadend.model.ChannelList;
-import ie.macinnes.tvheadend.tasks.SyncChannelEventsTask;
 import ie.macinnes.tvheadend.tasks.SyncEventsTask;
-import ie.macinnes.tvheadend.utils.TvContractUtils;
 
 public class SyncJobService extends JobService {
     private static final String TAG = SyncJobService.class.getName();
