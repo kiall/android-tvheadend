@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v17.leanback.widget.NonOverlappingLinearLayout
+    style="?attr/guidedActionItemContainerStyle"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyle"
+        android:indeterminateTintMode="src_in"
+        android:indeterminateTint="#FFAB91"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="10dp"
+        android:indeterminate="false"/>
+
+    <android.support.v17.leanback.widget.NonOverlappingLinearLayout
+        android:id="@+id/guidedactions_item_content"
+        style="?attr/guidedActionItemContentStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/guidedactions_item_title"
+            style="?attr/guidedActionItemTitleStyle"
+            android:text="Processing..."
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </android.support.v17.leanback.widget.NonOverlappingLinearLayout>
+
+</android.support.v17.leanback.widget.NonOverlappingLinearLayout>

@@ -20,13 +20,13 @@ import android.app.job.JobScheduler;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.os.PersistableBundle;
+import android.support.v4.content.LocalBroadcastManager;
 
 import ie.macinnes.tvheadend.Constants;
 
 public class SyncUtils {
-    public static final int PERIODIC_SYNC_JOB_ID = 0;
-    public static final int REQUEST_SYNC_JOB_ID = 1;
 
     private static void scheduleJob(Context context, JobInfo job) {
         JobScheduler jobScheduler =
@@ -39,7 +39,7 @@ public class SyncUtils {
 
         pBundle.putString(Constants.KEY_INPUT_ID, inputId);
 
-        JobInfo.Builder builder = new JobInfo.Builder(PERIODIC_SYNC_JOB_ID,
+        JobInfo.Builder builder = new JobInfo.Builder(Constants.PERIODIC_SYNC_JOB_ID,
                 new ComponentName(context, SyncJobService.class));
 
         JobInfo jobInfo = builder
@@ -59,7 +59,7 @@ public class SyncUtils {
         pBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
         pBundle.putString(Constants.KEY_INPUT_ID, inputId);
 
-        JobInfo.Builder builder = new JobInfo.Builder(REQUEST_SYNC_JOB_ID,
+        JobInfo.Builder builder = new JobInfo.Builder(Constants.REQUEST_SYNC_JOB_ID,
                 new ComponentName(context, SyncJobService.class));
 
         JobInfo jobInfo = builder
@@ -68,6 +68,11 @@ public class SyncUtils {
                 .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
                 .build();
         scheduleJob(context, jobInfo);
+
+        Intent intent = new Intent(Constants.ACTION_SYNC_STATUS_CHANGED);
+        intent.putExtra(Constants.KEY_INPUT_ID, inputId);
+        intent.putExtra(Constants.SYNC_STATUS, Constants.SYNC_STARTED);
+        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
     }
 
     public static void cancelAll(Context context) {

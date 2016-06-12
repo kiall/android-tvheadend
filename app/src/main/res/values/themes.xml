@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.SetupWizard" parent="Theme.Leanback.GuidedStep">
+        <!--<item name="guidedActionsBackground">@color/app_guidedstep_actions_background</item>-->
+        <!--<item name="guidedActionsBackgroundDark">@color/app_guidedstep_subactions_background</item>-->
+    </style>
+
+    <style name="Theme.SetupWizard.NoSelector">
+        <item name="guidedActionsSelectorDrawable">@null</item>
+    </style>
+</resources>

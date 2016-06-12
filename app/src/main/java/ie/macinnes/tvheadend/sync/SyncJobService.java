@@ -19,9 +19,11 @@ import android.accounts.AccountManager;
 import android.app.job.JobParameters;
 import android.app.job.JobService;
 import android.content.Context;
+import android.content.Intent;
 import android.media.tv.TvContract;
 import android.os.AsyncTask;
 import android.os.PersistableBundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.util.SparseArray;
 
@@ -32,7 +34,8 @@ import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.client.TVHClient;
 import ie.macinnes.tvheadend.model.Channel;
 import ie.macinnes.tvheadend.model.ChannelList;
-import ie.macinnes.tvheadend.model.ProgramList;
+import ie.macinnes.tvheadend.tasks.SyncChannelEventsTask;
+import ie.macinnes.tvheadend.tasks.SyncEventsTask;
 import ie.macinnes.tvheadend.utils.TvContractUtils;
 
 public class SyncJobService extends JobService {
@@ -43,7 +46,7 @@ public class SyncJobService extends JobService {
 
     private static final Object mContextLock = new Object();
     private static Context mContext;
-    private final SparseArray<EpgSyncTask> mTaskArray = new SparseArray<>();
+    private final SparseArray<SyncEventsTask> mTaskArray = new SparseArray<>();
 
 
     private AccountManager mAccountManager;
@@ -75,14 +78,24 @@ public class SyncJobService extends JobService {
     }
 
     @Override
-    public boolean onStartJob(JobParameters params) {
+    public boolean onStartJob(final JobParameters params) {
         Log.d(TAG, "onStartJob(" + params.getJobId() + ")");
 
-        EpgSyncTask epgSyncTask = new EpgSyncTask(params);
+        PersistableBundle extras = params.getExtras();
+        String inputId = extras.getString(Constants.KEY_INPUT_ID);
+
+        SyncEventsTask syncEventsTask = new SyncEventsTask(mContext, inputId) {
+            @Override
+            protected void onPostExecute(Boolean aBoolean) {
+                finishEventsSync(params);
+            }
+        };
+
         synchronized (mTaskArray) {
-            mTaskArray.put(params.getJobId(), epgSyncTask);
+            mTaskArray.put(params.getJobId(), syncEventsTask);
         }
-        epgSyncTask.execute();
+        syncEventsTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
         return true;
     }
 
@@ -91,78 +104,24 @@ public class SyncJobService extends JobService {
         Log.d(TAG, "onStopJob(" + params.getJobId() + ")");
         synchronized (mTaskArray) {
             int jobId = params.getJobId();
-            EpgSyncTask epgSyncTask = mTaskArray.get(jobId);
-            if (epgSyncTask != null) {
-                epgSyncTask.cancel(true);
+            SyncEventsTask syncEventsTasks = mTaskArray.get(jobId);
+            if (syncEventsTasks != null) {
+                syncEventsTasks.cancel(true);
                 mTaskArray.delete(params.getJobId());
             }
         }
         return false;
     }
 
-    private class EpgSyncTask extends AsyncTask<Void, Void, Void> {
-        private final JobParameters params;
+    private void finishEventsSync(JobParameters jobParams) {
+        jobFinished(jobParams, false);
 
-        private EpgSyncTask(JobParameters params) {
-            this.params = params;
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            if (isCancelled()) {
-                return null;
-            }
-
-            PersistableBundle extras = params.getExtras();
-            String inputId = extras.getString(Constants.KEY_INPUT_ID);
-
-            if (inputId == null) {
-                return null;
-            }
-
-            String[] projection = {
-                    TvContract.Channels._ID,
-                    TvContract.Channels.COLUMN_DISPLAY_NAME,
-                    TvContract.Channels.COLUMN_DISPLAY_NUMBER,
-                    TvContract.Channels.COLUMN_INTERNAL_PROVIDER_DATA
-            };
-
-            // Gather Channel List
-            ChannelList channelList = TvContractUtils.getChannels(mContext, inputId, projection);
-
-            // Fetch EPG for each channel
-            for (Channel channel : channelList) {
-                findEvents(channel);
-            }
-
-            return null;
-        }
-
-        private void findEvents(final Channel channel) {
-            Response.Listener<TVHClient.EventList> listener = new Response.Listener<TVHClient.EventList>() {
-
-                @Override
-                public void onResponse(TVHClient.EventList eventList) {
-                    TvContractUtils.updateEvents(
-                            mContext,
-                            channel,
-                            ProgramList.fromClientEventList(eventList, channel.getId())
-                    );
-
-                    mTaskArray.delete(params.getJobId());
-                    jobFinished(params, false);
-                }
-            };
-
-            Response.ErrorListener errorListener = new Response.ErrorListener() {
-
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    // TODO: Do Something Useful Here
-                }
-            };
-
-            mClient.getEventGrid(listener, errorListener, channel.getInternalProviderData().getUuid());
+        if (jobParams.getJobId() == Constants.REQUEST_SYNC_JOB_ID) {
+            Intent intent = new Intent(Constants.ACTION_SYNC_STATUS_CHANGED);
+            intent.putExtra(
+                    Constants.KEY_INPUT_ID, jobParams.getExtras().getString(Constants.KEY_INPUT_ID));
+            intent.putExtra(Constants.SYNC_STATUS, Constants.SYNC_FINISHED);
+            LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
         }
     }
 }
