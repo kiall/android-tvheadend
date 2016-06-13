@@ -45,7 +45,7 @@ import ie.macinnes.tvheadend.R;
 import ie.macinnes.tvheadend.client.TVHClient;
 import ie.macinnes.tvheadend.sync.SyncUtils;
 import ie.macinnes.tvheadend.tasks.SyncChannelsTask;
-import ie.macinnes.tvheadend.utils.TvContractUtils;
+import ie.macinnes.tvheadend.TvContractUtils;
 
 public class TvInputSetupActivity extends Activity {
     private static final String TAG = TvInputSetupActivity.class.getName();

@@ -31,7 +31,7 @@ import java.util.Map;
 
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.model.Channel;
-import ie.macinnes.tvheadend.utils.TvContractUtils;
+import ie.macinnes.tvheadend.TvContractUtils;
 
 public class PrepareVideoTask extends AsyncTask<Void, Void, MediaPlayer> {
     public static final String TAG = PrepareVideoTask.class.getSimpleName();

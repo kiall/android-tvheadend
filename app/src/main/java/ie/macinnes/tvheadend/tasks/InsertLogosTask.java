@@ -28,8 +28,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 
-import ie.macinnes.tvheadend.utils.TvContractUtils;
-
 public class InsertLogosTask extends AsyncTask<Map<Uri, String>, Void, Void> {
     public static final String TAG = InsertLogosTask.class.getSimpleName();
 

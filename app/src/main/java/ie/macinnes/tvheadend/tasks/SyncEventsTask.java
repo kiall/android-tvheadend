@@ -30,7 +30,7 @@ import java.util.concurrent.CountDownLatch;
 import ie.macinnes.tvheadend.client.TVHClient;
 import ie.macinnes.tvheadend.model.Channel;
 import ie.macinnes.tvheadend.model.ChannelList;
-import ie.macinnes.tvheadend.utils.TvContractUtils;
+import ie.macinnes.tvheadend.TvContractUtils;
 
 public class SyncEventsTask extends AsyncTask<Void, Void, Boolean> {
     public static final String TAG = SyncEventsTask.class.getSimpleName();

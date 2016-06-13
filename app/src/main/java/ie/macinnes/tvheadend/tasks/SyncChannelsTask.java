@@ -23,7 +23,7 @@ import android.util.Log;
 
 import ie.macinnes.tvheadend.client.TVHClient;
 import ie.macinnes.tvheadend.model.ChannelList;
-import ie.macinnes.tvheadend.utils.TvContractUtils;
+import ie.macinnes.tvheadend.TvContractUtils;
 
 public class SyncChannelsTask extends AsyncTask<TVHClient.ChannelList, Void, Boolean> {
     public static final String TAG = SyncChannelsTask.class.getSimpleName();
