@@ -6,7 +6,6 @@
     android:layout_height="match_parent">
 
     <ProgressBar
-        android:id="@+id/progressBar"
         style="?android:attr/progressBarStyle"
         android:indeterminateTintMode="src_in"
         android:indeterminateTint="#FFAB91"

@@ -14,6 +14,7 @@ under the License.
 */
 package ie.macinnes.tvheadend.utils;
 
+import android.content.ComponentName;
 import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -39,6 +40,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import ie.macinnes.tvheadend.TvheadendTvInputService;
 import ie.macinnes.tvheadend.client.TVHClient;
 import ie.macinnes.tvheadend.model.Channel;
 import ie.macinnes.tvheadend.model.ChannelList;
@@ -47,6 +49,15 @@ import ie.macinnes.tvheadend.model.ProgramList;
 
 public class TvContractUtils {
     private static final String TAG = TvContractUtils.class.getName();
+
+    public static String getInputId() {
+        // TODO: Use class references, so refactors etc will catch this.
+        ComponentName componentName = new ComponentName(
+                "ie.macinnes.tvheadend",
+                "ie.macinnes.tvheadend.TvheadendTvInputService");
+
+        return TvContract.buildInputId(componentName);
+    }
 
     public static Channel getChannelFromChannelUri(Context context, Uri channelUri) {
         ContentResolver resolver = context.getContentResolver();

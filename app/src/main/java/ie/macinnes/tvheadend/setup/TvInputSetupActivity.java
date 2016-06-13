@@ -45,6 +45,7 @@ import ie.macinnes.tvheadend.R;
 import ie.macinnes.tvheadend.client.TVHClient;
 import ie.macinnes.tvheadend.sync.SyncUtils;
 import ie.macinnes.tvheadend.tasks.SyncChannelsTask;
+import ie.macinnes.tvheadend.utils.TvContractUtils;
 
 public class TvInputSetupActivity extends Activity {
     private static final String TAG = TvInputSetupActivity.class.getName();
@@ -75,6 +76,9 @@ public class TvInputSetupActivity extends Activity {
             super.onCreate(savedInstanceState);
 
             mInputId = getActivity().getIntent().getStringExtra(TvInputInfo.EXTRA_INPUT_ID);
+            if (mInputId == null) {
+                mInputId = TvContractUtils.getInputId();
+            }
             mAccountManager = AccountManager.get(getActivity());
             sClient = TVHClient.getInstance(getActivity());
 

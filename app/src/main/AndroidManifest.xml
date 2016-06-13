@@ -60,24 +60,17 @@ under the License.
         android:theme="@style/Theme.Leanback"
         android:banner="@drawable/banner">
 
-        <activity
-            android:name=".IntroActivity"
-            android:theme="@style/Theme.Leanback"
-            android:label="TVHeadend">
-
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
-            </intent-filter>
-        </activity>
-
         <!--
              Launched by the TV app before it uses RichTvInputService. This registers channels and
              sets up SyncJobService to provide program information in the background.
         -->
-        <activity android:name=".setup.TvInputSetupActivity">
+        <activity
+            android:name=".setup.TvInputSetupActivity"
+            android:theme="@style/Theme.Leanback"
+            android:label="TVHeadend">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
         </activity>
 

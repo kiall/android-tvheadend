@@ -126,8 +126,6 @@ public class PrepareVideoTask extends AsyncTask<Void, Void, MediaPlayer> {
             }
         });
 
-
-
         try {
             mediaPlayer.setDataSource(mContext, videoUri, headers);
 
