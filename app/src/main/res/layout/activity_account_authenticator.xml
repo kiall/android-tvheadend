@@ -36,7 +36,7 @@ under the License.
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Hostname"
-        android:inputType="text"
+        android:inputType="textUri"
         android:padding="10dp"
         android:layout_below="@+id/header"
         android:layout_alignParentStart="true" />
@@ -45,7 +45,7 @@ under the License.
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Port Number"
-        android:inputType="text"
+        android:inputType="number"
         android:padding="10dp"
         android:layout_below="@+id/accountHostname"
         android:layout_alignParentStart="true" />
