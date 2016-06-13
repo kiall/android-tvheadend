@@ -51,6 +51,7 @@ public class SyncEventsTask extends AsyncTask<Void, Void, Boolean> {
 
     @Override
     protected Boolean doInBackground(Void... params) {
+        Log.d(TAG, "Starting SyncEventsTask for inputId: " + mInputId);
         if (isCancelled()) {
             return false;
         }
@@ -74,6 +75,7 @@ public class SyncEventsTask extends AsyncTask<Void, Void, Boolean> {
     }
 
     private ChannelList findChannels(String inputId) {
+        Log.d(TAG, "Fetching channel list from TV DB");
         // Select only a few columns
         String[] projection = {
                 TvContract.Channels._ID,
@@ -87,6 +89,7 @@ public class SyncEventsTask extends AsyncTask<Void, Void, Boolean> {
     }
 
     private void updateChannel(final Channel channel) {
+
         // Prepare the SyncChannelEventsTask
         final SyncChannelEventsTask syncChannelEventsTask = new SyncChannelEventsTask(mContext, channel) {
             @Override
@@ -110,6 +113,7 @@ public class SyncEventsTask extends AsyncTask<Void, Void, Boolean> {
             }
         };
 
+        Log.d(TAG, "Fetching events for channel " + channel.toString());
         mClient.getEventGrid(listener, errorListener, channel.getInternalProviderData().getUuid());
     }
 }

@@ -19,6 +19,7 @@ package ie.macinnes.tvheadend.tasks;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import ie.macinnes.tvheadend.client.TVHClient;
 import ie.macinnes.tvheadend.model.Channel;
@@ -43,6 +44,8 @@ public class SyncChannelEventsTask extends AsyncTask<TVHClient.EventList, Void, 
 
     @Override
     protected Boolean doInBackground(TVHClient.EventList... eventLists) {
+        Log.d(TAG, "Starting SyncChannelsTask for channel: " + mChannel.toString());
+
         if (isCancelled()) {
             return false;
         }

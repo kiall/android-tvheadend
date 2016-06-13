@@ -20,17 +20,19 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.util.Log;
 
 import java.util.List;
 
 import ie.macinnes.tvheadend.Constants;
 
 public class SyncBootReceiver extends BroadcastReceiver {
-    public SyncBootReceiver() {
-    }
+    private static final String TAG = SyncBootReceiver.class.getName();
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        Log.d(TAG, "SyncBootReceiver triggered");
+
         JobScheduler jobScheduler = (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
 
         // If there are no pending jobs, create a sync job and schedule it.
