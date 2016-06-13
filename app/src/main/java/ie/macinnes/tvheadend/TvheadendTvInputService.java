@@ -22,7 +22,7 @@ import android.net.Uri;
 import android.util.Log;
 import android.view.Surface;
 
-import ie.macinnes.tvheadend.player.PrepareVideoTask;
+import ie.macinnes.tvheadend.tasks.PrepareVideoTask;
 
 
 public class TvheadendTvInputService extends TvInputService {

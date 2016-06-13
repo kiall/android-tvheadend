@@ -14,7 +14,7 @@
  * under the License.
  */
 
-package ie.macinnes.tvheadend.player;
+package ie.macinnes.tvheadend.tasks;
 
 
 import android.accounts.Account;
