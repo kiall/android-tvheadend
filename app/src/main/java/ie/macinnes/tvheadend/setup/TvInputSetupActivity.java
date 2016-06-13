@@ -16,6 +16,8 @@ package ie.macinnes.tvheadend.setup;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.accounts.AccountManagerCallback;
+import android.accounts.AccountManagerFuture;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.content.BroadcastReceiver;
@@ -200,12 +202,16 @@ public class TvInputSetupActivity extends Activity {
 
                 return true;
             } else {
-                GuidedStepFragment fragment = new AccountCreaterFragment();
-                fragment.setArguments(getArguments());
 
-                add(getFragmentManager(), fragment);
+                mAccountManager.addAccount("ie.macinnes.tvheadend", null, null, new Bundle(), getActivity(), new AddAccountCallback(), null);
+                return true;
+            }
+        }
 
-                return false;
+        private class AddAccountCallback implements AccountManagerCallback<Bundle> {
+            @Override
+            public void run(AccountManagerFuture<Bundle> result) {
+                onResume();
             }
         }
 
@@ -220,42 +226,6 @@ public class TvInputSetupActivity extends Activity {
                 fragment.setArguments(getArguments());
                 add(getFragmentManager(), fragment);
             }
-        }
-    }
-
-    public static class AccountCreaterFragment extends BaseGuidedStepFragment {
-        // This pops the add account UI, but seems to wedge the GuidedStep who calls it.
-        // mAccountManager.addAccount("ie.macinnes.tvheadend", null, null, new Bundle(), getActivity(), null, null);
-
-        @NonNull
-        @Override
-        public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
-            GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
-                    "Add New Account",
-                    "TODO, Please manually add an account via the Settings app and return here",
-                    "TVHeadend",
-                    null);
-
-            return guidance;
-        }
-
-        @Override
-        public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
-            List<GuidedAction> subActions = new ArrayList();
-
-            GuidedAction action = new GuidedAction.Builder(getActivity())
-                    .title("Return")
-                    .description("Return to the account chooser")
-                    .editable(false)
-                    .build();
-
-            actions.add(action);
-        }
-
-        @Override
-        public void onGuidedActionClicked(GuidedAction action) {
-            popBackStackToGuidedStepFragment(AccountCreaterFragment.class,
-                    FragmentManager.POP_BACK_STACK_INCLUSIVE);
         }
     }
 
