@@ -33,7 +33,7 @@ import ie.macinnes.tvheadend.tasks.SyncEventsTask;
 public class SyncJobService extends JobService {
     private static final String TAG = SyncJobService.class.getName();
 
-    public static final long FULL_SYNC_FREQUENCY_MILLIS = 60 * 60 * 24 * 1000;  // daily
+    public static final long FULL_SYNC_FREQUENCY_MILLIS = 60 * 60 * 12 * 1000;  // twice daily
     public static final long OVERRIDE_DEADLINE_MILLIS = 1000;  // 1 second
 
     private static final Object mContextLock = new Object();
