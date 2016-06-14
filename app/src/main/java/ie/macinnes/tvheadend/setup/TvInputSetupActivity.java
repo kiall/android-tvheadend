@@ -56,7 +56,7 @@ public class TvInputSetupActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        GuidedStepFragment fragment = new AccountSelectorFragment();
+        GuidedStepFragment fragment = new IntroFragment();
         fragment.setArguments(getIntent().getExtras());
         GuidedStepFragment.addAsRoot(this, fragment, android.R.id.content);
     }
@@ -104,6 +104,42 @@ public class TvInputSetupActivity extends Activity {
 
             Log.d(TAG, "Failed to find account, no accounts with matching name");
             return null;
+        }
+    }
+
+    public static class IntroFragment extends BaseGuidedStepFragment {
+        @NonNull
+        @Override
+        public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
+            GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
+                    "Introduction",
+                    "Welcome to the Tvhheadend Live Channel, we'll guide you through the setup " +
+                    "process now, once done you will be ready to watch TV",
+                    "TVHeadend",
+                    null);
+
+            return guidance;
+        }
+
+        @Override
+        public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
+            List<GuidedAction> subActions = new ArrayList();
+
+            GuidedAction action = new GuidedAction.Builder(getActivity())
+                    .title("Begin")
+                    .description("Start Tvheadend Live Channel Setup")
+                    .editable(false)
+                    .build();
+
+            actions.add(action);
+        }
+
+        @Override
+        public void onGuidedActionClicked(GuidedAction action) {
+            // Move onto the next step
+            GuidedStepFragment fragment = new AccountSelectorFragment();
+            fragment.setArguments(getArguments());
+            add(getFragmentManager(), fragment);
         }
     }
 
@@ -233,43 +269,6 @@ public class TvInputSetupActivity extends Activity {
         private static final int ACTION_ID_PROCESSING = 1;
         private SyncChannelsTask mSyncChannelsTask;
 
-        private final BroadcastReceiver mSyncStatusChangedReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, final Intent intent) {
-                String syncStatusChangedInputId = intent.getStringExtra(
-                        Constants.KEY_INPUT_ID);
-
-                if (syncStatusChangedInputId.equals(mInputId)) {
-                    String syncStatus = intent.getStringExtra(Constants.SYNC_STATUS);
-
-                    if (syncStatus.equals(Constants.SYNC_FINISHED)) {
-                        SyncUtils.setUpPeriodicSync(getActivity(), mInputId);
-
-                        // Move to the CompletedFragment
-                        GuidedStepFragment fragment = new CompletedFragment();
-                        fragment.setArguments(getArguments());
-                        add(getFragmentManager(), fragment);
-                    }
-                }
-            }
-        };
-
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-
-            LocalBroadcastManager.getInstance(getActivity()).registerReceiver(
-                    mSyncStatusChangedReceiver,
-                    new IntentFilter(Constants.ACTION_SYNC_STATUS_CHANGED));
-        }
-
-        @Override
-        public void onDestroy() {
-            super.onDestroy();
-            LocalBroadcastManager.getInstance(getActivity())
-                    .unregisterReceiver(mSyncStatusChangedReceiver);
-        }
-
         @Override
         public void onStart() {
             super.onStart();
@@ -285,9 +284,10 @@ public class TvInputSetupActivity extends Activity {
                     editor.putString(Constants.KEY_INPUT_ID, mInputId);
                     editor.apply();
 
-                    // Force a EPG sync
-                    SyncUtils.cancelAll(getActivity());
-                    SyncUtils.requestSync(getActivity(), mInputId);
+                    // Move to the SyncEPGFragment
+                    GuidedStepFragment fragment = new SyncEPGFragment();
+                    fragment.setArguments(getArguments());
+                    add(getFragmentManager(), fragment);
                 }
             };
 
@@ -359,6 +359,95 @@ public class TvInputSetupActivity extends Activity {
         }
     }
 
+    public static class SyncEPGFragment extends BaseGuidedStepFragment {
+        private static final int ACTION_ID_PROCESSING = 1;
+
+        private final BroadcastReceiver mSyncStatusChangedReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, final Intent intent) {
+                String syncStatusChangedInputId = intent.getStringExtra(
+                        Constants.KEY_INPUT_ID);
+
+                if (syncStatusChangedInputId.equals(mInputId)) {
+                    String syncStatus = intent.getStringExtra(Constants.SYNC_STATUS);
+
+                    if (syncStatus.equals(Constants.SYNC_FINISHED)) {
+                        SyncUtils.setUpPeriodicSync(getActivity(), mInputId);
+
+                        // Move to the CompletedFragment
+                        GuidedStepFragment fragment = new CompletedFragment();
+                        fragment.setArguments(getArguments());
+                        add(getFragmentManager(), fragment);
+                    }
+                }
+            }
+        };
+
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+
+            LocalBroadcastManager.getInstance(getActivity()).registerReceiver(
+                    mSyncStatusChangedReceiver,
+                    new IntentFilter(Constants.ACTION_SYNC_STATUS_CHANGED));
+        }
+
+        @Override
+        public void onDestroy() {
+            super.onDestroy();
+            LocalBroadcastManager.getInstance(getActivity())
+                    .unregisterReceiver(mSyncStatusChangedReceiver);
+        }
+
+        @Override
+        public void onStart() {
+            super.onStart();
+
+            // Force a EPG sync
+            SyncUtils.cancelAll(getActivity());
+            SyncUtils.requestSync(getActivity(), mInputId);
+        }
+
+        @Override
+        public GuidedActionsStylist onCreateActionsStylist() {
+            GuidedActionsStylist stylist = new GuidedActionsStylist() {
+                @Override
+                public int onProvideItemLayoutId() {
+                    return R.layout.setup_progress;
+                }
+
+            };
+            return stylist;
+        }
+
+        @Override
+        public int onProvideTheme() {
+            return R.style.Theme_SetupWizard_NoSelector;
+        }
+
+        @NonNull
+        @Override
+        public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
+            GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
+                    "Syncing EPG",
+                    "Just a few seconds please :)",
+                    "TVHeadend",
+                    null);
+
+            return guidance;
+        }
+
+        @Override
+        public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
+            GuidedAction action = new GuidedAction.Builder(getActivity())
+                    .id(ACTION_ID_PROCESSING)
+                    .title("Processing")
+                    .infoOnly(true)
+                    .build();
+            actions.add(action);
+        }
+    }
+
     public static class CompletedFragment extends BaseGuidedStepFragment {
         @NonNull
         @Override
@@ -378,7 +467,7 @@ public class TvInputSetupActivity extends Activity {
 
             GuidedAction action = new GuidedAction.Builder(getActivity())
                     .title("Complete")
-                    .description("Return to the Live Channels app")
+                    .description("You're all set!")
                     .editable(false)
                     .build();
 
