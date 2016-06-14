@@ -3,6 +3,8 @@ Android TV + TVHeadend
 
 Still a WIP, Just about works..
 
+Sign up for Beta access on Google Play: https://play.google.com/apps/testing/ie.macinnes.tvheadend
+
 Download from Google Play: https://play.google.com/store/apps/details?id=ie.macinnes.tvheadend
 
 .. image:: https://travis-ci.org/kiall/android-tvheadend.svg
