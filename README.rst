@@ -20,3 +20,4 @@ Outstanding TODOs (not complete in any way, shape or form)
 * Detect removal of account, remove channels etc when detected
 * Support for choosing the stream profile to use
 * Support for choosing the audio track
+* Add validation during Account Creation wizard
