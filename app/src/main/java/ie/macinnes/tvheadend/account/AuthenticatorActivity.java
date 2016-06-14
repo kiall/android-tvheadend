@@ -17,12 +17,14 @@ package ie.macinnes.tvheadend.account;
 import android.accounts.Account;
 import android.accounts.AccountAuthenticatorActivity;
 import android.accounts.AccountManager;
-import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v17.leanback.app.GuidedStepFragment;
+import android.support.v17.leanback.widget.GuidanceStylist;
+import android.support.v17.leanback.widget.GuidedAction;
+import android.support.v17.leanback.widget.GuidedActionsStylist;
+import android.text.InputType;
 import android.util.Log;
-import android.view.View;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkError;
@@ -34,6 +36,9 @@ import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.R;
@@ -47,102 +52,362 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_account_authenticator);
 
-        mAccountManager = AccountManager.get(getBaseContext());
-
-        findViewById(R.id.submit).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                submit();
-            }
-        });
+        GuidedStepFragment fragment = new ServerFragment();
+        fragment.setArguments(getIntent().getExtras());
+        GuidedStepFragment.addAsRoot(this, fragment, android.R.id.content);
     }
 
-    public void submit() {
-        final String accountType = getIntent().getStringExtra(AccountManager.KEY_ACCOUNT_TYPE);
+    @Override
+    public void onBackPressed() {
+        if (GuidedStepFragment.getCurrentGuidedStepFragment(getFragmentManager())
+                instanceof CompletedFragment) {
+            finish();
 
-        final String accountName = ((TextView) findViewById(R.id.accountName)).getText().toString();
-        final String accountPassword = ((TextView) findViewById(R.id.accountPassword)).getText().toString();
-        final String accountHostname = ((TextView) findViewById(R.id.accountHostname)).getText().toString();
-        final String accountPort = ((TextView) findViewById(R.id.accountPort)).getText().toString();
+        } else if (GuidedStepFragment.getCurrentGuidedStepFragment(getFragmentManager())
+                instanceof FailedFragment) {
+            finish();
 
-        // Validate the User and Pass by connecting to TVHeadend
-        Response.Listener<JSONObject> listener = new Response.Listener<JSONObject>() {
+        } else {
+            super.onBackPressed();
+        }
+    }
 
-            @Override
-            public void onResponse(JSONObject response) {
-                Log.d(TAG, "Successfully validated credentials");
+    public static abstract class BaseGuidedStepFragment extends GuidedStepFragment {
+        protected AccountManager mAccountManager;
 
-                Bundle data = new Bundle();
+        @Override
+        public int onProvideTheme() {
+            return R.style.Theme_Wizard;
+        }
 
-                data.putString(AccountManager.KEY_ACCOUNT_TYPE, accountType);
-                data.putString(AccountManager.KEY_ACCOUNT_NAME, accountName);
-                data.putString(AccountManager.KEY_PASSWORD, accountPassword);
-                data.putString(Constants.KEY_HOSTNAME, accountHostname);
-                data.putString(Constants.KEY_PORT, accountPort);
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            mAccountManager = AccountManager.get(getActivity());
+        }
+    }
 
-                final Intent res = new Intent();
-                res.putExtras(data);
-                finishLogin(res);
+    public static class ServerFragment extends BaseGuidedStepFragment {
+        private static final int ACTION_ID_HOSTNAME = 1;
+        private static final int ACTION_ID_PORT = 2;
+        private static final int ACTION_ID_NEXT = 3;
+
+        @NonNull
+        @Override
+        public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
+            GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
+                    "Tvheadend server",
+                    "Enter your Tvheadend server hostname or IP address", null, null);
+
+            return guidance;
+        }
+
+        @Override
+        public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
+            GuidedAction action = new GuidedAction.Builder(getActivity())
+                    .id(ACTION_ID_HOSTNAME)
+                    .title("Hostname/IP")
+                    .descriptionEditInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI)
+                    .descriptionInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI)
+                    .descriptionEditable(true)
+                    .build();
+
+            actions.add(action);
+
+            action = new GuidedAction.Builder(getActivity())
+                    .id(ACTION_ID_PORT)
+                    .title("Port Number")
+                    .descriptionEditInputType(InputType.TYPE_CLASS_NUMBER)
+                    .descriptionInputType(InputType.TYPE_CLASS_NUMBER)
+                    .descriptionEditable(true)
+                    .build();
+
+            actions.add(action);
+
+            action = new GuidedAction.Builder(getActivity())
+                    .id(ACTION_ID_NEXT)
+                    .title("Next")
+                    .editable(false)
+                    .build();
+
+            actions.add(action);
+        }
+
+        @Override
+        public void onGuidedActionClicked(GuidedAction action) {
+            if (action.getId() == ACTION_ID_NEXT) {
+                GuidedStepFragment fragment = new AccountFragment();
+
+                Bundle args = getArguments();
+
+                GuidedAction hostnameAction = findActionById(ACTION_ID_HOSTNAME);
+                args.putString(Constants.KEY_HOSTNAME, hostnameAction.getDescription().toString());
+
+                GuidedAction portAction = findActionById(ACTION_ID_PORT);
+                args.putString(Constants.KEY_PORT, portAction.getDescription().toString());
+
+                fragment.setArguments(args);
+
+                add(getFragmentManager(), fragment);
             }
-        };
+        }
+    }
 
-        Response.ErrorListener errorListener = new Response.ErrorListener() {
+    public static class AccountFragment extends BaseGuidedStepFragment {
+        private static final int ACTION_ID_USERNAME = 1;
+        private static final int ACTION_ID_PASSWORD = 2;
+        private static final int ACTION_ID_ADD_ACCOUNT = 3;
 
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.d(TAG, "Failed to validate credentials");
+        @NonNull
+        @Override
+        public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
+            GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
+                    "Tvheadend Account",
+                    "Enter your Tvheadend username and password", null, null);
 
-                if (error instanceof TimeoutError || error instanceof NoConnectionError) {
-                    onError("Network Timeout!");
-                } else if (error instanceof AuthFailureError) {
-                    onError("Auth Failure!");
-                } else if (error instanceof ServerError) {
-                    onError("Unknown Server Error");
-                } else if (error instanceof NetworkError) {
-                    onError("Unknown Network Error");
-                } else if (error instanceof ParseError) {
-                    onError("Unknown Parse Error");
-                } else {
-                    onError("Unknown Error");
+            return guidance;
+        }
+
+        @Override
+        public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
+            GuidedAction action = new GuidedAction.Builder(getActivity())
+                    .id(ACTION_ID_USERNAME)
+                    .title("Username")
+                    .descriptionEditInputType(InputType.TYPE_CLASS_TEXT)
+                    .descriptionInputType(InputType.TYPE_CLASS_TEXT)
+                    .descriptionEditable(true)
+                    .build();
+
+            actions.add(action);
+
+            action = new GuidedAction.Builder(getActivity())
+                    .id(ACTION_ID_PASSWORD)
+                    .title("Password")
+                    .descriptionEditInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)
+                    .descriptionInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)
+                    .descriptionEditable(true)
+                    .build();
+
+            actions.add(action);
+
+            action = new GuidedAction.Builder(getActivity())
+                    .id(ACTION_ID_ADD_ACCOUNT)
+                    .title("Finish")
+                    .editable(false)
+                    .build();
+
+            actions.add(action);
+        }
+
+        @Override
+        public void onGuidedActionClicked(GuidedAction action) {
+            if (action.getId() == ACTION_ID_ADD_ACCOUNT) {
+                GuidedStepFragment fragment = new ValidateAccountFragment();
+
+                Bundle args = getArguments();
+
+                GuidedAction usernameAction = findActionById(ACTION_ID_USERNAME);
+                args.putString(Constants.KEY_USERNAME, usernameAction.getDescription().toString());
+
+                GuidedAction passwordAction = findActionById(ACTION_ID_PASSWORD);
+                args.putString(Constants.KEY_PASSWORD, passwordAction.getDescription().toString());
+
+                fragment.setArguments(args);
+
+                add(getFragmentManager(), fragment);
+            }
+        }
+    }
+
+    public static class ValidateAccountFragment extends BaseGuidedStepFragment {
+        private static final int ACTION_ID_PROCESSING = 1;
+
+        @Override
+        public GuidedActionsStylist onCreateActionsStylist() {
+            GuidedActionsStylist stylist = new GuidedActionsStylist() {
+                @Override
+                public int onProvideItemLayoutId() {
+                    return R.layout.setup_progress;
                 }
-            }
-        };
 
-        TVHClient client = TVHClient.getInstance(getBaseContext());
+            };
+            return stylist;
+        }
 
-        client.setConnectionInfo(accountHostname, accountPort, accountName, accountPassword);
+        @Override
+        public int onProvideTheme() {
+            return R.style.Theme_Wizard_NoSelector;
+        }
 
-        client.getServerInfo(listener, errorListener);
+        @NonNull
+        @Override
+        public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
+            GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
+                    "Tvheadend Account",
+                    "Checking your account", null, null);
+
+            return guidance;
+        }
+
+        @Override
+        public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
+            GuidedAction action = new GuidedAction.Builder(getActivity())
+                    .id(ACTION_ID_PROCESSING)
+                    .title("Processing")
+                    .infoOnly(true)
+                    .build();
+            actions.add(action);
+        }
+
+        @Override
+        public void onStart() {
+            super.onStart();
+
+            Bundle args = getArguments();
+
+            final String accountType = args.getString(AccountManager.KEY_ACCOUNT_TYPE);
+            final String accountName = args.getString(Constants.KEY_USERNAME);
+            final String accountPassword = args.getString(Constants.KEY_PASSWORD);
+            final String accountHostname = args.getString(Constants.KEY_HOSTNAME);
+            final String accountPort = args.getString(Constants.KEY_PORT);
+
+            // Validate the User and Pass by connecting to TVHeadend
+            Response.Listener<JSONObject> listener = new Response.Listener<JSONObject>() {
+
+                @Override
+                public void onResponse(JSONObject response) {
+                    Log.d(TAG, "Successfully validated credentials");
+
+                    // Store the account
+                    final Account account = new Account(accountName, accountType);
+
+                    Bundle userdata = new Bundle();
+
+                    userdata.putString(Constants.KEY_HOSTNAME, accountHostname);
+                    userdata.putString(Constants.KEY_PORT, accountPort);
+
+                    mAccountManager.addAccountExplicitly(account, accountPassword, userdata);
+
+                    // Store the result, with the username too
+                    userdata.putString(Constants.KEY_USERNAME, accountName);
+
+                    AuthenticatorActivity activity = (AuthenticatorActivity) getActivity();
+                    activity.setAccountAuthenticatorResult(userdata);
+
+                    // Move to the CompletedFragment
+                    GuidedStepFragment fragment = new CompletedFragment();
+                    fragment.setArguments(getArguments());
+                    add(getFragmentManager(), fragment);
+
+                }
+            };
+
+            Response.ErrorListener errorListener = new Response.ErrorListener() {
+
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.d(TAG, "Failed to validate credentials");
+
+                    GuidedStepFragment fragment = new FailedFragment();
+                    Bundle args = getArguments();
+
+                    if (error instanceof TimeoutError || error instanceof NoConnectionError) {
+                        args.putString(Constants.KEY_ERROR_MESSAGE, "Network Timeout!");
+                    } else if (error instanceof AuthFailureError) {
+                        args.putString(Constants.KEY_ERROR_MESSAGE, "Auth Failure!");
+                    } else if (error instanceof ServerError) {
+                        args.putString(Constants.KEY_ERROR_MESSAGE, "Unknown Server Error");
+                    } else if (error instanceof NetworkError) {
+                        args.putString(Constants.KEY_ERROR_MESSAGE, "Unknown Network Error");
+                    } else if (error instanceof ParseError) {
+                        args.putString(Constants.KEY_ERROR_MESSAGE, "Unknown Parse Error");
+                    } else {
+                        args.putString(Constants.KEY_ERROR_MESSAGE, "Unknown Error");
+                    }
+
+                    fragment.setArguments(args);
+                    add(getFragmentManager(), fragment);
+                }
+            };
+
+            TVHClient client = TVHClient.getInstance(getActivity());
+
+            client.setConnectionInfo(accountHostname, accountPort, accountName, accountPassword);
+
+            client.getServerInfo(listener, errorListener);
+        }
     }
 
-    private void finishLogin(Intent intent) {
-        Log.d(TAG, "Storing new account");
-        String accountType = intent.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE);
-        String accountName = intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
-        String accountPassword = intent.getStringExtra(AccountManager.KEY_PASSWORD);
-        String accountHostname = intent.getStringExtra(Constants.KEY_HOSTNAME);
-        String accountPort = intent.getStringExtra(Constants.KEY_PORT);
+    public static class CompletedFragment extends BaseGuidedStepFragment {
+        @NonNull
+        @Override
+        public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
+            GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
+                    "Tvheadend Account",
+                    "Successfully Added Account",
+                    null,
+                    null);
 
-        final Account account = new Account(accountName, accountType);
+            return guidance;
+        }
 
-        Bundle userdata = new Bundle();
-        userdata.putString(Constants.KEY_HOSTNAME, accountHostname);
-        userdata.putString(Constants.KEY_PORT, accountPort);
+        @Override
+        public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
+            List<GuidedAction> subActions = new ArrayList();
 
-        mAccountManager.addAccountExplicitly(account, accountPassword, userdata);
+            GuidedAction action = new GuidedAction.Builder(getActivity())
+                    .title("Complete")
+                    .description("You're all set!")
+                    .editable(false)
+                    .build();
 
-        setAccountAuthenticatorResult(intent.getExtras());
-        setResult(RESULT_OK, intent);
-        finish();
+            actions.add(action);
+        }
+
+        @Override
+        public void onGuidedActionClicked(GuidedAction action) {
+            getActivity().finish();
+        }
     }
 
-    private void onError(int errorResId) {
-        Toast.makeText(getBaseContext(), errorResId, Toast.LENGTH_LONG).show();
-    }
+    public static class FailedFragment extends BaseGuidedStepFragment {
+        @NonNull
+        @Override
+        public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
+            GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
+                    "Tvheadend Account",
+                    "Failed to add account",
+                    null,
+                    null);
 
-    private void onError(String errorMessage) {
-        Toast.makeText(getBaseContext(), errorMessage, Toast.LENGTH_LONG).show();
+            return guidance;
+        }
+
+        @Override
+        public void onResume() {
+            super.onResume();
+
+            Bundle args = getArguments();
+            String errorMessage = args.getString(Constants.KEY_ERROR_MESSAGE);
+            getGuidanceStylist().getDescriptionView().setText("Failed to add account: " + errorMessage);
+        }
+
+        @Override
+        public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
+            List<GuidedAction> subActions = new ArrayList();
+
+            GuidedAction action = new GuidedAction.Builder(getActivity())
+                    .title("Complete")
+                    .editable(false)
+                    .build();
+
+            actions.add(action);
+        }
+
+        @Override
+        public void onGuidedActionClicked(GuidedAction action) {
+            getActivity().finish();
+        }
     }
 }

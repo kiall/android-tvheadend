@@ -19,7 +19,6 @@ import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.app.Activity;
-import android.app.FragmentManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -70,7 +69,7 @@ public class TvInputSetupActivity extends Activity {
 
         @Override
         public int onProvideTheme() {
-            return R.style.Theme_SetupWizard;
+            return R.style.Theme_Wizard;
         }
 
         @Override
@@ -333,7 +332,7 @@ public class TvInputSetupActivity extends Activity {
 
         @Override
         public int onProvideTheme() {
-            return R.style.Theme_SetupWizard_NoSelector;
+            return R.style.Theme_Wizard_NoSelector;
         }
 
         @NonNull
@@ -422,7 +421,7 @@ public class TvInputSetupActivity extends Activity {
 
         @Override
         public int onProvideTheme() {
-            return R.style.Theme_SetupWizard_NoSelector;
+            return R.style.Theme_Wizard_NoSelector;
         }
 
         @NonNull

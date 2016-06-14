@@ -23,7 +23,12 @@ public class Constants {
     // Bundle Keys
     public static final String KEY_HOSTNAME = "HOSTNAME";
     public static final String KEY_PORT = "PORT";
+    public static final String KEY_USERNAME = "USERNAME";
+    public static final String KEY_PASSWORD = "PASSWORD";
+
     public static final String KEY_INPUT_ID = "INPUT-ID";
+
+    public static final String KEY_ERROR_MESSAGE = "ERROR-MESSAGE";
 
     // Sync Job IDs
     public static final int PERIODIC_SYNC_JOB_ID = 0;
