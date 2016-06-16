@@ -22,12 +22,16 @@ import android.util.Log;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
+import com.android.volley.toolbox.RequestFuture;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.annotations.SerializedName;
 
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import ie.macinnes.tvheadend.Constants;
 
@@ -42,6 +46,8 @@ public class TVHClient {
     private String mAccountPort;
     private String mAccountName;
     private String mAccountPassword;
+
+    private int mTimeout = 30;
 
     public static synchronized TVHClient getInstance(Context context) {
         if (mInstance == null) {
@@ -89,6 +95,14 @@ public class TVHClient {
         getRequestQueue().add(jsObjRequest);
     }
 
+    public JSONObject getServerInfo() throws InterruptedException, ExecutionException, TimeoutException {
+        RequestFuture<JSONObject> future = RequestFuture.newFuture();
+
+        getServerInfo(future, future);
+
+        return future.get(mTimeout, TimeUnit.SECONDS);
+    }
+
     public void getChannelGrid(Response.Listener<ChannelList> listener, Response.ErrorListener errorListener) {
         Log.d(TAG, "Calling getChannelGrid");
 
@@ -111,6 +125,14 @@ public class TVHClient {
         getRequestQueue().add(request);
     }
 
+    public ChannelList getChannelGrid() throws InterruptedException, ExecutionException, TimeoutException {
+        RequestFuture<ChannelList> future = RequestFuture.newFuture();
+
+        getChannelGrid(future, future);
+
+        return future.get(mTimeout, TimeUnit.SECONDS);
+    }
+
     public void getEventGrid(Response.Listener<EventList> listener, Response.ErrorListener errorListener, String channelUuid) {
         Log.d(TAG, "Calling getEventGrid for channel: " + channelUuid);
 
@@ -120,6 +142,14 @@ public class TVHClient {
                 Request.Method.GET, url, EventList.class, listener, errorListener, mAccountName, mAccountPassword);
 
         getRequestQueue().add(request);
+    }
+
+    public EventList getEventGrid(String channelUuid) throws InterruptedException, ExecutionException, TimeoutException {
+        RequestFuture<EventList> future = RequestFuture.newFuture();
+
+        getEventGrid(future, future, channelUuid);
+
+        return future.get(mTimeout, TimeUnit.SECONDS);
     }
 
     public static class Channel {
