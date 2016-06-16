@@ -24,7 +24,6 @@ under the License.
     <uses-permission android:name="com.android.providers.tv.permission.READ_EPG_DATA"/>
     <uses-permission android:name="com.android.providers.tv.permission.WRITE_EPG_DATA"/>
 
-
     <!-- Required to use the android AccountManager -->
     <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
     <uses-permission android:name="android.permission.MANAGE_ACCOUNTS"/>
@@ -48,19 +47,21 @@ under the License.
         android:name="android.software.live_tv"
         android:required="true"/>
 
-    <!-- In order to be visible for Android TV devices in the store, we MUST declare touchscreen
-         as optional -->
+    <!--
+         In order to be visible for Android TV devices in the store, we MUST declare touchscreen
+         as optional
+    -->
     <uses-feature
         android:name="android.hardware.touchscreen"
-        android:required="false" />
+        android:required="false"/>
 
     <application
         android:allowBackup="true"
+        android:banner="@drawable/banner"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Leanback"
-        android:banner="@drawable/banner">
+        android:theme="@style/Theme.Leanback">
 
         <!--
              Launched by the TV app before it uses RichTvInputService. This registers channels and
@@ -68,11 +69,12 @@ under the License.
         -->
         <activity
             android:name=".setup.TvInputSetupActivity"
-            android:theme="@style/Theme.Leanback"
-            android:label="TVHeadend">
+            android:label="TVHeadend"
+            android:theme="@style/Theme.Leanback">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+                <action android:name="android.intent.action.MAIN"/>
+
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER"/>
             </intent-filter>
         </activity>
 
@@ -113,16 +115,17 @@ under the License.
             android:name=".sync.SyncService"
             android:exported="true"
             android:process=":sync">
-
             <intent-filter>
                 <action android:name="android.content.SyncAdapter"/>
             </intent-filter>
 
             <meta-data
                 android:name="android.content.SyncAdapter"
-                android:resource="@xml/syncadapter" />
+                android:resource="@xml/syncadapter"/>
         </service>
 
+        <activity android:name=".setup.IssuesActivity">
+        </activity>
     </application>
 
 </manifest>

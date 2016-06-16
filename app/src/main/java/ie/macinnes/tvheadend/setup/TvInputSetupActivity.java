@@ -19,35 +19,26 @@ import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.app.Activity;
-import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.SyncStatusObserver;
 import android.media.tv.TvInputInfo;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v17.leanback.app.GuidedStepFragment;
 import android.support.v17.leanback.widget.GuidanceStylist;
 import android.support.v17.leanback.widget.GuidedAction;
 import android.support.v17.leanback.widget.GuidedActionsStylist;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.R;
+import ie.macinnes.tvheadend.TvContractUtils;
 import ie.macinnes.tvheadend.client.TVHClient;
 import ie.macinnes.tvheadend.sync.SyncUtils;
-import ie.macinnes.tvheadend.TvContractUtils;
 
 public class TvInputSetupActivity extends Activity {
     private static final String TAG = TvInputSetupActivity.class.getName();
@@ -139,9 +130,63 @@ public class TvInputSetupActivity extends Activity {
         @Override
         public void onGuidedActionClicked(GuidedAction action) {
             // Move onto the next step
-            GuidedStepFragment fragment = new AccountSelectorFragment();
+            GuidedStepFragment fragment = new IssuesFragment();
             fragment.setArguments(getArguments());
             add(getFragmentManager(), fragment);
+        }
+    }
+
+    public static class IssuesFragment extends BaseGuidedStepFragment {
+        private static final int ACTION_ID_SHOW_ISSUES = 1;
+        private static final int ACTION_ID_LETS_GO = 2;
+
+        @NonNull
+        @Override
+        public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
+            GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
+                    "Known Issues",
+                    "There are several known issues at the moment, without reading this info, it " +
+                    "is extremely unlikely you will get working video!",
+                    "TVHeadend",
+                    null);
+
+            return guidance;
+        }
+
+        @Override
+        public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
+            List<GuidedAction> subActions = new ArrayList();
+
+            GuidedAction action = new GuidedAction.Builder(getActivity())
+                    .id(ACTION_ID_SHOW_ISSUES)
+                    .title("Show Issues")
+                    .description("Show the known issues page")
+                    .editable(false)
+                    .build();
+
+            actions.add(action);
+
+            action = new GuidedAction.Builder(getActivity())
+                    .id(ACTION_ID_LETS_GO)
+                    .title("Begin")
+                    .description("Start Tvheadend Live Channel Setup")
+                    .editable(false)
+                    .build();
+
+            actions.add(action);
+        }
+
+        @Override
+        public void onGuidedActionClicked(GuidedAction action) {
+            if (action.getId() == ACTION_ID_SHOW_ISSUES) {
+                Intent intent = new Intent(getActivity(), IssuesActivity.class);
+                startActivity(intent);
+            } else if (action.getId() == ACTION_ID_LETS_GO) {
+                // Move onto the next step
+                GuidedStepFragment fragment = new AccountSelectorFragment();
+                fragment.setArguments(getArguments());
+                add(getFragmentManager(), fragment);
+            }
         }
     }
 
