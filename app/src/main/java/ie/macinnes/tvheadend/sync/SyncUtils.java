@@ -15,66 +15,46 @@ under the License.
 package ie.macinnes.tvheadend.sync;
 
 
-import android.app.job.JobInfo;
-import android.app.job.JobScheduler;
-import android.content.ComponentName;
+import android.accounts.Account;
 import android.content.ContentResolver;
-import android.content.Context;
-import android.content.Intent;
-import android.os.PersistableBundle;
-import android.support.v4.content.LocalBroadcastManager;
+import android.os.Bundle;
+import android.util.Log;
 
 import ie.macinnes.tvheadend.Constants;
-import ie.macinnes.tvheadend.TvContractUtils;
 
 public class SyncUtils {
+    private static final String TAG = SyncUtils.class.getName();
 
-    private static void scheduleJob(Context context, JobInfo job) {
-        JobScheduler jobScheduler =
-                (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
-        jobScheduler.schedule(job);
+    public static final long SYNC_FREQUENCY_SEC = 60 * 60 * 12 ;  // twice daily
+
+    public static void setUpPeriodicSync(Account account) {
+        Log.d(TAG, "Setting periodic sync for account: " + account.toString());
+
+        ContentResolver.setIsSyncable(account, Constants.CONTENT_AUTHORITY, 1);
+        ContentResolver.setSyncAutomatically(account, Constants.CONTENT_AUTHORITY, true);
+
+        Bundle bundle = new Bundle();
+
+        ContentResolver.addPeriodicSync(
+                account, Constants.CONTENT_AUTHORITY, bundle, SYNC_FREQUENCY_SEC);
     }
 
-    public static void setUpPeriodicSync(Context context) {
-        PersistableBundle pBundle = new PersistableBundle();
+    public static void removePeriodicSync(Account account) {
+        ContentResolver.setIsSyncable(account, Constants.CONTENT_AUTHORITY, 0);
+        ContentResolver.setSyncAutomatically(account, Constants.CONTENT_AUTHORITY, false);
 
-        JobInfo.Builder builder = new JobInfo.Builder(Constants.PERIODIC_SYNC_JOB_ID,
-                new ComponentName(context, SyncJobService.class));
+        Bundle bundle = new Bundle();
 
-        JobInfo jobInfo = builder
-                .setExtras(pBundle)
-                .setPeriodic(SyncJobService.FULL_SYNC_FREQUENCY_MILLIS)
-                .setPersisted(true)
-                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                .build();
-
-        scheduleJob(context, jobInfo);
+        ContentResolver.removePeriodicSync(account, Constants.CONTENT_AUTHORITY, bundle);
     }
 
-    public static void requestSync(Context context) {
-        PersistableBundle pBundle = new PersistableBundle();
+    public static void requestSync(Account account) {
+        Log.d(TAG, "Requesting immediate sync for account: " + account.toString());
+        Bundle bundle = new Bundle();
 
-        pBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
-        pBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+        bundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+        bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
 
-        JobInfo.Builder builder = new JobInfo.Builder(Constants.REQUEST_SYNC_JOB_ID,
-                new ComponentName(context, SyncJobService.class));
-
-        JobInfo jobInfo = builder
-                .setExtras(pBundle)
-                .setOverrideDeadline(SyncJobService.OVERRIDE_DEADLINE_MILLIS)
-                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                .build();
-        scheduleJob(context, jobInfo);
-
-        Intent intent = new Intent(Constants.ACTION_SYNC_STATUS_CHANGED);
-        intent.putExtra(Constants.SYNC_STATUS, Constants.SYNC_STARTED);
-        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
-    }
-
-    public static void cancelAll(Context context) {
-        JobScheduler jobScheduler =
-                (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
-        jobScheduler.cancelAll();
+        ContentResolver.requestSync(account, Constants.CONTENT_AUTHORITY, bundle);
     }
 }

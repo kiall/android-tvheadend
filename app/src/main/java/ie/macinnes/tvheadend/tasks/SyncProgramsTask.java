@@ -26,8 +26,8 @@ import ie.macinnes.tvheadend.model.Channel;
 import ie.macinnes.tvheadend.model.ProgramList;
 import ie.macinnes.tvheadend.TvContractUtils;
 
-public class SyncChannelEventsTask extends AsyncTask<TVHClient.EventList, Void, Boolean> {
-    public static final String TAG = SyncChannelEventsTask.class.getSimpleName();
+public class SyncProgramsTask extends AsyncTask<TVHClient.EventList, Void, Boolean> {
+    public static final String TAG = SyncProgramsTask.class.getSimpleName();
 
     private final Context mContext;
     private final Channel mChannel;
@@ -35,7 +35,7 @@ public class SyncChannelEventsTask extends AsyncTask<TVHClient.EventList, Void, 
     private final TVHClient mClient;
     private boolean complete;
 
-    protected SyncChannelEventsTask(Context context, Channel channel) {
+    protected SyncProgramsTask(Context context, Channel channel) {
         mContext = context;
         mChannel = channel;
 

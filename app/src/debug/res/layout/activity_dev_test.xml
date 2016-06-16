@@ -54,6 +54,14 @@ under the License.
             android:nestedScrollingEnabled="true"
             android:onClick="serverInfo" />
 
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Delete Channels"
+            android:nestedScrollingEnabled="true"
+            android:onClick="deleteChannels"
+            android:layout_gravity="center_horizontal"/>
+
     </LinearLayout>
 
     <ScrollView

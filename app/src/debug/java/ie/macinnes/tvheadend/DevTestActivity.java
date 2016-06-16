@@ -129,4 +129,10 @@ public class DevTestActivity extends Activity {
 
         mClient.getServerInfo(listener, errorListener);
     }
+
+    public void deleteChannels(View view) {
+        setRunning();
+        TvContractUtils.removeChannels(getBaseContext());
+        setOk();
+    }
 }

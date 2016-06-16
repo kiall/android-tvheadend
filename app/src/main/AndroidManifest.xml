@@ -20,15 +20,22 @@ under the License.
     <!-- Required to play internet-based streaming contents. -->
     <uses-permission android:name="android.permission.INTERNET"/>
 
-    <!-- Required to update or read existing channel and program information in TvProvider. -->
+    <!-- Required to read and update channel and program information in TvProvider. -->
     <uses-permission android:name="com.android.providers.tv.permission.READ_EPG_DATA"/>
-
-    <!-- Required to update channel and program information in TvProvider. -->
     <uses-permission android:name="com.android.providers.tv.permission.WRITE_EPG_DATA"/>
 
-    <!-- Required to sync EPG data after reboot. -->
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
+    <!-- Required to use the android AccountManager -->
+    <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
+    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS"/>
+    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS"/>
+
+    <!-- Required for Syncing Data -->
+    <uses-permission android:name="android.permission.READ_SYNC_STATS"/>
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS"/>
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS"/>
+
+    <!-- Expose this app in the store only to devices with leanback UI framework -->
     <uses-feature
         android:name="android.software.leanback"
         android:required="true"/>
@@ -46,11 +53,6 @@ under the License.
     <uses-feature
         android:name="android.hardware.touchscreen"
         android:required="false" />
-
-    <!-- Required to use the android AccountManager -->
-    <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
-    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS"/>
-    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS"/>
 
     <application
         android:allowBackup="true"
@@ -106,20 +108,21 @@ under the License.
                 android:resource="@xml/authenticatorservice"/>
         </service>
 
-        <!-- This service is for using JobScheduler to sync EPG data. -->
+        <!-- This service is for syncing Channel and EPG data -->
         <service
-            android:name=".sync.SyncJobService"
+            android:name=".sync.SyncService"
             android:exported="true"
-            android:permission="android.permission.BIND_JOB_SERVICE"/>
+            android:process=":sync">
 
-        <receiver
-            android:name=".sync.SyncBootReceiver"
-            android:enabled="true"
-            android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.content.SyncAdapter"/>
             </intent-filter>
-        </receiver>
+
+            <meta-data
+                android:name="android.content.SyncAdapter"
+                android:resource="@xml/syncadapter" />
+        </service>
+
     </application>
 
 </manifest>

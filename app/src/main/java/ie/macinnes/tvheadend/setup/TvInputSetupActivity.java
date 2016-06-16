@@ -20,10 +20,12 @@ import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.SyncStatusObserver;
 import android.media.tv.TvInputInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -45,7 +47,6 @@ import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.R;
 import ie.macinnes.tvheadend.client.TVHClient;
 import ie.macinnes.tvheadend.sync.SyncUtils;
-import ie.macinnes.tvheadend.tasks.SyncChannelsTask;
 import ie.macinnes.tvheadend.TvContractUtils;
 
 public class TvInputSetupActivity extends Activity {
@@ -259,114 +260,31 @@ public class TvInputSetupActivity extends Activity {
                 sClient.setConnectionInfo(sAccount);
 
                 // Move onto the next step
-                GuidedStepFragment fragment = new AddChannelsFragment();
+                GuidedStepFragment fragment = new SyncingFragment();
                 fragment.setArguments(getArguments());
                 add(getFragmentManager(), fragment);
             }
         }
     }
 
-    public static class AddChannelsFragment extends BaseGuidedStepFragment {
-        private static final int ACTION_ID_PROCESSING = 1;
-        private SyncChannelsTask mSyncChannelsTask;
+    public static class SyncingFragment extends BaseGuidedStepFragment {
+        private Object mSyncStatusChangedReceiverHandle;
+        private final SyncStatusObserver mSyncStatusObserver = new SyncStatusObserver() {
 
-        @Override
-        public void onStart() {
-            super.onStart();
-
-            mSyncChannelsTask = new SyncChannelsTask(getActivity()) {
-                @Override
-                protected void onPostExecute(Boolean completed) {
-                    // Move to the SyncEPGFragment
-                    GuidedStepFragment fragment = new SyncEPGFragment();
-                    fragment.setArguments(getArguments());
-                    add(getFragmentManager(), fragment);
-                }
-            };
-
-            Response.Listener<TVHClient.ChannelList> listener = new Response.Listener<TVHClient.ChannelList>() {
-                @Override
-                public void onResponse(TVHClient.ChannelList channelList) {
-                    mSyncChannelsTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, channelList);
-                }
-            };
-
-            Response.ErrorListener errorListener = new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    // Move to the FailedFragment
-                    GuidedStepFragment fragment = new FailedFragment();
-                    fragment.setArguments(getArguments());
-                    add(getFragmentManager(), fragment);
-                }
-            };
-
-            sClient.getChannelGrid(listener, errorListener);
-        }
-
-        @Override
-        public void onStop() {
-            super.onStop();
-            if (mSyncChannelsTask != null) {
-                mSyncChannelsTask.cancel(false);
-            }
-        }
-
-        @Override
-        public GuidedActionsStylist onCreateActionsStylist() {
-            GuidedActionsStylist stylist = new GuidedActionsStylist() {
-                @Override
-                public int onProvideItemLayoutId() {
-                    return R.layout.setup_progress;
-                }
-
-            };
-            return stylist;
-        }
-
-        @Override
-        public int onProvideTheme() {
-            return R.style.Theme_Wizard_NoSelector;
-        }
-
-        @NonNull
-        @Override
-        public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
-            GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
-                    "Adding Channels",
-                    "Just a few seconds please :)",
-                    "TVHeadend",
-                    null);
-
-            return guidance;
-        }
-
-        @Override
-        public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
-            GuidedAction action = new GuidedAction.Builder(getActivity())
-                    .id(ACTION_ID_PROCESSING)
-                    .title("Processing")
-                    .infoOnly(true)
-                    .build();
-            actions.add(action);
-        }
-    }
-
-    public static class SyncEPGFragment extends BaseGuidedStepFragment {
-        private static final int ACTION_ID_PROCESSING = 1;
-
-        private final BroadcastReceiver mSyncStatusChangedReceiver = new BroadcastReceiver() {
             @Override
-            public void onReceive(Context context, final Intent intent) {
-                 String syncStatus = intent.getStringExtra(Constants.SYNC_STATUS);
+            public void onStatusChanged(int which) {
+                if (which == ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE) {
+                    if (!ContentResolver.isSyncActive(sAccount, Constants.CONTENT_AUTHORITY)) {
+                        Log.d(TAG, "Initial Sync Completed");
 
-                if (syncStatus.equals(Constants.SYNC_FINISHED)) {
-                    SyncUtils.setUpPeriodicSync(getActivity());
+                        // Set up a periodic sync from now on
+                        SyncUtils.setUpPeriodicSync(sAccount);
 
-                    // Move to the CompletedFragment
-                    GuidedStepFragment fragment = new CompletedFragment();
-                    fragment.setArguments(getArguments());
-                    add(getFragmentManager(), fragment);
+                        // Move to the CompletedFragment
+                        GuidedStepFragment fragment = new CompletedFragment();
+                        fragment.setArguments(getArguments());
+                        add(getFragmentManager(), fragment);
+                    }
                 }
             }
         };
@@ -375,16 +293,15 @@ public class TvInputSetupActivity extends Activity {
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
 
-            LocalBroadcastManager.getInstance(getActivity()).registerReceiver(
-                    mSyncStatusChangedReceiver,
-                    new IntentFilter(Constants.ACTION_SYNC_STATUS_CHANGED));
+            mSyncStatusChangedReceiverHandle = ContentResolver.addStatusChangeListener(
+                    ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE, mSyncStatusObserver);
         }
 
         @Override
         public void onDestroy() {
             super.onDestroy();
-            LocalBroadcastManager.getInstance(getActivity())
-                    .unregisterReceiver(mSyncStatusChangedReceiver);
+
+            ContentResolver.removeStatusChangeListener(mSyncStatusChangedReceiverHandle);
         }
 
         @Override
@@ -392,8 +309,7 @@ public class TvInputSetupActivity extends Activity {
             super.onStart();
 
             // Force a EPG sync
-            SyncUtils.cancelAll(getActivity());
-            SyncUtils.requestSync(getActivity());
+            SyncUtils.requestSync(sAccount);
         }
 
         @Override
@@ -417,7 +333,7 @@ public class TvInputSetupActivity extends Activity {
         @Override
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
             GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
-                    "Syncing EPG",
+                    "Syncing Channels and Program data",
                     "Just a few seconds please :)",
                     "TVHeadend",
                     null);
@@ -428,7 +344,6 @@ public class TvInputSetupActivity extends Activity {
         @Override
         public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
             GuidedAction action = new GuidedAction.Builder(getActivity())
-                    .id(ACTION_ID_PROCESSING)
                     .title("Processing")
                     .infoOnly(true)
                     .build();
