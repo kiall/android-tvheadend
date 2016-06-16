@@ -28,8 +28,6 @@ import ie.macinnes.tvheadend.tasks.PrepareVideoTask;
 public class TvheadendTvInputService extends TvInputService {
     private static final String TAG = TvheadendTvInputService.class.getName();
 
-    private final Object mPrepareLock = new Object();
-
     public TvheadendTvInputService() {
     }
 
@@ -47,14 +45,10 @@ public class TvheadendTvInputService extends TvInputService {
     public final Session onCreateSession(String inputId) {
         Log.d(TAG, "Creating new TvInputService Session for input ID: " + inputId + ".");
 
-        return new TvheadendTvInputSessionImpl(this, inputId);
+        return new TvheadendTvInputSessionImpl(this);
     }
 
     class TvheadendTvInputSessionImpl extends TvInputService.Session {
-        private final Context mContext;
-        private final String mInputId;
-        private final TvInputManager mTvInputManager;
-
         private MediaPlayer mMediaPlayer;
         private Surface mSurface;
 
@@ -63,13 +57,9 @@ public class TvheadendTvInputService extends TvInputService {
          *
          * @param context The context of the application
          */
-        public TvheadendTvInputSessionImpl(Context context, String inputId) {
+        public TvheadendTvInputSessionImpl(Context context) {
             super(context);
             Log.d(TAG, "Session created");
-
-            mContext = context;
-            mInputId = inputId;
-            mTvInputManager = (TvInputManager) context.getSystemService(Context.TV_INPUT_SERVICE);
         }
 
         @Override
