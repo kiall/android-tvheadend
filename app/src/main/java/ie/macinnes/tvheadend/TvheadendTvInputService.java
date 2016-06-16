@@ -133,6 +133,7 @@ public class TvheadendTvInputService extends TvInputService {
         private void stopPlayback() {
             Log.d(TAG, "Session stopPlayback");
             if (mMediaPlayer != null) {
+                mMediaPlayer.setSurface(null);
                 mMediaPlayer.stop();
                 mMediaPlayer.release();
                 mMediaPlayer = null;
