@@ -20,6 +20,7 @@ import android.media.tv.TvContract;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
+import ie.macinnes.tvheadend.TvContractUtils;
 import ie.macinnes.tvheadend.client.TVHClient;
 
 public class Channel implements Comparable<Channel> {
@@ -181,11 +182,11 @@ public class Channel implements Comparable<Channel> {
         return channel;
     }
 
-    public static Channel fromClientChannel(TVHClient.Channel clientChannel, String inputId) {
+    public static Channel fromClientChannel(TVHClient.Channel clientChannel) {
         Channel channel = new Channel();
 
         // Set the provided inputId
-        channel.setInputId(inputId);
+        channel.setInputId(TvContractUtils.getInputId());
 
         // Copy values from the clientChannel
         channel.setDisplayNumber(Integer.toString(clientChannel.number));

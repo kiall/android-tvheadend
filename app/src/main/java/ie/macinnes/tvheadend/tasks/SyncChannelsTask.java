@@ -29,21 +29,19 @@ public class SyncChannelsTask extends AsyncTask<TVHClient.ChannelList, Void, Boo
     public static final String TAG = SyncChannelsTask.class.getSimpleName();
 
     private final Context mContext;
-    private final String mInputId;
 
     private final TVHClient mClient;
     private boolean complete;
 
-    protected SyncChannelsTask(Context context, String inputId) {
+    protected SyncChannelsTask(Context context) {
         mContext = context;
-        mInputId = inputId;
 
         mClient = TVHClient.getInstance(context);
     }
 
     @Override
     protected Boolean doInBackground(TVHClient.ChannelList... channelLists) {
-        Log.d(TAG, "Starting SyncChannelsTask for inputId: " + mInputId);
+        Log.d(TAG, "Starting SyncChannelsTask");
         if (isCancelled()) {
             return false;
         }
@@ -56,8 +54,8 @@ public class SyncChannelsTask extends AsyncTask<TVHClient.ChannelList, Void, Boo
             // Update the channels DB
             TvContractUtils.updateChannels(
                     mContext,
-                    mInputId,
-                    ChannelList.fromClientChannelList(channelList, mInputId));
+
+                    ChannelList.fromClientChannelList(channelList));
         }
 
         return true;

@@ -74,9 +74,8 @@ public class SyncJobService extends JobService {
         Log.d(TAG, "onStartJob(" + params.getJobId() + ")");
 
         PersistableBundle extras = params.getExtras();
-        String inputId = extras.getString(Constants.KEY_INPUT_ID);
 
-        SyncEventsTask syncEventsTask = new SyncEventsTask(mContext, inputId) {
+        SyncEventsTask syncEventsTask = new SyncEventsTask(mContext) {
             @Override
             protected void onPostExecute(Boolean aBoolean) {
                 finishEventsSync(params);
@@ -110,9 +109,8 @@ public class SyncJobService extends JobService {
 
         if (jobParams.getJobId() == Constants.REQUEST_SYNC_JOB_ID) {
             Intent intent = new Intent(Constants.ACTION_SYNC_STATUS_CHANGED);
-            intent.putExtra(
-                    Constants.KEY_INPUT_ID, jobParams.getExtras().getString(Constants.KEY_INPUT_ID));
             intent.putExtra(Constants.SYNC_STATUS, Constants.SYNC_FINISHED);
+
             LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
         }
     }

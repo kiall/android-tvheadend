@@ -62,8 +62,8 @@ public class TvContractUtils {
         }
     }
 
-    public static ChannelList getChannels(Context context, String inputId, String[] projection) {
-        Uri channelsUri = TvContract.buildChannelsUriForInput(inputId);
+    public static ChannelList getChannels(Context context, String[] projection) {
+        Uri channelsUri = TvContract.buildChannelsUriForInput(getInputId());
 
         ContentResolver resolver = context.getContentResolver();
 
@@ -73,8 +73,8 @@ public class TvContractUtils {
     }
 
 
-    public static void removeChannels(Context context, String inputId) {
-        Uri channelsUri = TvContract.buildChannelsUriForInput(inputId);
+    public static void removeChannels(Context context) {
+        Uri channelsUri = TvContract.buildChannelsUriForInput(getInputId());
 
         ContentResolver resolver = context.getContentResolver();
 
@@ -89,14 +89,14 @@ public class TvContractUtils {
         }
     }
 
-    public static void updateChannels(Context context, String inputId, ChannelList channelList) {
-        Log.d(TAG, "Updating channels for inputId: " + inputId);
+    public static void updateChannels(Context context, ChannelList channelList) {
+        Log.d(TAG, "Updating channels");
 
         Collections.sort(channelList);
 
         // Create a map from original network ID to channel row ID for existing channels.
         SparseArray<Long> channelMap = new SparseArray<>();
-        Uri channelsUri = TvContract.buildChannelsUriForInput(inputId);
+        Uri channelsUri = TvContract.buildChannelsUriForInput(getInputId());
         String[] projection = {Channels._ID, Channels.COLUMN_ORIGINAL_NETWORK_ID};
         ContentResolver resolver = context.getContentResolver();
 

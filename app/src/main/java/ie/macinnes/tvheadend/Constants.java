@@ -23,17 +23,11 @@ public class Constants {
     public static final String CONTENT_AUTHORITY = TvContract.AUTHORITY;
     public static final String ACCOUNT_TYPE = "ie.macinnes.tvheadend";
 
-    // Preference Files
-    public static final String PREFERENCE_TVHEADEND = "tvheadend";
-
     // Bundle Keys
     public static final String KEY_HOSTNAME = "HOSTNAME";
     public static final String KEY_PORT = "PORT";
     public static final String KEY_USERNAME = "USERNAME";
     public static final String KEY_PASSWORD = "PASSWORD";
-
-    public static final String KEY_INPUT_ID = "INPUT-ID";
-
     public static final String KEY_ERROR_MESSAGE = "ERROR-MESSAGE";
 
     // Sync Job IDs

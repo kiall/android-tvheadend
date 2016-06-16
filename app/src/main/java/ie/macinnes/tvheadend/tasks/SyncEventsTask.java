@@ -36,27 +36,24 @@ public class SyncEventsTask extends AsyncTask<Void, Void, Boolean> {
     public static final String TAG = SyncEventsTask.class.getSimpleName();
 
     private final Context mContext;
-    private final String mInputId;
 
     private final TVHClient mClient;
 
     private CountDownLatch mCountDownLatch;
 
-    protected SyncEventsTask(Context context, String inputId) {
+    protected SyncEventsTask(Context context) {
         mContext = context;
-        mInputId = inputId;
-
         mClient = TVHClient.getInstance(context);
     }
 
     @Override
     protected Boolean doInBackground(Void... params) {
-        Log.d(TAG, "Starting SyncEventsTask for inputId: " + mInputId);
+        Log.d(TAG, "Starting SyncEventsTask");
         if (isCancelled()) {
             return false;
         }
 
-        ChannelList channelList = findChannels(mInputId);
+        ChannelList channelList = findChannels();
 
         mCountDownLatch = new CountDownLatch(channelList.size());
 
@@ -74,7 +71,7 @@ public class SyncEventsTask extends AsyncTask<Void, Void, Boolean> {
         return true;
     }
 
-    private ChannelList findChannels(String inputId) {
+    private ChannelList findChannels() {
         Log.d(TAG, "Fetching channel list from TV DB");
         // Select only a few columns
         String[] projection = {
@@ -85,7 +82,7 @@ public class SyncEventsTask extends AsyncTask<Void, Void, Boolean> {
         };
 
         // Gather and return ChannelList
-        return TvContractUtils.getChannels(mContext, inputId, projection);
+        return TvContractUtils.getChannels(mContext, projection);
     }
 
     private void updateChannel(final Channel channel) {

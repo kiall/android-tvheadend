@@ -61,7 +61,6 @@ public class TvInputSetupActivity extends Activity {
     }
 
     public static abstract class BaseGuidedStepFragment extends GuidedStepFragment {
-        protected String mInputId;
         protected AccountManager mAccountManager;
 
         protected static Account sAccount;
@@ -76,13 +75,16 @@ public class TvInputSetupActivity extends Activity {
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
 
-            mInputId = getActivity().getIntent().getStringExtra(TvInputInfo.EXTRA_INPUT_ID);
-            if (mInputId == null) {
-                mInputId = TvContractUtils.getInputId();
+            String inputId = getActivity().getIntent().getStringExtra(TvInputInfo.EXTRA_INPUT_ID);
+
+            if (inputId != null && inputId != TvContractUtils.getInputId()) {
+                // Ensure the provided ID matches what we expect, as we only have a single input.
+                throw new RuntimeException(
+                        "Setup Activity called for unknown inputId: " + inputId);
             }
+
             mAccountManager = AccountManager.get(getActivity());
             sClient = TVHClient.getInstance(getActivity());
-
         }
 
         protected Account getAccountByName(String name) {
@@ -272,17 +274,9 @@ public class TvInputSetupActivity extends Activity {
         public void onStart() {
             super.onStart();
 
-            mSyncChannelsTask = new SyncChannelsTask(getActivity(), mInputId) {
+            mSyncChannelsTask = new SyncChannelsTask(getActivity()) {
                 @Override
                 protected void onPostExecute(Boolean completed) {
-                    // Set up SharedPreference to store inputId, used by the BootReceiver to set up the
-                    // periodic sync job again after a reboot.
-                    SharedPreferences sharedPreferences = getActivity().getSharedPreferences(
-                            Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putString(Constants.KEY_INPUT_ID, mInputId);
-                    editor.apply();
-
                     // Move to the SyncEPGFragment
                     GuidedStepFragment fragment = new SyncEPGFragment();
                     fragment.setArguments(getArguments());
@@ -364,20 +358,15 @@ public class TvInputSetupActivity extends Activity {
         private final BroadcastReceiver mSyncStatusChangedReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, final Intent intent) {
-                String syncStatusChangedInputId = intent.getStringExtra(
-                        Constants.KEY_INPUT_ID);
+                 String syncStatus = intent.getStringExtra(Constants.SYNC_STATUS);
 
-                if (syncStatusChangedInputId.equals(mInputId)) {
-                    String syncStatus = intent.getStringExtra(Constants.SYNC_STATUS);
+                if (syncStatus.equals(Constants.SYNC_FINISHED)) {
+                    SyncUtils.setUpPeriodicSync(getActivity());
 
-                    if (syncStatus.equals(Constants.SYNC_FINISHED)) {
-                        SyncUtils.setUpPeriodicSync(getActivity(), mInputId);
-
-                        // Move to the CompletedFragment
-                        GuidedStepFragment fragment = new CompletedFragment();
-                        fragment.setArguments(getArguments());
-                        add(getFragmentManager(), fragment);
-                    }
+                    // Move to the CompletedFragment
+                    GuidedStepFragment fragment = new CompletedFragment();
+                    fragment.setArguments(getArguments());
+                    add(getFragmentManager(), fragment);
                 }
             }
         };
@@ -404,7 +393,7 @@ public class TvInputSetupActivity extends Activity {
 
             // Force a EPG sync
             SyncUtils.cancelAll(getActivity());
-            SyncUtils.requestSync(getActivity(), mInputId);
+            SyncUtils.requestSync(getActivity());
         }
 
         @Override

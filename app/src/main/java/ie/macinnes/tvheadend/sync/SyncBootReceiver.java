@@ -25,6 +25,7 @@ import android.util.Log;
 import java.util.List;
 
 import ie.macinnes.tvheadend.Constants;
+import ie.macinnes.tvheadend.TvContractUtils;
 
 public class SyncBootReceiver extends BroadcastReceiver {
     private static final String TAG = SyncBootReceiver.class.getName();
@@ -39,14 +40,8 @@ public class SyncBootReceiver extends BroadcastReceiver {
         List<JobInfo> pendingJobs = jobScheduler.getAllPendingJobs();
 
         if (pendingJobs.isEmpty()) {
-            String inputId = context.getSharedPreferences(Constants.PREFERENCE_TVHEADEND,
-                    Context.MODE_PRIVATE).getString(Constants.KEY_INPUT_ID, null);
-
-            if (inputId != null) {
-                // Set up periodic sync only when input has set up.
-                SyncUtils.setUpPeriodicSync(context, inputId);
-            }
-
+            // Set up periodic sync
+            SyncUtils.setUpPeriodicSync(context);
             return;
         }
 

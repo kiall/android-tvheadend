@@ -38,11 +38,11 @@ public class ChannelList extends ArrayList<Channel> {
         return channelList;
     }
 
-    public static ChannelList fromClientChannelList(TVHClient.ChannelList clientChannelList, String inputId) {
+    public static ChannelList fromClientChannelList(TVHClient.ChannelList clientChannelList) {
         ChannelList channelList = new ChannelList();
 
         for (TVHClient.Channel channel : clientChannelList.entries) {
-            channelList.add(Channel.fromClientChannel(channel, inputId));
+            channelList.add(Channel.fromClientChannel(channel));
         }
 
         return channelList;

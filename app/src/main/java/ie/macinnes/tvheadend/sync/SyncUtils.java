@@ -25,6 +25,7 @@ import android.os.PersistableBundle;
 import android.support.v4.content.LocalBroadcastManager;
 
 import ie.macinnes.tvheadend.Constants;
+import ie.macinnes.tvheadend.TvContractUtils;
 
 public class SyncUtils {
 
@@ -34,10 +35,8 @@ public class SyncUtils {
         jobScheduler.schedule(job);
     }
 
-    public static void setUpPeriodicSync(Context context, String inputId) {
+    public static void setUpPeriodicSync(Context context) {
         PersistableBundle pBundle = new PersistableBundle();
-
-        pBundle.putString(Constants.KEY_INPUT_ID, inputId);
 
         JobInfo.Builder builder = new JobInfo.Builder(Constants.PERIODIC_SYNC_JOB_ID,
                 new ComponentName(context, SyncJobService.class));
@@ -52,12 +51,11 @@ public class SyncUtils {
         scheduleJob(context, jobInfo);
     }
 
-    public static void requestSync(Context context, String inputId) {
+    public static void requestSync(Context context) {
         PersistableBundle pBundle = new PersistableBundle();
 
         pBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
         pBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
-        pBundle.putString(Constants.KEY_INPUT_ID, inputId);
 
         JobInfo.Builder builder = new JobInfo.Builder(Constants.REQUEST_SYNC_JOB_ID,
                 new ComponentName(context, SyncJobService.class));
@@ -70,7 +68,6 @@ public class SyncUtils {
         scheduleJob(context, jobInfo);
 
         Intent intent = new Intent(Constants.ACTION_SYNC_STATUS_CHANGED);
-        intent.putExtra(Constants.KEY_INPUT_ID, inputId);
         intent.putExtra(Constants.SYNC_STATUS, Constants.SYNC_STARTED);
         LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
     }
