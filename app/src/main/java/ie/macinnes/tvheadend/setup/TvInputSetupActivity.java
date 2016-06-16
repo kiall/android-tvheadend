@@ -69,10 +69,10 @@ public class TvInputSetupActivity extends Activity {
 
             String inputId = getActivity().getIntent().getStringExtra(TvInputInfo.EXTRA_INPUT_ID);
 
-            if (inputId != null && inputId != TvContractUtils.getInputId()) {
+            if (inputId != null && ! inputId.equals(TvContractUtils.getInputId())) {
                 // Ensure the provided ID matches what we expect, as we only have a single input.
                 throw new RuntimeException(
-                        "Setup Activity called for unknown inputId: " + inputId);
+                        "Setup Activity called for unknown inputId: " + inputId + " (expected: " + TvContractUtils.getInputId() + ")");
             }
 
             mAccountManager = AccountManager.get(getActivity());

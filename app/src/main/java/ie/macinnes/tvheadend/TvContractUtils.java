@@ -40,15 +40,15 @@ import ie.macinnes.tvheadend.model.ChannelList;
 import ie.macinnes.tvheadend.model.Program;
 import ie.macinnes.tvheadend.model.ProgramList;
 import ie.macinnes.tvheadend.tasks.InsertLogosTask;
+import ie.macinnes.tvheadend.tvinput.TvInputService;
 
 public class TvContractUtils {
     private static final String TAG = TvContractUtils.class.getName();
 
     public static String getInputId() {
-        // TODO: Use class references, so refactors etc will catch this.
         ComponentName componentName = new ComponentName(
                 "ie.macinnes.tvheadend",
-                "ie.macinnes.tvheadend.TvheadendTvInputService");
+                ".tvinput.TvInputService");
 
         return TvContract.buildInputId(componentName);
     }

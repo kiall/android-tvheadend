@@ -79,7 +79,7 @@ under the License.
         </activity>
 
         <service
-            android:name=".TvheadendTvInputService"
+            android:name=".tvinput.TvInputService"
             android:permission="android.permission.BIND_TV_INPUT">
 
             <!-- Required filter used by the system to launch our TV service. -->
