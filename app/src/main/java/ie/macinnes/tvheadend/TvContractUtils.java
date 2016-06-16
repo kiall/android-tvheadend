@@ -217,7 +217,7 @@ public class TvContractUtils {
             if (ops.size() > 100
                     || newProgramsIndex >= newProgramsCount) {
                 try {
-                    context.getContentResolver().applyBatch(TvContract.AUTHORITY, ops);
+                    context.getContentResolver().applyBatch(Constants.CONTENT_AUTHORITY, ops);
                 } catch (RemoteException | OperationApplicationException e) {
                     Log.e(TAG, "Failed to insert programs.", e);
                     return;

@@ -88,7 +88,7 @@ public class TvInputSetupActivity extends Activity {
         protected Account getAccountByName(String name) {
             Log.d(TAG, "getAccountByName(" + name + ")");
 
-            Account[] accounts = mAccountManager.getAccountsByType("ie.macinnes.tvheadend");
+            Account[] accounts = mAccountManager.getAccountsByType(Constants.ACCOUNT_TYPE);
 
             Log.d(TAG, "Checking " + Integer.toString(accounts.length) + " accounts");
 
@@ -193,7 +193,7 @@ public class TvInputSetupActivity extends Activity {
             List<GuidedAction> accountSubActions = accountAction.getSubActions();
             accountSubActions.clear();
 
-            Account[] accounts = mAccountManager.getAccountsByType("ie.macinnes.tvheadend");
+            Account[] accounts = mAccountManager.getAccountsByType(Constants.ACCOUNT_TYPE);
 
             for (Account account : accounts) {
                 GuidedAction action = new GuidedAction.Builder(getActivity())
@@ -238,7 +238,7 @@ public class TvInputSetupActivity extends Activity {
                 return true;
             } else {
 
-                mAccountManager.addAccount("ie.macinnes.tvheadend", null, null, new Bundle(), getActivity(), new AddAccountCallback(), null);
+                mAccountManager.addAccount(Constants.ACCOUNT_TYPE, null, null, new Bundle(), getActivity(), new AddAccountCallback(), null);
                 return true;
             }
         }

@@ -15,7 +15,13 @@ under the License.
 package ie.macinnes.tvheadend;
 
 
+import android.media.tv.TvContract;
+
 public class Constants {
+
+    // Misc Things
+    public static final String CONTENT_AUTHORITY = TvContract.AUTHORITY;
+    public static final String ACCOUNT_TYPE = "ie.macinnes.tvheadend";
 
     // Preference Files
     public static final String PREFERENCE_TVHEADEND = "tvheadend";

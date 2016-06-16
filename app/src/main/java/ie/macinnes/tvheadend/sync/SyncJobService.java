@@ -60,7 +60,7 @@ public class SyncJobService extends JobService {
     }
 
     private void setClientConnectionInfo() {
-        Account[] accounts = mAccountManager.getAccountsByType("ie.macinnes.tvheadend");
+        Account[] accounts = mAccountManager.getAccountsByType(Constants.ACCOUNT_TYPE);
 
         // TODO: We should only every have one account.. Figure out how that works (or 1 account per
         //       hostname+port combo?)

@@ -67,7 +67,7 @@ public class PrepareVideoTask extends AsyncTask<Void, Void, MediaPlayer> {
 
         // Gather Details on the TVHeadend Instance
         AccountManager accountManager = AccountManager.get(mContext);;
-        Account[] accounts = accountManager.getAccountsByType("ie.macinnes.tvheadend");
+        Account[] accounts = accountManager.getAccountsByType(Constants.ACCOUNT_TYPE);
 
         // TODO: We should only every have one account.. Figure out how that works (or 1 account per
         //       hostname+port combo?)
