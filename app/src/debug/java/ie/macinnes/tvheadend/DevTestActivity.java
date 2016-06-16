@@ -12,7 +12,7 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations
 under the License.
 */
-package ie.macinnes.tvheadend.dev;
+package ie.macinnes.tvheadend;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -28,12 +28,9 @@ import com.android.volley.VolleyError;
 
 import org.json.JSONObject;
 
-import ie.macinnes.tvheadend.Constants;
-import ie.macinnes.tvheadend.R;
 import ie.macinnes.tvheadend.client.TVHClient;
 import ie.macinnes.tvheadend.setup.TvInputSetupActivity;
 import ie.macinnes.tvheadend.sync.SyncUtils;
-import ie.macinnes.tvheadend.TvContractUtils;
 
 public class DevTestActivity extends Activity {
     private static final String TAG = DevTestActivity.class.getName();
@@ -132,77 +129,4 @@ public class DevTestActivity extends Activity {
 
         mClient.getServerInfo(listener, errorListener);
     }
-
-    public void channelGrid(View view) {
-        setRunning();
-
-        Response.Listener<TVHClient.ChannelList> listener = new Response.Listener<TVHClient.ChannelList>() {
-
-            @Override
-            public void onResponse(TVHClient.ChannelList response) {
-                for (TVHClient.Channel chan : response.entries ) {
-                    appendDebugOutput("Name: " + chan.name);
-                }
-                setOk();
-            }
-        };
-
-        Response.ErrorListener errorListener = new Response.ErrorListener() {
-
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                setFail();
-            }
-        };
-
-        mClient.getChannelGrid(listener, errorListener);
-    }
-
-    public void eventGrid(View view) {
-        setRunning();
-
-        Response.Listener<TVHClient.EventList> listener = new Response.Listener<TVHClient.EventList>() {
-
-            @Override
-            public void onResponse(TVHClient.EventList response) {
-                for (TVHClient.Event event : response.entries ) {
-                    appendDebugOutput("Title: " + event.title);
-                }
-                setOk();
-            }
-        };
-
-        Response.ErrorListener errorListener = new Response.ErrorListener() {
-
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                setFail();
-            }
-        };
-
-//        mClient.getEventGrid(listener, errorListener);
-
-        setOk();
-    }
-
-    public void rescanChannels(View view) {
-        setRunning();
-        Intent intent = new Intent(this, TvInputSetupActivity.class);
-        intent.putExtra(TvInputInfo.EXTRA_INPUT_ID, "ie.macinnes.tvheadend/.TvheadendTvInputService");
-        startActivity(intent);
-        setOk();
-    }
-
-    public void syncEpg(View view) {
-        setRunning();
-        SyncUtils.requestSync(getBaseContext(), "ie.macinnes.tvheadend/.TvheadendTvInputService");
-        setOk();
-    }
-
-    public void removeChannels(View view) {
-        setRunning();
-        TvContractUtils.removeChannels(getBaseContext(), "ie.macinnes.tvheadend/.TvheadendTvInputService");
-        setOk();
-    }
-
 }

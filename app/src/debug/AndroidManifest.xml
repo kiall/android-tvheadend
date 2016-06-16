@@ -21,7 +21,7 @@ under the License.
 
     <application>
         <activity
-            android:name="ie.macinnes.tvheadend.dev.DevTestActivity"
+            android:name="ie.macinnes.tvheadend.DevTestActivity"
             android:label="@string/title_activity_dev_test"
             android:banner="@drawable/banner_debug">
             <intent-filter>

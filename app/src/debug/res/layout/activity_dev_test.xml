@@ -21,7 +21,7 @@ under the License.
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="ie.macinnes.tvheadend.dev.DevTestActivity">
+    tools:context=".DevTestActivity">
 
     <LinearLayout
         android:orientation="vertical"
@@ -53,44 +53,6 @@ under the License.
             android:text="Show Server Info"
             android:nestedScrollingEnabled="true"
             android:onClick="serverInfo" />
-
-        <Button
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="Show Channel Grid"
-            android:nestedScrollingEnabled="true"
-            android:onClick="channelGrid" />
-
-        <Button
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="Show Event Grid"
-            android:nestedScrollingEnabled="true"
-            android:layout_gravity="center_horizontal"
-            android:onClick="eventGrid" />
-
-        <Button
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="Rescan Channels"
-            android:nestedScrollingEnabled="true"
-            android:layout_gravity="center_horizontal"
-            android:onClick="rescanChannels" />
-
-        <Button
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="Sync EPG"
-            android:nestedScrollingEnabled="true"
-            android:layout_gravity="center_horizontal"
-            android:onClick="syncEpg" />
-
-        <Button
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="Remove Channels"
-            android:nestedScrollingEnabled="true"
-            android:onClick="removeChannels"/>
 
     </LinearLayout>
 
