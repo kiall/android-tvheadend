@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ie.macinnes.tvheadend.Constants;
+import ie.macinnes.tvheadend.account.AccountUtils;
 import ie.macinnes.tvheadend.model.Channel;
 import ie.macinnes.tvheadend.TvContractUtils;
 
@@ -67,11 +68,7 @@ public class PrepareVideoTask extends AsyncTask<Void, Void, MediaPlayer> {
 
         // Gather Details on the TVHeadend Instance
         AccountManager accountManager = AccountManager.get(mContext);;
-        Account[] accounts = accountManager.getAccountsByType(Constants.ACCOUNT_TYPE);
-
-        // TODO: We should only every have one account.. Figure out how that works (or 1 account per
-        //       hostname+port combo?)
-        Account account = accounts[0];
+        Account account = AccountUtils.getActiveAccount(mContext);
 
         String username = account.name;
         String password = accountManager.getPassword(account);

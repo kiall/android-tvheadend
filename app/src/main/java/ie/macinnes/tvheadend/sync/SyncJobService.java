@@ -27,6 +27,7 @@ import android.util.Log;
 import android.util.SparseArray;
 
 import ie.macinnes.tvheadend.Constants;
+import ie.macinnes.tvheadend.account.AccountUtils;
 import ie.macinnes.tvheadend.client.TVHClient;
 import ie.macinnes.tvheadend.tasks.SyncEventsTask;
 
@@ -60,13 +61,8 @@ public class SyncJobService extends JobService {
     }
 
     private void setClientConnectionInfo() {
-        Account[] accounts = mAccountManager.getAccountsByType(Constants.ACCOUNT_TYPE);
-
-        // TODO: We should only every have one account.. Figure out how that works (or 1 account per
-        //       hostname+port combo?)
-        for (Account account : accounts) {
-            mClient.setConnectionInfo(account);
-        }
+        Account account = AccountUtils.getActiveAccount(mContext);
+        mClient.setConnectionInfo(account);
     }
 
     @Override
