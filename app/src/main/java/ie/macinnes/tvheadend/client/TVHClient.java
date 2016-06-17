@@ -103,6 +103,25 @@ public class TVHClient {
         return future.get(mTimeout, TimeUnit.SECONDS);
     }
 
+    public void getProfileList(Response.Listener<KeyValList> listener, Response.ErrorListener errorListener) {
+        Log.d(TAG, "Calling getProfileList");
+
+        String url = "http://" + mAccountHostname + ":" + mAccountPort + "/api/profile/list";
+
+        GsonRequest<KeyValList> request = new GsonRequest<KeyValList>(
+                Request.Method.GET, url, KeyValList.class, listener, errorListener, mAccountName, mAccountPassword);
+
+        getRequestQueue().add(request);
+    }
+
+    public KeyValList getProfileList() throws InterruptedException, ExecutionException, TimeoutException {
+        RequestFuture<KeyValList> future = RequestFuture.newFuture();
+
+        getProfileList(future, future);
+
+        return future.get(mTimeout, TimeUnit.SECONDS);
+    }
+
     public void getChannelGrid(Response.Listener<ChannelList> listener, Response.ErrorListener errorListener) {
         Log.d(TAG, "Calling getChannelGrid");
 
@@ -150,6 +169,16 @@ public class TVHClient {
         getEventGrid(future, future, channelUuid);
 
         return future.get(mTimeout, TimeUnit.SECONDS);
+    }
+
+
+    public static class KeyVal {
+        public String key;
+        public String value;
+    }
+
+    public static class KeyValList {
+        public ArrayList<KeyVal> entries;
     }
 
     public static class Channel {
