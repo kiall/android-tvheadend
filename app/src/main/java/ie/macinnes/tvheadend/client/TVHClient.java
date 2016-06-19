@@ -89,7 +89,7 @@ public class TVHClient {
 
         String url = "http://" + mAccountHostname + ":" + mAccountPort + "/api/serverinfo";
 
-        AuthenticatedJsonObjectRequest jsObjRequest = new AuthenticatedJsonObjectRequest(
+        JsonObjectRequest jsObjRequest = new JsonObjectRequest(
                 Request.Method.GET, url, null, listener, errorListener, mAccountName, mAccountPassword);
 
         getRequestQueue().add(jsObjRequest);

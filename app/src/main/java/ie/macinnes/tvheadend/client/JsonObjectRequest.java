@@ -18,21 +18,20 @@ import android.util.Base64;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Response;
-import com.android.volley.toolbox.JsonObjectRequest;
 
 import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class AuthenticatedJsonObjectRequest extends JsonObjectRequest {
-    private static final String TAG = AuthenticatedJsonObjectRequest.class.getName();
+public class JsonObjectRequest extends com.android.volley.toolbox.JsonObjectRequest {
+    private static final String TAG = JsonObjectRequest.class.getName();
 
     private String mUsername;
     private String mPassword;
     private Map<String, String> mParams;
 
-    public AuthenticatedJsonObjectRequest(
+    public JsonObjectRequest(
             int method, String url, JSONObject jsonRequest, Response.Listener<JSONObject> listener,
             Response.ErrorListener errorListener, String username, String password) {
         super(method, url, jsonRequest, listener, errorListener);
@@ -41,7 +40,7 @@ public class AuthenticatedJsonObjectRequest extends JsonObjectRequest {
         mPassword = password;
     }
 
-    public AuthenticatedJsonObjectRequest(
+    public JsonObjectRequest(
             int method, String url, JSONObject jsonRequest, Response.Listener<JSONObject> listener,
             Response.ErrorListener errorListener, String username, String password, Map<String, String> params) {
         super(method, url, jsonRequest, listener, errorListener);
