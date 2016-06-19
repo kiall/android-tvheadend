@@ -8,8 +8,8 @@ android {
         applicationId "ie.macinnes.tvheadend"
         minSdkVersion 22
         targetSdkVersion 23
-        versionCode 12
-        versionName '0.1.6'
+        versionCode 13
+        versionName '0.1.7'
     }
     buildTypes {
         release {
