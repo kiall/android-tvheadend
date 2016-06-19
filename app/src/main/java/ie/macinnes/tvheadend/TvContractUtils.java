@@ -39,8 +39,7 @@ import ie.macinnes.tvheadend.model.Channel;
 import ie.macinnes.tvheadend.model.ChannelList;
 import ie.macinnes.tvheadend.model.Program;
 import ie.macinnes.tvheadend.model.ProgramList;
-import ie.macinnes.tvheadend.tasks.InsertLogosTask;
-import ie.macinnes.tvheadend.tvinput.TvInputService;
+import ie.macinnes.tvheadend.tasks.SyncLogosTask;
 
 public class TvContractUtils {
     private static final String TAG = TvContractUtils.class.getName();
@@ -135,7 +134,7 @@ public class TvContractUtils {
         }
 
         if (!logos.isEmpty()) {
-            new InsertLogosTask(context).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, logos);
+            new SyncLogosTask(context).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, logos);
         }
 
         // Deletes channels which don't exist in the new feed.

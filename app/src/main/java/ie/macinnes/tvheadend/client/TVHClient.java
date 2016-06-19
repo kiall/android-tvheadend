@@ -17,6 +17,7 @@ package ie.macinnes.tvheadend.client;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.util.Log;
 
 import com.android.volley.Request;
@@ -128,18 +129,7 @@ public class TVHClient {
         String url = "http://" + mAccountHostname + ":" + mAccountPort + "/api/channel/grid?limit=10000";
 
         GsonRequest<ChannelList> request = new GsonRequest<ChannelList>(
-                Request.Method.GET, url, ChannelList.class, listener, errorListener, mAccountName, mAccountPassword) {
-
-            @Override
-            protected TVHClient.ChannelList mutateResponse(TVHClient.ChannelList response) {
-                // TODO: Find a better way to include the prefix than iterating the list again..
-                // Prefix Icon URLs
-                for (Channel channel : response.entries) {
-                    channel.icon_url = "http://" + mAccountHostname + ":" + mAccountPort + "/" + channel.icon_url;
-                }
-                return response;
-            }
-        };
+                Request.Method.GET, url, ChannelList.class, listener, errorListener, mAccountName, mAccountPassword);
 
         getRequestQueue().add(request);
     }
@@ -148,6 +138,25 @@ public class TVHClient {
         RequestFuture<ChannelList> future = RequestFuture.newFuture();
 
         getChannelGrid(future, future);
+
+        return future.get(mTimeout, TimeUnit.SECONDS);
+    }
+
+    public void getChannelIcon(Response.Listener<Bitmap> listener, Response.ErrorListener errorListener, String channelIconPath) {
+        Log.d(TAG, "Calling getChannelIcon");
+
+        String url = "http://" + mAccountHostname + ":" + mAccountPort + "/" + channelIconPath;
+
+        ImageRequest request = new ImageRequest(
+                url, listener, errorListener, mAccountName, mAccountPassword);
+
+        getRequestQueue().add(request);
+    }
+
+    public Bitmap getChannelIcon(String channelIconPath) throws InterruptedException, ExecutionException, TimeoutException {
+        RequestFuture<Bitmap> future = RequestFuture.newFuture();
+
+        getChannelIcon(future, future, channelIconPath);
 
         return future.get(mTimeout, TimeUnit.SECONDS);
     }

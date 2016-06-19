@@ -16,7 +16,9 @@
 
 package ie.macinnes.tvheadend.tasks;
 
+import android.content.ContentResolver;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -27,52 +29,55 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
-public class InsertLogosTask extends AsyncTask<Map<Uri, String>, Void, Void> {
-    public static final String TAG = InsertLogosTask.class.getSimpleName();
+import ie.macinnes.tvheadend.client.TVHClient;
+
+public class SyncLogosTask extends AsyncTask<Map<Uri, String>, Void, Void> {
+    public static final String TAG = SyncLogosTask.class.getSimpleName();
 
     private final Context mContext;
+    private final TVHClient mClient;
+    private final ContentResolver mContentResolver;
 
-    public InsertLogosTask(Context context) {
+    public SyncLogosTask(Context context) {
         mContext = context;
 
+        mClient = TVHClient.getInstance(context);
+        mContentResolver = context.getContentResolver();
     }
 
     @Override
     public Void doInBackground(Map<Uri, String>... logosList) {
         for (Map<Uri, String> logos : logosList) {
             for (Uri uri : logos.keySet()) {
-                try {
-                    insertUrl(mContext, uri, new URL(logos.get(uri)));
-                } catch (MalformedURLException e) {
-                    Log.e(TAG, "Failed to load icon " + logos.get(uri), e);
-                }
+                insertUrl(mContext, uri, logos.get(uri));
             }
         }
         return null;
     }
 
-    private void insertUrl(Context context, Uri contentUri, URL sourceUrl) {
+    private void insertUrl(Context context, Uri contentUri, String sourceUrl) {
         Log.d(TAG, "Inserting logo " + sourceUrl + " to " + contentUri);
 
-        // TODO: Support authentication when fetching logs
-        InputStream is = null;
+        Bitmap logo;
+
+        try {
+            logo = mClient.getChannelIcon(sourceUrl);
+        } catch (InterruptedException|ExecutionException|TimeoutException e) {
+            Log.d(TAG, "Failed to fetch logo from " + sourceUrl, e);
+            return;
+        }
+
         OutputStream os = null;
 
         try {
-            is = sourceUrl.openStream();
-            os = context.getContentResolver().openOutputStream(contentUri);
-            copy(is, os);
+            os = mContentResolver.openOutputStream(contentUri);
+            logo.compress(Bitmap.CompressFormat.PNG, 100, os);
         } catch (IOException ioe) {
             Log.e(TAG, "Failed to copy " + sourceUrl + "  to " + contentUri, ioe);
         } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    // Ignore...
-                }
-            }
             if (os != null) {
                 try {
                     os.close();
@@ -80,14 +85,6 @@ public class InsertLogosTask extends AsyncTask<Map<Uri, String>, Void, Void> {
                     // Ignore...
                 }
             }
-        }
-    }
-
-    private void copy(InputStream is, OutputStream os) throws IOException {
-        byte[] buffer = new byte[1024];
-        int len;
-        while ((len = is.read(buffer)) != -1) {
-            os.write(buffer, 0, len);
         }
     }
 }

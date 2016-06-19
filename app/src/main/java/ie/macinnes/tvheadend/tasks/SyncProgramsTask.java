@@ -32,14 +32,9 @@ public class SyncProgramsTask extends AsyncTask<TVHClient.EventList, Void, Boole
     private final Context mContext;
     private final Channel mChannel;
 
-    private final TVHClient mClient;
-    private boolean complete;
-
     protected SyncProgramsTask(Context context, Channel channel) {
         mContext = context;
         mChannel = channel;
-
-        mClient = TVHClient.getInstance(context);
     }
 
     @Override
