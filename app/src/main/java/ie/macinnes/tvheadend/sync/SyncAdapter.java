@@ -118,6 +118,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
         Log.d(TAG, "Starting sync for account: " + account.toString());
 
+        mIsCancelled = false;
+
         // TODO: The TVHClient class needs to support multiple accounts, this is racy as other
         // processes may be using this singleton with different creds.
         mClient.setConnectionInfo(account);
