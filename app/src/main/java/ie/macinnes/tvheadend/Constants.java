@@ -29,14 +29,4 @@ public class Constants {
     public static final String KEY_USERNAME = "USERNAME";
     public static final String KEY_PASSWORD = "PASSWORD";
     public static final String KEY_ERROR_MESSAGE = "ERROR-MESSAGE";
-
-    // Sync Job IDs
-    public static final int PERIODIC_SYNC_JOB_ID = 0;
-    public static final int REQUEST_SYNC_JOB_ID = 1;
-
-    // Sync Status
-    public static final String ACTION_SYNC_STATUS_CHANGED = "action_sync_status_changed";
-    public static final String SYNC_STATUS = "sync_status";
-    public static final String SYNC_FINISHED = "sync_finished";
-    public static final String SYNC_STARTED = "sync_started";
 }
