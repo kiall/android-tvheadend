@@ -16,7 +16,7 @@ under the License.
 <account-authenticator xmlns:android="http://schemas.android.com/apk/res/android"
     android:accountType="ie.macinnes.tvheadend"
     android:accountPreferences="@xml/authenticatorpreferences"
-    android:icon="@mipmap/ic_launcher"
-    android:smallIcon="@mipmap/ic_launcher"
+    android:icon="@mipmap/ic_tv_service"
+    android:smallIcon="@mipmap/ic_tv_service"
     android:label="@string/account_label"/>
 

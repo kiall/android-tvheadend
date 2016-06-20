@@ -58,7 +58,7 @@ under the License.
     <application
         android:allowBackup="true"
         android:banner="@drawable/banner"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_tv_service"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.Leanback">
@@ -70,7 +70,8 @@ under the License.
         <activity
             android:name=".setup.TvInputSetupActivity"
             android:label="TVHeadend"
-            android:theme="@style/Theme.Leanback">
+            android:theme="@style/Theme.Leanback"
+            android:icon="@mipmap/ic_tv_service">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -80,7 +81,8 @@ under the License.
 
         <service
             android:name=".tvinput.TvInputService"
-            android:permission="android.permission.BIND_TV_INPUT">
+            android:permission="android.permission.BIND_TV_INPUT"
+            android:icon="@mipmap/ic_tv_service">
 
             <!-- Required filter used by the system to launch our TV service. -->
             <intent-filter>

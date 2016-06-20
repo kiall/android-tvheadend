@@ -14,4 +14,5 @@ License for the specific language governing permissions and limitations
 under the License.
 -->
 <tv-input xmlns:android="http://schemas.android.com/apk/res/android"
-    android:setupActivity="ie.macinnes.tvheadend.setup.TvInputSetupActivity" />
+    android:setupActivity="ie.macinnes.tvheadend.setup.TvInputSetupActivity"
+    android:icon="@mipmap/ic_tv_service"/>
