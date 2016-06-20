@@ -43,15 +43,17 @@ import java.util.List;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.R;
 import ie.macinnes.tvheadend.client.TVHClient;
+import ie.macinnes.tvheadend.migrate.MigrateUtils;
 
 public class AuthenticatorActivity extends AccountAuthenticatorActivity {
     private static final String TAG = TVHClient.class.getName();
 
-    private AccountManager mAccountManager;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // TODO: Find a better (+ out of UI thread) way to do this.
+        MigrateUtils.doMigrate(getBaseContext());
 
         GuidedStepFragment fragment = new ServerFragment();
         fragment.setArguments(getIntent().getExtras());
@@ -90,7 +92,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
 
     public static class ServerFragment extends BaseGuidedStepFragment {
         private static final int ACTION_ID_HOSTNAME = 1;
-        private static final int ACTION_ID_PORT = 2;
+        private static final int ACTION_ID_HTTP_PORT = 2;
         private static final int ACTION_ID_NEXT = 3;
 
         @NonNull
@@ -116,8 +118,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
             actions.add(action);
 
             action = new GuidedAction.Builder(getActivity())
-                    .id(ACTION_ID_PORT)
-                    .title("Port Number")
+                    .id(ACTION_ID_HTTP_PORT)
+                    .title("HTTP Port Number")
                     .descriptionEditInputType(InputType.TYPE_CLASS_NUMBER)
                     .descriptionInputType(InputType.TYPE_CLASS_NUMBER)
                     .descriptionEditable(true)
@@ -144,8 +146,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
                 GuidedAction hostnameAction = findActionById(ACTION_ID_HOSTNAME);
                 args.putString(Constants.KEY_HOSTNAME, hostnameAction.getDescription().toString());
 
-                GuidedAction portAction = findActionById(ACTION_ID_PORT);
-                args.putString(Constants.KEY_PORT, portAction.getDescription().toString());
+                GuidedAction httpPortAction = findActionById(ACTION_ID_HTTP_PORT);
+                args.putString(Constants.KEY_HTTP_PORT, httpPortAction.getDescription().toString());
 
                 fragment.setArguments(args);
 
@@ -270,7 +272,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
             final String accountName = args.getString(Constants.KEY_USERNAME);
             final String accountPassword = args.getString(Constants.KEY_PASSWORD);
             final String accountHostname = args.getString(Constants.KEY_HOSTNAME);
-            final String accountPort = args.getString(Constants.KEY_PORT);
+            final String accountHttpPort = args.getString(Constants.KEY_HTTP_PORT);
 
             // Validate the User and Pass by connecting to TVHeadend
             Response.Listener<JSONObject> listener = new Response.Listener<JSONObject>() {
@@ -285,7 +287,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
                     Bundle userdata = new Bundle();
 
                     userdata.putString(Constants.KEY_HOSTNAME, accountHostname);
-                    userdata.putString(Constants.KEY_PORT, accountPort);
+                    userdata.putString(Constants.KEY_HTTP_PORT, accountHttpPort);
 
                     mAccountManager.addAccountExplicitly(account, accountPassword, userdata);
 
@@ -333,7 +335,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
 
             TVHClient client = TVHClient.getInstance(getActivity());
 
-            client.setConnectionInfo(accountHostname, accountPort, accountName, accountPassword);
+            client.setConnectionInfo(accountHostname, accountHttpPort, accountName, accountPassword);
 
             client.getServerInfo(listener, errorListener);
         }
@@ -354,8 +356,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
 
         @Override
         public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
-            List<GuidedAction> subActions = new ArrayList();
-
             GuidedAction action = new GuidedAction.Builder(getActivity())
                     .title("Complete")
                     .description("You're all set!")
@@ -395,8 +395,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
 
         @Override
         public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
-            List<GuidedAction> subActions = new ArrayList();
-
             GuidedAction action = new GuidedAction.Builder(getActivity())
                     .title("Complete")
                     .editable(false)

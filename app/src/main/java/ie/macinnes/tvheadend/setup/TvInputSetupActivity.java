@@ -38,6 +38,7 @@ import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.R;
 import ie.macinnes.tvheadend.TvContractUtils;
 import ie.macinnes.tvheadend.client.TVHClient;
+import ie.macinnes.tvheadend.migrate.MigrateUtils;
 import ie.macinnes.tvheadend.sync.SyncUtils;
 
 public class TvInputSetupActivity extends Activity {
@@ -46,6 +47,9 @@ public class TvInputSetupActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // TODO: Find a better (+ out of UI thread) way to do this.
+        MigrateUtils.doMigrate(getBaseContext());
 
         GuidedStepFragment fragment = new IntroFragment();
         fragment.setArguments(getIntent().getExtras());

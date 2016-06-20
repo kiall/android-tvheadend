@@ -16,16 +16,18 @@ package ie.macinnes.tvheadend.tvinput;
 
 import android.util.Log;
 
+import ie.macinnes.tvheadend.migrate.MigrateUtils;
+
 
 public class TvInputService extends android.media.tv.TvInputService {
     private static final String TAG = TvInputService.class.getName();
 
-    public TvInputService() {
-    }
-
     @Override
     public void onCreate() {
         super.onCreate();
+
+        // TODO: Find a better (+ out of UI thread) way to do this.
+        MigrateUtils.doMigrate(getBaseContext());
     }
 
     @Override

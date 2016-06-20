@@ -28,7 +28,6 @@ import android.view.Surface;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.TvContractUtils;
@@ -167,11 +166,11 @@ public class MediaPlayerSession extends BaseSession {
             String username = account.name;
             String password = accountManager.getPassword(account);
             String hostname = accountManager.getUserData(account, Constants.KEY_HOSTNAME);
-            String port = accountManager.getUserData(account, Constants.KEY_PORT);
+            String httpPort = accountManager.getUserData(account, Constants.KEY_HTTP_PORT);
 
             // Create authentication headers and streamUri
             Map<String, String> headers = createBasicAuthHeader(username, password);
-            Uri videoUri = Uri.parse("http://" + hostname + ":" + port + "/stream/channel/" + channelUuid + "?profile=tif");
+            Uri videoUri = Uri.parse("http://" + hostname + ":" + httpPort + "/stream/channel/" + channelUuid + "?profile=tif");
 
             // Prepare the media player
             return prepareMediaPlayer(videoUri, headers);

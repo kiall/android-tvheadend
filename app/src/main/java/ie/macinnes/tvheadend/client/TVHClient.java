@@ -66,7 +66,7 @@ public class TVHClient {
 
         String password = accountManager.getPassword(account);
         String hostname = accountManager.getUserData(account, Constants.KEY_HOSTNAME);
-        String port = accountManager.getUserData(account, Constants.KEY_PORT);
+        String port = accountManager.getUserData(account, Constants.KEY_HTTP_PORT);
 
         setConnectionInfo(hostname, port, account.name, password);
     }

@@ -26,6 +26,7 @@ import android.util.Log;
 
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.R;
+import ie.macinnes.tvheadend.migrate.MigrateUtils;
 
 
 public class SyncService extends Service {
@@ -36,12 +37,14 @@ public class SyncService extends Service {
 
     @Override
     public void onCreate() {
+        // TODO: Find a better (+ out of UI thread) way to do this.
+        MigrateUtils.doMigrate(getBaseContext());
+
         synchronized (sSyncAdapterLock) {
             if (sSyncAdapter == null) {
                 sSyncAdapter = new SyncAdapter(getApplicationContext(), true);
             }
         }
-
     }
 
     @Override

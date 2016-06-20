@@ -16,8 +16,6 @@ package ie.macinnes.tvheadend;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.content.Intent;
-import android.media.tv.TvInputInfo;
 import android.os.Bundle;
 import android.app.Activity;
 import android.view.View;
@@ -29,8 +27,7 @@ import com.android.volley.VolleyError;
 import org.json.JSONObject;
 
 import ie.macinnes.tvheadend.client.TVHClient;
-import ie.macinnes.tvheadend.setup.TvInputSetupActivity;
-import ie.macinnes.tvheadend.sync.SyncUtils;
+import ie.macinnes.tvheadend.migrate.MigrateUtils;
 
 public class DevTestActivity extends Activity {
     private static final String TAG = DevTestActivity.class.getName();
@@ -42,6 +39,9 @@ public class DevTestActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // TODO: Find a better (+ out of UI thread) way to do this.
+        MigrateUtils.doMigrate(getBaseContext());
+
         setContentView(R.layout.activity_dev_test);
 
         mAccountManager = AccountManager.get(getBaseContext());
@@ -51,7 +51,8 @@ public class DevTestActivity extends Activity {
     private void setRunning() {
         TextView v = (TextView) findViewById(R.id.statusOutput);
         v.setText("RUNNING");
-        clearDebugOutput();    }
+        clearDebugOutput();
+    }
 
     private void setOk() {
         TextView v = (TextView) findViewById(R.id.statusOutput);
@@ -81,7 +82,7 @@ public class DevTestActivity extends Activity {
     public void accountInfo(View view) {
         setRunning();
 
-        Account[] accounts = mAccountManager.getAccountsByType("ie.macinnes.tvheadend");
+        Account[] accounts = mAccountManager.getAccountsByType(Constants.ACCOUNT_TYPE);
 
         appendDebugOutput("Number of Accounts: " + Integer.toString(accounts.length));
 
@@ -98,10 +99,10 @@ public class DevTestActivity extends Activity {
             String hostname = mAccountManager.getUserData(account, Constants.KEY_HOSTNAME);
             appendDebugOutput("Account Hostname: " + hostname);
 
-            String port = mAccountManager.getUserData(account, Constants.KEY_PORT);
-            appendDebugOutput("Account Port: " + port);
+            String httpPort = mAccountManager.getUserData(account, Constants.KEY_HTTP_PORT);
+            appendDebugOutput("Account HTTP Port: " + httpPort);
 
-            mClient.setConnectionInfo(hostname, port, username, password);
+            mClient.setConnectionInfo(hostname, httpPort, username, password);
         }
 
         setOk();
