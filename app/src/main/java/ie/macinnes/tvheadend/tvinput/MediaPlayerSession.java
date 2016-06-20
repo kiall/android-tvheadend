@@ -133,8 +133,8 @@ public class MediaPlayerSession extends BaseSession {
         }
     }
 
-    public static class PrepareVideoTask extends AsyncTask<Void, Void, MediaPlayer> {
-        public static final String TAG = PrepareVideoTask.class.getSimpleName();
+    public class PrepareVideoTask extends AsyncTask<Void, Void, MediaPlayer> {
+        public final String TAG = PrepareVideoTask.class.getSimpleName();
 
         private final Context mContext;
         private final Uri mChannelUri;
@@ -210,8 +210,31 @@ public class MediaPlayerSession extends BaseSession {
             mediaPlayer.setOnInfoListener(new MediaPlayer.OnInfoListener() {
                 @Override
                 public boolean onInfo(MediaPlayer mp, int what, int extra) {
-                    Log.d(TAG, "Video info: " + what + ", Extra = " + extra);
-                    return false;
+
+                    boolean handled = false;
+
+                    switch (what) {
+                        case MediaPlayer.MEDIA_INFO_BUFFERING_START:
+                            Log.d(TAG, "Buffering Start");
+                            notifyVideoUnavailable(TvInputManager.VIDEO_UNAVAILABLE_REASON_BUFFERING);
+                            handled = true;
+                            break;
+                        case MediaPlayer.MEDIA_INFO_BUFFERING_END:
+                            Log.d(TAG, "Buffering End");
+                            notifyVideoAvailable();
+                            handled = true;
+                            break;
+                        case MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START:
+                            Log.d(TAG, "Rendering Start");
+                            notifyVideoAvailable();
+                            handled = true;
+                            break;
+                        default:
+                            Log.d(TAG, "Video info: " + what + ", Extra = " + extra);
+                            break;
+                    }
+
+                    return handled;
                 }
             });
 
