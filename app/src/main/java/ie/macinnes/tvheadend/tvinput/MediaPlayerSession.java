@@ -38,6 +38,7 @@ public class MediaPlayerSession extends BaseSession {
     private static final String TAG = MediaPlayerSession.class.getName();
 
     private MediaPlayer mMediaPlayer;
+    private PrepareVideoTask mPrepareVideoTask;
 
     /**
      * Creates a new Session.
@@ -84,13 +85,14 @@ public class MediaPlayerSession extends BaseSession {
         stopPlayback();
 
         // Prepare for a new playback
-        PrepareVideoTask prepareVideoTask = new PrepareVideoTask(mContext, channelUri, 30000) {
+        mPrepareVideoTask = new PrepareVideoTask(mContext, channelUri, 30000) {
             @Override
             protected void onPostExecute(MediaPlayer mediaPlayer) {
-                mMediaPlayer = mediaPlayer;
-
                 if (mediaPlayer != null) {
+                    mMediaPlayer = mediaPlayer;
+
                     mediaPlayer.setSurface(mSurface);
+                    mediaPlayer.setVolume(mVolume, mVolume);
                     mediaPlayer.start();
 
                     notifyVideoAvailable();
@@ -101,7 +103,7 @@ public class MediaPlayerSession extends BaseSession {
             }
         };
 
-        prepareVideoTask.execute();
+        mPrepareVideoTask.execute();
 
         return true;
     }
@@ -119,6 +121,10 @@ public class MediaPlayerSession extends BaseSession {
 
     private void stopPlayback() {
         Log.d(TAG, "Session stopPlayback (" + mSessionNumber + ")");
+        if (mPrepareVideoTask != null) {
+            mPrepareVideoTask.cancel(true);
+        }
+
         if (mMediaPlayer != null) {
             mMediaPlayer.setSurface(null);
             mMediaPlayer.stop();
@@ -172,6 +178,10 @@ public class MediaPlayerSession extends BaseSession {
             Map<String, String> headers = createBasicAuthHeader(username, password);
             Uri videoUri = Uri.parse("http://" + hostname + ":" + httpPort + "/stream/channel/" + channelUuid + "?profile=tif");
 
+            if (isCancelled()) {
+                return null;
+            }
+
             // Prepare the media player
             return prepareMediaPlayer(videoUri, headers);
         }
@@ -216,8 +226,16 @@ public class MediaPlayerSession extends BaseSession {
                 }
             });
 
+            if (isCancelled()) {
+                return null;
+            }
+
             try {
                 mediaPlayer.setDataSource(mContext, videoUri, headers);
+
+                if (isCancelled()) {
+                    return null;
+                }
 
                 Log.d(TAG, "Preparing video: " + videoUri + ".");
                 mediaPlayer.prepareAsync();
@@ -227,6 +245,10 @@ public class MediaPlayerSession extends BaseSession {
                     if (!prepared) {
                         throw new InterruptedException("Video prepare timed out after " + mTimeout + " ms.");
                     }
+                }
+
+                if (isCancelled()) {
+                    return null;
                 }
 
                 return mediaPlayer;
