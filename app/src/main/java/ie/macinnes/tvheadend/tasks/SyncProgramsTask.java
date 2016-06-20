@@ -39,7 +39,7 @@ public class SyncProgramsTask extends AsyncTask<TVHClient.EventList, Void, Boole
 
     @Override
     protected Boolean doInBackground(TVHClient.EventList... eventLists) {
-        Log.d(TAG, "Starting SyncChannelsTask for channel: " + mChannel.toString());
+        Log.d(TAG, "Starting SyncProgramsTask for channel: " + mChannel.toString());
 
         if (isCancelled()) {
             return false;
