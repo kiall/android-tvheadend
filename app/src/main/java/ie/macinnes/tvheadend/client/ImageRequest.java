@@ -40,17 +40,6 @@ public class ImageRequest extends com.android.volley.toolbox.ImageRequest {
 
     @Override
     public Map<String, String> getHeaders() throws AuthFailureError {
-        return createBasicAuthHeader(mUsername, mPassword);
-    }
-
-    private Map<String, String> createBasicAuthHeader(String username, String password) {
-        Map<String, String> headerMap = new HashMap<String, String>();
-
-        String credentials = username + ":" + password;
-        String base64EncodedCredentials =
-                Base64.encodeToString(credentials.getBytes(), Base64.NO_WRAP);
-        headerMap.put("Authorization", "Basic " + base64EncodedCredentials);
-
-        return headerMap;
+        return ClientUtils.createBasicAuthHeader(mUsername, mPassword);
     }
 }

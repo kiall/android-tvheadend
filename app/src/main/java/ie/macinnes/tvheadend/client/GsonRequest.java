@@ -17,6 +17,7 @@ package ie.macinnes.tvheadend.client;
 
 import android.util.Base64;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
 import com.android.volley.ParseError;
 import com.android.volley.Request;
@@ -53,15 +54,8 @@ public class GsonRequest<T> extends Request<T> {
     }
 
     @Override
-    public Map<String, String> getHeaders() {
-        Map<String, String> headerMap = new HashMap<String, String>();
-
-        String credentials = mUsername + ":" + mPassword;
-        String base64EncodedCredentials =
-                Base64.encodeToString(credentials.getBytes(), Base64.NO_WRAP);
-        headerMap.put("Authorization", "Basic " + base64EncodedCredentials);
-
-        return headerMap;
+    public Map<String, String> getHeaders() throws AuthFailureError {
+        return ClientUtils.createBasicAuthHeader(mUsername, mPassword);
     }
 
     @Override

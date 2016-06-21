@@ -32,6 +32,7 @@ import java.util.Map;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.TvContractUtils;
 import ie.macinnes.tvheadend.account.AccountUtils;
+import ie.macinnes.tvheadend.client.ClientUtils;
 import ie.macinnes.tvheadend.model.Channel;
 
 public class MediaPlayerSession extends BaseSession {
@@ -175,7 +176,7 @@ public class MediaPlayerSession extends BaseSession {
             String httpPort = accountManager.getUserData(account, Constants.KEY_HTTP_PORT);
 
             // Create authentication headers and streamUri
-            Map<String, String> headers = createBasicAuthHeader(username, password);
+            Map<String, String> headers = ClientUtils.createBasicAuthHeader(username, password);
             Uri videoUri = Uri.parse("http://" + hostname + ":" + httpPort + "/stream/channel/" + channelUuid + "?profile=tif");
 
             if (isCancelled()) {
@@ -284,17 +285,6 @@ public class MediaPlayerSession extends BaseSession {
 
                 return null;
             }
-        }
-
-        private Map<String, String> createBasicAuthHeader(String username, String password) {
-            Map<String, String> headerMap = new HashMap<String, String>();
-
-            String credentials = username + ":" + password;
-            String base64EncodedCredentials =
-                    Base64.encodeToString(credentials.getBytes(), Base64.NO_WRAP);
-            headerMap.put("Authorization", "Basic " + base64EncodedCredentials);
-
-            return headerMap;
         }
     }
 }
