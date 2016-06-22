@@ -8,10 +8,13 @@ android {
         applicationId "ie.macinnes.tvheadend"
         minSdkVersion 22
         targetSdkVersion 23
-        versionCode 16
-        versionName '0.1.10'
+        versionCode 17
+        versionName '0.1.' + versionCode
     }
     buildTypes {
+        debug {
+            versionNameSuffix "-SNAPSHOT"
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
