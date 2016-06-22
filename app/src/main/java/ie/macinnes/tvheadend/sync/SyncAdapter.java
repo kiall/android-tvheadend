@@ -20,6 +20,7 @@ import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SyncResult;
 import android.media.tv.TvContract;
 import android.os.AsyncTask;
@@ -70,7 +71,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     };
 
     private static final BlockingQueue<Runnable> sPoolWorkQueue =
-            new LinkedBlockingQueue<Runnable>(128);
+            new LinkedBlockingQueue<Runnable>();
 
     private static final Executor sExecutor
             = new ThreadPoolExecutor(INITIAL_POOL_SIZE, MAXIMUM_POOL_SIZE, KEEP_ALIVE_TIME,
