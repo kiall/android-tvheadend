@@ -38,8 +38,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import ie.macinnes.tvheadend.Constants;
-import ie.macinnes.tvheadend.R;
 import ie.macinnes.tvheadend.TvContractUtils;
 import ie.macinnes.tvheadend.client.TVHClient;
 import ie.macinnes.tvheadend.model.Channel;

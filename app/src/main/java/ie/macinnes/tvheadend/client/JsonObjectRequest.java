@@ -14,15 +14,11 @@ under the License.
 */
 package ie.macinnes.tvheadend.client;
 
-import android.util.Base64;
-
 import com.android.volley.AuthFailureError;
 import com.android.volley.Response;
 
 import org.json.JSONObject;
 
-import java.net.URI;
-import java.util.HashMap;
 import java.util.Map;
 
 public class JsonObjectRequest extends com.android.volley.toolbox.JsonObjectRequest {

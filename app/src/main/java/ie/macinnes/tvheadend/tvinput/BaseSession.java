@@ -2,7 +2,6 @@ package ie.macinnes.tvheadend.tvinput;
 
 import android.content.Context;
 import android.media.tv.TvInputManager;
-import android.util.Log;
 import android.view.Surface;
 
 import java.util.concurrent.atomic.AtomicInteger;

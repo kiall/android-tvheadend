@@ -21,10 +21,10 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import ie.macinnes.tvheadend.TvContractUtils;
 import ie.macinnes.tvheadend.client.TVHClient;
 import ie.macinnes.tvheadend.model.Channel;
 import ie.macinnes.tvheadend.model.ProgramList;
-import ie.macinnes.tvheadend.TvContractUtils;
 
 public class SyncProgramsTask extends AsyncTask<TVHClient.EventList, Void, Boolean> {
     public static final String TAG = SyncProgramsTask.class.getSimpleName();

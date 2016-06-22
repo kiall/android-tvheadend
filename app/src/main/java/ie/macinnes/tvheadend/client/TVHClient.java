@@ -39,7 +39,7 @@ import ie.macinnes.tvheadend.Constants;
 public class TVHClient {
     private static final String TAG = TVHClient.class.getName();
 
-    private static TVHClient mInstance;
+    private static TVHClient sInstance;
     private final Context mContext;
     private RequestQueue mRequestQueue;
 
@@ -51,10 +51,10 @@ public class TVHClient {
     private int mTimeout = 30;
 
     public static synchronized TVHClient getInstance(Context context) {
-        if (mInstance == null) {
-            mInstance = new TVHClient(context);
+        if (sInstance == null) {
+            sInstance = new TVHClient(context);
         }
-        return mInstance;
+        return sInstance;
     }
 
     public TVHClient(Context context) {

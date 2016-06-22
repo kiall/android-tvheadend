@@ -15,17 +15,10 @@
  */
 package ie.macinnes.tvheadend.sync;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
-import android.accounts.OnAccountsUpdateListener;
 import android.app.Service;
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.os.IBinder;
-import android.util.Log;
 
-import ie.macinnes.tvheadend.Constants;
-import ie.macinnes.tvheadend.R;
 import ie.macinnes.tvheadend.migrate.MigrateUtils;
 
 

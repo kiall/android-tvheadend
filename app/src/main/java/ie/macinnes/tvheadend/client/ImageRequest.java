@@ -16,12 +16,10 @@
 package ie.macinnes.tvheadend.client;
 
 import android.graphics.Bitmap;
-import android.util.Base64;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Response;
 
-import java.util.HashMap;
 import java.util.Map;
 
 

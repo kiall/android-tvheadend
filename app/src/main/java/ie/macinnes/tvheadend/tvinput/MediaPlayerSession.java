@@ -22,11 +22,9 @@ import android.media.MediaPlayer;
 import android.media.tv.TvInputManager;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.util.Base64;
 import android.util.Log;
 import android.view.Surface;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import ie.macinnes.tvheadend.Constants;
@@ -142,7 +140,6 @@ public class MediaPlayerSession extends BaseSession {
         private final long mTimeout;
 
         private Channel mChannel;
-        private Throwable mError;
         private boolean prepared;
 
         protected PrepareVideoTask(Context context, Uri channelUri, long timeout) {
@@ -280,7 +277,6 @@ public class MediaPlayerSession extends BaseSession {
             } catch (Throwable e) {
                 Log.e(TAG, "Error preparing video: " + e);
 
-                mError = e;
                 mediaPlayer.release();
 
                 return null;

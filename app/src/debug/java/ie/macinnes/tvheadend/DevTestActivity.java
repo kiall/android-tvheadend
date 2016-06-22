@@ -16,8 +16,8 @@ package ie.macinnes.tvheadend;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.os.Bundle;
 import android.app.Activity;
+import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
