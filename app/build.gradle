@@ -2,13 +2,13 @@ apply plugin: 'com.android.application'
 
 
 android {
-    compileSdkVersion 23
+    compileSdkVersion 24
     buildToolsVersion "23.0.3"
     defaultConfig {
         applicationId "ie.macinnes.tvheadend"
         minSdkVersion 22
-        targetSdkVersion 23
-        versionCode 17
+        targetSdkVersion 24
+        versionCode 19
         versionName '0.1.' + versionCode
     }
     buildTypes {
@@ -26,9 +26,9 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:support-v4:23.4.0'
-    compile 'com.android.support:leanback-v17:23.4.0'
-    compile 'com.android.support:preference-leanback-v17:23.4.0'
+    compile 'com.android.support:support-v4:24.0.0'
+    compile 'com.android.support:leanback-v17:24.0.0'
+    compile 'com.android.support:preference-leanback-v17:24.0.0'
     compile 'com.google.code.gson:gson:2.6.2'
     compile 'com.android.volley:volley:1.0.0'
 }
