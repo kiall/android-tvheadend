@@ -87,15 +87,23 @@ public class TvContractUtils {
         }
     }
 
-    public static void updateChannels(Context context, ChannelList channelList) {
-        Log.d(TAG, "Updating channels");
+    public static ProgramList getPrograms(Context context, Channel channel) {
+        Uri channelUri = TvContract.buildChannelUri(channel.getId());
+        Uri programsUri = TvContract.buildProgramsUriForChannel(channelUri);
 
-        Collections.sort(channelList);
+        ContentResolver resolver = context.getContentResolver();
 
+        try (Cursor cursor = resolver.query(programsUri, null, null, null, null)) {
+            return ProgramList.fromCursor(cursor);
+        }
+    }
+
+    public static SparseArray<Long> buildChannelMap(Context context, ChannelList channelList) {
         // Create a map from original network ID to channel row ID for existing channels.
         SparseArray<Long> channelMap = new SparseArray<>();
-        Uri channelsUri = TvContract.buildChannelsUriForInput(getInputId());
-        String[] projection = {Channels._ID, Channels.COLUMN_ORIGINAL_NETWORK_ID};
+        Uri channelsUri = TvContract.buildChannelsUriForInput(TvContractUtils.getInputId());
+        String[] projection = {TvContract.Channels._ID, TvContract.Channels.COLUMN_ORIGINAL_NETWORK_ID};
+
         ContentResolver resolver = context.getContentResolver();
 
         try (Cursor cursor = resolver.query(channelsUri, projection, null, null, null)) {
@@ -106,54 +114,7 @@ public class TvContractUtils {
             }
         }
 
-        // If a channel exists, update it. If not, insert a new one.
-        ContentValues values;
-        Map<Uri, String> logos = new HashMap<>();
-
-        for (Channel channel : channelList) {
-            values = channel.toContentValues();
-
-            Long rowId = channelMap.get(channel.getOriginalNetworkId());
-
-            Uri uri;
-            if (rowId == null) {
-                Log.d(TAG, "Adding channel: " + channel.toString());
-                uri = resolver.insert(TvContract.Channels.CONTENT_URI, values);
-            } else {
-                Log.d(TAG, "Updating channel: " + channel.toString());
-                uri = TvContract.buildChannelUri(rowId);
-                resolver.update(uri, values, null, null);
-                channelMap.remove(channel.getOriginalNetworkId());
-            }
-
-            // Update the channel icon
-            if (channel.getIconUri() != null && !TextUtils.isEmpty(channel.getIconUri())) {
-                logos.put(TvContract.buildChannelLogoUri(uri), channel.getIconUri());
-            }
-        }
-
-        if (!logos.isEmpty()) {
-            new SyncLogosTask(context).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, logos);
-        }
-
-        // Deletes channels which don't exist in the new feed.
-        int size = channelMap.size();
-        for (int i = 0; i < size; ++i) {
-            Long rowId = channelMap.valueAt(i);
-            Log.d(TAG, "Deleting channel: " + rowId);
-            resolver.delete(TvContract.buildChannelUri(rowId), null, null);
-        }
-    }
-
-    public static ProgramList getPrograms(Context context, Channel channel) {
-        Uri channelUri = TvContract.buildChannelUri(channel.getId());
-        Uri programsUri = TvContract.buildProgramsUriForChannel(channelUri);
-
-        ContentResolver resolver = context.getContentResolver();
-
-        try (Cursor cursor = resolver.query(programsUri, null, null, null, null)) {
-            return ProgramList.fromCursor(cursor);
-        }
+        return channelMap;
     }
 
     public static void updateEvents(Context context, Channel channel, ProgramList newProgramList) {

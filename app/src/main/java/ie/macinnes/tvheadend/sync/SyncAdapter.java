@@ -19,15 +19,22 @@ import android.accounts.Account;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SyncResult;
+import android.database.Cursor;
 import android.media.tv.TvContract;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
+import android.util.SparseArray;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -43,6 +50,7 @@ import ie.macinnes.tvheadend.TvContractUtils;
 import ie.macinnes.tvheadend.client.TVHClient;
 import ie.macinnes.tvheadend.model.Channel;
 import ie.macinnes.tvheadend.model.ChannelList;
+import ie.macinnes.tvheadend.tasks.SyncLogosTask;
 import ie.macinnes.tvheadend.tasks.SyncProgramsTask;
 
 
@@ -150,10 +158,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private boolean syncChannels() {
         Log.d(TAG, "Starting channel sync");
 
-        TVHClient.ChannelList channelList;
+        ChannelList channelList;
 
         try {
-            channelList = mClient.getChannelGrid();
+            channelList = ChannelList.fromClientChannelList(mClient.getChannelGrid());
         } catch (InterruptedException|ExecutionException e) {
             // Something went wrong
             Log.w(TAG, "Failed to fetch channel list from server: " + e.getLocalizedMessage(), e);
@@ -164,12 +172,83 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             return false;
         }
 
-        // Update the channels DB (Also does channel logos)
-        TvContractUtils.updateChannels(
-                mContext,
-                ChannelList.fromClientChannelList(channelList));
+        // Sort the list of Channels
+        Collections.sort(channelList);
+
+        // Build a channel map, mapping from Original Network ID -> RowID's
+        SparseArray<Long> channelMap = TvContractUtils.buildChannelMap(mContext, channelList);
+
+        // Prep a mapping for Logo content URI and URLs
+        Map<Uri, String> logos = new HashMap<>();
+
+        // Update the Channels DB - If a channel exists, update it. If not, insert a new one.
+        ContentValues values;
+        Long rowId;
+        Uri channelUri;
+
+        for (Channel channel : channelList) {
+            if (isCancelled()) {
+                Log.d(TAG, "Sync cancelled");
+                return false;
+            }
+
+            values = channel.toContentValues();
+
+            rowId = channelMap.get(channel.getOriginalNetworkId());
+
+            if (rowId == null) {
+                Log.d(TAG, "Adding channel: " + channel.toString());
+                channelUri = mContentResolver.insert(TvContract.Channels.CONTENT_URI, values);
+            } else {
+                Log.d(TAG, "Updating channel: " + channel.toString());
+                channelUri = TvContract.buildChannelUri(rowId);
+                mContentResolver.update(channelUri, values, null, null);
+                channelMap.remove(channel.getOriginalNetworkId());
+            }
+
+            // If we have a channel icon, add it to the logs map
+            if (channel.getIconUri() != null && !TextUtils.isEmpty(channel.getIconUri())) {
+                logos.put(TvContract.buildChannelLogoUri(channelUri), channel.getIconUri());
+            }
+        }
+
+        // Update the Channels DB - Delete channels which no longer exist.
+        int size = channelMap.size();
+        for (int i = 0; i < size; ++i) {
+            if (isCancelled()) {
+                Log.d(TAG, "Sync cancelled");
+                return false;
+            }
+
+            rowId = channelMap.valueAt(i);
+            Log.d(TAG, "Deleting channel: " + rowId);
+            mContentResolver.delete(TvContract.buildChannelUri(rowId), null, null);
+        }
+
+        if (!logos.isEmpty()) {
+            SyncLogosTask syncLogosTask = new SyncLogosTask(mContext) {
+                @Override
+                protected void onPostExecute(Void voids) {
+                    mPendingTasks.remove(this);
+                }
+
+                @Override
+                protected void onCancelled() {
+                    mPendingTasks.remove(this);
+                }
+            };
+
+            if (isCancelled()) {
+                Log.d(TAG, "Sync cancelled");
+                return false;
+            }
+
+            Log.d(TAG, "Dispatching Logos Sync Task");
+            mPendingTasks.add(syncLogosTask.executeOnExecutor(sExecutor, logos));
+        }
 
         Log.d(TAG, "Completed channel sync");
+
         return true;
     }
 
