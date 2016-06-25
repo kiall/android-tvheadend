@@ -18,11 +18,13 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.google.firebase.crash.FirebaseCrash;
 
 import org.json.JSONObject;
 
@@ -81,6 +83,9 @@ public class DevTestActivity extends Activity {
 
     public void accountInfo(View view) {
         setRunning();
+
+        Log.d(TAG, "Sending TESTING Crash Report");
+        FirebaseCrash.report(new Exception("TESTING"));
 
         Account[] accounts = mAccountManager.getAccountsByType(Constants.ACCOUNT_TYPE);
 
