@@ -10,10 +10,10 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="ie.macinnes.tvheadend.setup.IssuesActivity">
 
-    <WebView
+    <us.feras.mdv.MarkdownView
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:id="@+id/webView"
+        android:id="@+id/markdownView"
         android:layout_below="@+id/textView"
         android:layout_alignParentStart="true"/>
 
