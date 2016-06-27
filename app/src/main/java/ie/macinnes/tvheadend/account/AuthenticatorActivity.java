@@ -24,7 +24,9 @@ import android.support.v17.leanback.widget.GuidanceStylist;
 import android.support.v17.leanback.widget.GuidedAction;
 import android.support.v17.leanback.widget.GuidedActionsStylist;
 import android.text.InputType;
+import android.text.TextUtils;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkError;
@@ -138,18 +140,33 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         @Override
         public void onGuidedActionClicked(GuidedAction action) {
             if (action.getId() == ACTION_ID_NEXT) {
-                GuidedStepFragment fragment = new AccountFragment();
-
                 Bundle args = getArguments();
 
+                // Hostname Field
                 GuidedAction hostnameAction = findActionById(ACTION_ID_HOSTNAME);
-                args.putString(Constants.KEY_HOSTNAME, hostnameAction.getDescription().toString());
+                CharSequence hostnameValue = hostnameAction.getDescription();
 
+                if (hostnameValue == null || TextUtils.isEmpty(hostnameValue)) {
+                    Toast.makeText(getActivity(), "Invalid Hostname", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                args.putString(Constants.KEY_HOSTNAME, hostnameValue.toString());
+
+                // HTTP Port Field
                 GuidedAction httpPortAction = findActionById(ACTION_ID_HTTP_PORT);
+                CharSequence httpPortValue = httpPortAction.getDescription();
+
+                if (httpPortValue == null || TextUtils.isEmpty(httpPortValue)) {
+                    Toast.makeText(getActivity(), "Invalid HTTP Port", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 args.putString(Constants.KEY_HTTP_PORT, httpPortAction.getDescription().toString());
 
+                // Move to the next setup
+                GuidedStepFragment fragment = new AccountFragment();
                 fragment.setArguments(args);
-
                 add(getFragmentManager(), fragment);
             }
         }
@@ -204,18 +221,33 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         @Override
         public void onGuidedActionClicked(GuidedAction action) {
             if (action.getId() == ACTION_ID_ADD_ACCOUNT) {
-                GuidedStepFragment fragment = new ValidateAccountFragment();
-
                 Bundle args = getArguments();
 
+                // Username Field
                 GuidedAction usernameAction = findActionById(ACTION_ID_USERNAME);
+                CharSequence usernameValue = usernameAction.getDescription();
+
+                if (usernameValue == null || TextUtils.isEmpty(usernameValue)) {
+                    Toast.makeText(getActivity(), "Invalid Username", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 args.putString(Constants.KEY_USERNAME, usernameAction.getDescription().toString());
 
+                // Password Field
                 GuidedAction passwordAction = findActionById(ACTION_ID_PASSWORD);
+                CharSequence passwordValue = passwordAction.getDescription();
+
+                if (passwordValue == null || TextUtils.isEmpty(passwordValue)) {
+                    Toast.makeText(getActivity(), "Invalid Password", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 args.putString(Constants.KEY_PASSWORD, passwordAction.getDescription().toString());
 
+                // Move to the next step
+                GuidedStepFragment fragment = new ValidateAccountFragment();
                 fragment.setArguments(args);
-
                 add(getFragmentManager(), fragment);
             }
         }
@@ -310,7 +342,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
                 public void onErrorResponse(VolleyError error) {
                     Log.d(TAG, "Failed to validate credentials");
 
-                    GuidedStepFragment fragment = new FailedFragment();
                     Bundle args = getArguments();
 
                     if (error instanceof TimeoutError || error instanceof NoConnectionError) {
@@ -327,6 +358,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
                         args.putString(Constants.KEY_ERROR_MESSAGE, "Unknown Error");
                     }
 
+                    // Move to the failed step
+                    GuidedStepFragment fragment = new FailedFragment();
                     fragment.setArguments(args);
                     add(getFragmentManager(), fragment);
                 }
