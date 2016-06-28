@@ -245,9 +245,10 @@ public class TvContractUtils {
     }
 
     private static boolean programEventIdMatches(Program oldProgram, Program newProgram) {
-        // TODO: Handle null's etc...
-        return oldProgram.getInternalProviderData().getEventId() ==
-               newProgram.getInternalProviderData().getEventId();
+        final String oldEventId = oldProgram.getInternalProviderData().getEventId();
+        final String newEventId = newProgram.getInternalProviderData().getEventId();
+
+        return oldEventId.equals(newEventId);
     }
 
 }

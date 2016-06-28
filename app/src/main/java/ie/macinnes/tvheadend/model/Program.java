@@ -352,6 +352,7 @@ public class Program implements Comparable<Program> {
             return false;
         }
         Program program = (Program) other;
+
         return mChannelId == program.mChannelId
                 && mStartTimeUtcMillis == program.mStartTimeUtcMillis
                 && mEndTimeUtcMillis == program.mEndTimeUtcMillis
@@ -395,7 +396,7 @@ public class Program implements Comparable<Program> {
                 return false;
             }
             InternalProviderData providerData = (InternalProviderData) other;
-            return mEventId == providerData.mEventId;
+            return mEventId.equals(providerData.mEventId);
         }
     }
 }
