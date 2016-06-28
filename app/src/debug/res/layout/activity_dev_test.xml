@@ -57,6 +57,20 @@ under the License.
         <Button
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
+            android:text="Show Channel List"
+            android:nestedScrollingEnabled="true"
+            android:onClick="channelList" />
+
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Show Program List"
+            android:nestedScrollingEnabled="true"
+            android:onClick="programList" />
+
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
             android:text="Delete Channels"
             android:nestedScrollingEnabled="true"
             android:onClick="deleteChannels"
