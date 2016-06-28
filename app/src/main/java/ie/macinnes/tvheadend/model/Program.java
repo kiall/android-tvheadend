@@ -34,10 +34,10 @@ public class Program implements Comparable<Program> {
     private long mChannelId;
     private String mTitle;
     private String mEpisodeTitle;
-    private long mStartTimeUtcMillis;
-    private long mEndTimeUtcMillis;
     private String mShortDescription;
     private String mLongDescription;
+    private long mStartTimeUtcMillis;
+    private long mEndTimeUtcMillis;
     private String mSeasonDisplayNumber;
     private String mEpisodeDisplayNumber;
 
@@ -75,22 +75,6 @@ public class Program implements Comparable<Program> {
         mEpisodeTitle = episodeTitle;
     }
 
-    public long getStartTimeUtcMillis() {
-        return mStartTimeUtcMillis;
-    }
-
-    public void setStartTimeUtcMillis(long startTimeUtcMillis) {
-        mStartTimeUtcMillis = startTimeUtcMillis;
-    }
-
-    public long getEndTimeUtcMillis() {
-        return mEndTimeUtcMillis;
-    }
-
-    public void setEndTimeUtcMillis(long endTimeUtcMillis) {
-        mEndTimeUtcMillis = endTimeUtcMillis;
-    }
-
     public String getShortDescription() {
         return mShortDescription;
     }
@@ -105,6 +89,22 @@ public class Program implements Comparable<Program> {
 
     public void setLongDescription(String longDescription) {
         mLongDescription = longDescription;
+    }
+
+    public long getStartTimeUtcMillis() {
+        return mStartTimeUtcMillis;
+    }
+
+    public void setStartTimeUtcMillis(long startTimeUtcMillis) {
+        mStartTimeUtcMillis = startTimeUtcMillis;
+    }
+
+    public long getEndTimeUtcMillis() {
+        return mEndTimeUtcMillis;
+    }
+
+    public void setEndTimeUtcMillis(long endTimeUtcMillis) {
+        mEndTimeUtcMillis = endTimeUtcMillis;
     }
 
     public String getSeasonDisplayNumber() {
@@ -155,16 +155,6 @@ public class Program implements Comparable<Program> {
             program.setEpisodeTitle(cursor.getString(index));
         }
 
-        index = cursor.getColumnIndex(TvContract.Programs.COLUMN_START_TIME_UTC_MILLIS);
-        if (index >= 0 && !cursor.isNull(index)) {
-            program.setStartTimeUtcMillis(cursor.getLong(index));
-        }
-
-        index = cursor.getColumnIndex(TvContract.Programs.COLUMN_END_TIME_UTC_MILLIS);
-        if (index >= 0 && !cursor.isNull(index)) {
-            program.setEndTimeUtcMillis(cursor.getLong(index));
-        }
-
         index = cursor.getColumnIndex(TvContract.Programs.COLUMN_SHORT_DESCRIPTION);
         if (index >= 0 && !cursor.isNull(index)) {
             program.setShortDescription(cursor.getString(index));
@@ -173,6 +163,16 @@ public class Program implements Comparable<Program> {
         index = cursor.getColumnIndex(TvContract.Programs.COLUMN_LONG_DESCRIPTION);
         if (index >= 0 && !cursor.isNull(index)) {
             program.setLongDescription(cursor.getString(index));
+        }
+
+        index = cursor.getColumnIndex(TvContract.Programs.COLUMN_START_TIME_UTC_MILLIS);
+        if (index >= 0 && !cursor.isNull(index)) {
+            program.setStartTimeUtcMillis(cursor.getLong(index));
+        }
+
+        index = cursor.getColumnIndex(TvContract.Programs.COLUMN_END_TIME_UTC_MILLIS);
+        if (index >= 0 && !cursor.isNull(index)) {
+            program.setEndTimeUtcMillis(cursor.getLong(index));
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -239,6 +239,25 @@ public class Program implements Comparable<Program> {
         program.setInternalProviderData(providerData);
 
         return program;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("<Program ")
+                .append("programId=").append(mProgramId)
+                .append(", channelId=").append(mChannelId)
+                .append(", title=").append(mTitle)
+                .append(", shortDescription=").append(mShortDescription)
+                .append(", longDescription=").append(mLongDescription)
+                .append(", episodeTitle=").append(mEpisodeTitle)
+                .append(", startTimeUtcSec=").append(mStartTimeUtcMillis)
+                .append(", endTimeUtcSec=").append(mEndTimeUtcMillis)
+                .append(", seasonDisplayNumber=").append(mSeasonDisplayNumber)
+                .append(", episodeDisplayNumber=").append(mEpisodeDisplayNumber);
+
+        return builder.append(">").toString();
     }
 
     @TargetApi(24)

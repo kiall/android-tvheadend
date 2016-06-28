@@ -209,8 +209,22 @@ public class Channel implements Comparable<Channel> {
         return channel;
     }
 
+    @Override
     public String toString() {
-        return "<Number: " + mDisplayNumber + ", Name: " + mDisplayName + ">";
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("<Channel ")
+                .append("id=").append(mId)
+                .append(", inputId=").append(mInputId)
+                .append(", type=").append(mType)
+                .append(", displayNumber=").append(mDisplayNumber)
+                .append(", displayName=").append(mDisplayName)
+                .append(", description=").append(mDescription)
+                .append(", originalNetworkId=").append(mOriginalNetworkId)
+                .append(", transportStreamId=").append(mTransportStreamId)
+                .append(", serviceId=").append(mServiceId);
+
+        return builder.append(">").toString();
     }
 
     public ContentValues toContentValues() {
