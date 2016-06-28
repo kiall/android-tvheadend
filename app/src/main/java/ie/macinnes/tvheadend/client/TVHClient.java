@@ -213,6 +213,7 @@ public class TVHClient {
         public String title;
         public String subtitle;
         public String summary;
+        public String description;
         public int seasonNumber;
         public int episodeNumber;
         public int nextEventId;

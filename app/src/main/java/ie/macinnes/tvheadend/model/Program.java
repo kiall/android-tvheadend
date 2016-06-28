@@ -36,7 +36,7 @@ public class Program implements Comparable<Program> {
     private String mEpisodeTitle;
     private long mStartTimeUtcMillis;
     private long mEndTimeUtcMillis;
-    private String mDescription;
+    private String mShortDescription;
     private String mLongDescription;
     private String mSeasonDisplayNumber;
     private String mEpisodeDisplayNumber;
@@ -91,12 +91,12 @@ public class Program implements Comparable<Program> {
         mEndTimeUtcMillis = endTimeUtcMillis;
     }
 
-    public String getDescription() {
-        return mDescription;
+    public String getShortDescription() {
+        return mShortDescription;
     }
 
-    public void setDescription(String description) {
-        mDescription = description;
+    public void setShortDescription(String shortDescription) {
+        mShortDescription = shortDescription;
     }
 
     public String getLongDescription() {
@@ -167,7 +167,7 @@ public class Program implements Comparable<Program> {
 
         index = cursor.getColumnIndex(TvContract.Programs.COLUMN_SHORT_DESCRIPTION);
         if (index >= 0 && !cursor.isNull(index)) {
-            program.setDescription(cursor.getString(index));
+            program.setShortDescription(cursor.getString(index));
         }
 
         index = cursor.getColumnIndex(TvContract.Programs.COLUMN_LONG_DESCRIPTION);
@@ -213,8 +213,19 @@ public class Program implements Comparable<Program> {
 
         // Copy values from the clientEvent
         program.setTitle(clientEvent.title);
-        program.setDescription(clientEvent.subtitle);
-        program.setLongDescription(clientEvent.summary);
+        program.setEpisodeTitle(clientEvent.subtitle);
+        // Use summary as short description, otherwise use description
+        if (clientEvent.summary != null) {
+            program.setShortDescription(clientEvent.summary);
+        } else if (clientEvent.description != null) {
+            program.setShortDescription(clientEvent.description);
+        }
+        // Use description as long description, otherwise use summary
+        if (clientEvent.description != null) {
+            program.setLongDescription(clientEvent.description);
+        } else if (clientEvent.summary != null) {
+            program.setLongDescription(clientEvent.summary);
+        }
         program.setStartTimeUtcMillis(clientEvent.start * 1000);
         program.setEndTimeUtcMillis(clientEvent.stop * 1000);
         program.setSeasonDisplayNumber(Integer.toString(clientEvent.seasonNumber));
@@ -252,10 +263,16 @@ public class Program implements Comparable<Program> {
             values.putNull(TvContract.Programs.COLUMN_EPISODE_TITLE);
         }
 
-        if (!TextUtils.isEmpty(mDescription)) {
-            values.put(TvContract.Programs.COLUMN_SHORT_DESCRIPTION, mDescription);
+        if (!TextUtils.isEmpty(mShortDescription)) {
+            values.put(TvContract.Programs.COLUMN_SHORT_DESCRIPTION, mShortDescription);
         } else {
             values.putNull(TvContract.Programs.COLUMN_SHORT_DESCRIPTION);
+        }
+
+        if (!TextUtils.isEmpty(mLongDescription)) {
+            values.put(TvContract.Programs.COLUMN_LONG_DESCRIPTION, mLongDescription);
+        } else {
+            values.putNull(TvContract.Programs.COLUMN_LONG_DESCRIPTION);
         }
 
         if (mStartTimeUtcMillis != INVALID_LONG_VALUE) {
@@ -321,7 +338,7 @@ public class Program implements Comparable<Program> {
                 && mEndTimeUtcMillis == program.mEndTimeUtcMillis
                 && Objects.equals(mTitle, program.mTitle)
                 && Objects.equals(mEpisodeTitle, program.mEpisodeTitle)
-                && Objects.equals(mDescription, program.mDescription)
+                && Objects.equals(mShortDescription, program.mShortDescription)
                 && Objects.equals(mLongDescription, program.mLongDescription)
                 && Objects.equals(mSeasonDisplayNumber, program.mSeasonDisplayNumber)
                 && Objects.equals(mEpisodeDisplayNumber, program.mEpisodeDisplayNumber)
