@@ -14,9 +14,11 @@ under the License.
 */
 package ie.macinnes.tvheadend.model;
 
+import android.annotation.TargetApi;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.media.tv.TvContract;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
@@ -36,6 +38,9 @@ public class Program implements Comparable<Program> {
     private long mEndTimeUtcMillis;
     private String mDescription;
     private String mLongDescription;
+    private String mSeasonDisplayNumber;
+    private String mEpisodeDisplayNumber;
+
     private InternalProviderData mInternalProviderData;
 
     public long getProgramId() {
@@ -102,6 +107,22 @@ public class Program implements Comparable<Program> {
         mLongDescription = longDescription;
     }
 
+    public String getSeasonDisplayNumber() {
+        return mSeasonDisplayNumber;
+    }
+
+    public void setSeasonDisplayNumber(String seasonDisplayNumber) {
+        mSeasonDisplayNumber = seasonDisplayNumber;
+    }
+
+    public String getEpisodeDisplayNumber() {
+        return mEpisodeDisplayNumber;
+    }
+
+    public void setEpisodeDisplayNumber(String episodeDisplayNumber) {
+        mEpisodeDisplayNumber = episodeDisplayNumber;
+    }
+
     public InternalProviderData getInternalProviderData() {
         return mInternalProviderData;
     }
@@ -110,6 +131,7 @@ public class Program implements Comparable<Program> {
         mInternalProviderData = internalProviderData;
     }
 
+    @TargetApi(24)
     public static Program fromCursor(Cursor cursor) {
         Program program = new Program();
 
@@ -153,6 +175,28 @@ public class Program implements Comparable<Program> {
             program.setLongDescription(cursor.getString(index));
         }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            index = cursor.getColumnIndex(TvContract.Programs.COLUMN_SEASON_DISPLAY_NUMBER);
+            if (index >= 0 && !cursor.isNull(index)) {
+                program.setSeasonDisplayNumber(cursor.getString(index));
+            }
+
+            index = cursor.getColumnIndex(TvContract.Programs.COLUMN_EPISODE_DISPLAY_NUMBER);
+            if (index >= 0 && !cursor.isNull(index)) {
+                program.setEpisodeDisplayNumber(cursor.getString(index));
+            }
+        } else {
+            index = cursor.getColumnIndex(TvContract.Programs.COLUMN_SEASON_NUMBER);
+            if (index >= 0 && !cursor.isNull(index)) {
+                program.setSeasonDisplayNumber(cursor.getString(index));
+            }
+
+            index = cursor.getColumnIndex(TvContract.Programs.COLUMN_EPISODE_NUMBER);
+            if (index >= 0 && !cursor.isNull(index)) {
+                program.setEpisodeDisplayNumber(cursor.getString(index));
+            }
+        }
+
         index = cursor.getColumnIndex(TvContract.Programs.COLUMN_INTERNAL_PROVIDER_DATA);
         if (index >= 0 && !cursor.isNull(index)) {
             program.setInternalProviderData(InternalProviderData.fromString(cursor.getString(index)));
@@ -173,6 +217,8 @@ public class Program implements Comparable<Program> {
         program.setLongDescription(clientEvent.summary);
         program.setStartTimeUtcMillis(clientEvent.start * 1000);
         program.setEndTimeUtcMillis(clientEvent.stop * 1000);
+        program.setSeasonDisplayNumber(Integer.toString(clientEvent.seasonNumber));
+        program.setEpisodeDisplayNumber(Integer.toString(clientEvent.episodeNumber));
 
         // Prep and set a InternalProviderData object
         InternalProviderData providerData = new InternalProviderData();
@@ -184,6 +230,7 @@ public class Program implements Comparable<Program> {
         return program;
     }
 
+    @TargetApi(24)
     public ContentValues toContentValues() {
         ContentValues values = new ContentValues();
 
@@ -223,6 +270,32 @@ public class Program implements Comparable<Program> {
             values.putNull(TvContract.Programs.COLUMN_END_TIME_UTC_MILLIS);
         }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            if (!TextUtils.isEmpty(mSeasonDisplayNumber)) {
+                values.put(TvContract.Programs.COLUMN_SEASON_DISPLAY_NUMBER, mSeasonDisplayNumber);
+            } else {
+                values.putNull(TvContract.Programs.COLUMN_SEASON_DISPLAY_NUMBER);
+            }
+
+            if (!TextUtils.isEmpty(mEpisodeDisplayNumber)) {
+                values.put(TvContract.Programs.COLUMN_EPISODE_DISPLAY_NUMBER, mEpisodeDisplayNumber);
+            } else {
+                values.putNull(TvContract.Programs.COLUMN_EPISODE_DISPLAY_NUMBER);
+            }
+        } else {
+            if (!TextUtils.isEmpty(mSeasonDisplayNumber)) {
+                values.put(TvContract.Programs.COLUMN_SEASON_NUMBER, mSeasonDisplayNumber);
+            } else {
+                values.putNull(TvContract.Programs.COLUMN_SEASON_NUMBER);
+            }
+
+            if (!TextUtils.isEmpty(mEpisodeDisplayNumber)) {
+                values.put(TvContract.Programs.COLUMN_EPISODE_NUMBER, mEpisodeDisplayNumber);
+            } else {
+                values.putNull(TvContract.Programs.COLUMN_EPISODE_NUMBER);
+            }
+        }
+
         if (mInternalProviderData != null) {
             values.put(TvContract.Programs.COLUMN_INTERNAL_PROVIDER_DATA, mInternalProviderData.toString());
         } else {
@@ -250,6 +323,8 @@ public class Program implements Comparable<Program> {
                 && Objects.equals(mEpisodeTitle, program.mEpisodeTitle)
                 && Objects.equals(mDescription, program.mDescription)
                 && Objects.equals(mLongDescription, program.mLongDescription)
+                && Objects.equals(mSeasonDisplayNumber, program.mSeasonDisplayNumber)
+                && Objects.equals(mEpisodeDisplayNumber, program.mEpisodeDisplayNumber)
                 && mInternalProviderData.equals(program.mInternalProviderData);
     }
 
