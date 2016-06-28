@@ -71,7 +71,6 @@ public class TvContractUtils {
         }
     }
 
-
     public static void removeChannels(Context context) {
         Uri channelsUri = TvContract.buildChannelsUriForInput(getInputId());
 
@@ -160,6 +159,11 @@ public class TvContractUtils {
     public static void updateEvents(Context context, Channel channel, ProgramList newProgramList) {
         Log.d(TAG, "Updating events for channel: " + channel.toString() + ". Have " + newProgramList.size() + " events.");
 
+        int additions = 0;
+        int updates = 0;
+        int deletions = 0;
+        int nochange = 0;
+
         ProgramList oldProgramList = getPrograms(context, channel);
 
         int oldProgramsIndex = 0;
@@ -183,6 +187,7 @@ public class TvContractUtils {
                     oldProgramsIndex++;
                     newProgramsIndex++;
 
+                    nochange++;
                 } else if (programEventIdMatches(oldProgram, newProgram)) {
                     // Partial match. Update the old program with the new one.
                     // NOTE: Use 'update' in this case instead of 'insert' and 'delete'. There
@@ -193,6 +198,16 @@ public class TvContractUtils {
                             .build());
                     oldProgramsIndex++;
                     newProgramsIndex++;
+                    updates++;
+                } else if (oldProgram.getEndTimeUtcMillis()
+                        < newProgram.getEndTimeUtcMillis()) {
+                    // No match. Remove the old program first to see if the next program in
+                    // {@code oldPrograms} partially matches the new program.
+                    ops.add(ContentProviderOperation.newDelete(
+                            TvContract.buildProgramUri(oldProgram.getProgramId()))
+                            .build());
+                    oldProgramsIndex++;
+                    deletions++;
                 } else {
                     // No match. The new program does not match any of the old programs. Insert
                     // it as a new program.
@@ -210,6 +225,7 @@ public class TvContractUtils {
                         .newInsert(TvContract.Programs.CONTENT_URI)
                         .withValues(newProgram.toContentValues())
                         .build());
+                additions++;
             }
 
             // Throttle the batch operation not to cause TransactionTooLargeException.
@@ -224,6 +240,8 @@ public class TvContractUtils {
                 ops.clear();
             }
         }
+
+        Log.d(TAG, "Finished updating events for channel: " + channel.toString() + ". A:" + Integer.toString(additions) + ", U:" + Integer.toString(updates) + ", D:" + Integer.toString(deletions) + ", NC:" + Integer.toString(nochange));
     }
 
     private static boolean programEventIdMatches(Program oldProgram, Program newProgram) {
