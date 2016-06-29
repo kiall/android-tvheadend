@@ -15,31 +15,18 @@ under the License.
 package ie.macinnes.tvheadend;
 
 import android.content.ComponentName;
-import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
-import android.content.OperationApplicationException;
 import android.database.Cursor;
 import android.media.tv.TvContract;
 import android.media.tv.TvContract.Channels;
 import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.RemoteException;
-import android.text.TextUtils;
 import android.util.Log;
 import android.util.SparseArray;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import ie.macinnes.tvheadend.model.Channel;
 import ie.macinnes.tvheadend.model.ChannelList;
-import ie.macinnes.tvheadend.model.Program;
 import ie.macinnes.tvheadend.model.ProgramList;
-import ie.macinnes.tvheadend.tasks.SyncLogosTask;
 
 public class TvContractUtils {
     private static final String TAG = TvContractUtils.class.getName();
@@ -116,100 +103,4 @@ public class TvContractUtils {
 
         return channelMap;
     }
-
-    public static void updateEvents(Context context, Channel channel, ProgramList newProgramList) {
-        Log.d(TAG, "Updating events for channel: " + channel.toString() + ". Have " + newProgramList.size() + " events.");
-
-        int additions = 0;
-        int updates = 0;
-        int deletions = 0;
-        int nochange = 0;
-
-        ProgramList oldProgramList = getPrograms(context, channel);
-
-        int oldProgramsIndex = 0;
-        int newProgramsIndex = 0;
-        final int oldProgramsCount = oldProgramList.size();
-        final int newProgramsCount = newProgramList.size();
-
-        // Compare the new programs with old programs one by one and update/delete the old one
-        // or insert new program if there is no matching program in the database.
-        ArrayList<ContentProviderOperation> ops = new ArrayList<>();
-
-        while (newProgramsIndex < newProgramsCount) {
-            Program oldProgram = oldProgramsIndex < oldProgramsCount
-                    ? oldProgramList.get(oldProgramsIndex) : null;
-            Program newProgram = newProgramList.get(newProgramsIndex);
-
-            boolean addNewProgram = false;
-            if (oldProgram != null) {
-                if (oldProgram.equals(newProgram)) {
-                    // Exact match. No need to update. Move on to the next programs.
-                    oldProgramsIndex++;
-                    newProgramsIndex++;
-
-                    nochange++;
-                } else if (programEventIdMatches(oldProgram, newProgram)) {
-                    // Partial match. Update the old program with the new one.
-                    // NOTE: Use 'update' in this case instead of 'insert' and 'delete'. There
-                    // could be application specific settings which belong to the old program.
-                    ops.add(ContentProviderOperation.newUpdate(
-                            TvContract.buildProgramUri(oldProgram.getProgramId()))
-                            .withValues(newProgram.toContentValues())
-                            .build());
-                    oldProgramsIndex++;
-                    newProgramsIndex++;
-                    updates++;
-                } else if (oldProgram.getEndTimeUtcMillis()
-                        < newProgram.getEndTimeUtcMillis()) {
-                    // No match. Remove the old program first to see if the next program in
-                    // {@code oldPrograms} partially matches the new program.
-                    ops.add(ContentProviderOperation.newDelete(
-                            TvContract.buildProgramUri(oldProgram.getProgramId()))
-                            .build());
-                    oldProgramsIndex++;
-                    deletions++;
-                } else {
-                    // No match. The new program does not match any of the old programs. Insert
-                    // it as a new program.
-                    addNewProgram = true;
-                    newProgramsIndex++;
-                }
-            } else {
-                // No old programs. Just insert new programs.
-                addNewProgram = true;
-                newProgramsIndex++;
-            }
-
-            if (addNewProgram) {
-                ops.add(ContentProviderOperation
-                        .newInsert(TvContract.Programs.CONTENT_URI)
-                        .withValues(newProgram.toContentValues())
-                        .build());
-                additions++;
-            }
-
-            // Throttle the batch operation not to cause TransactionTooLargeException.
-            if (ops.size() > 100
-                    || newProgramsIndex >= newProgramsCount) {
-                try {
-                    context.getContentResolver().applyBatch(Constants.CONTENT_AUTHORITY, ops);
-                } catch (RemoteException | OperationApplicationException e) {
-                    Log.e(TAG, "Failed to insert programs.", e);
-                    return;
-                }
-                ops.clear();
-            }
-        }
-
-        Log.d(TAG, "Finished updating events for channel: " + channel.toString() + ". A:" + Integer.toString(additions) + ", U:" + Integer.toString(updates) + ", D:" + Integer.toString(deletions) + ", NC:" + Integer.toString(nochange));
-    }
-
-    private static boolean programEventIdMatches(Program oldProgram, Program newProgram) {
-        final String oldEventId = oldProgram.getInternalProviderData().getEventId();
-        final String newEventId = newProgram.getInternalProviderData().getEventId();
-
-        return oldEventId.equals(newEventId);
-    }
-
 }
