@@ -52,7 +52,7 @@ public class TvInputService extends android.media.tv.TvInputService {
     public final Session onCreateSession(String inputId) {
         Log.d(TAG, "Creating new TvInputService Session for input ID: " + inputId + ".");
 
-        return new MediaPlayerSession(this, mHandler);
+        return new VlcSession(this, mHandler);
     }
 
 }

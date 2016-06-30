@@ -23,6 +23,12 @@ android {
     }
 }
 
+repositories{
+    flatDir{
+        dirs 'libs'
+    }
+}
+
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:support-v4:24.0.0'
@@ -34,6 +40,7 @@ dependencies {
     compile 'com.google.firebase:firebase-crash:9.0.2'
     compile 'us.feras.mdv:markdownview:1.1.0'
     compile 'com.google.android.exoplayer:exoplayer:r1.5.9'
+    compile(name:'libvlc', ext:'aar')
 }
 
 if (project.file('google-services.json').exists()) {
