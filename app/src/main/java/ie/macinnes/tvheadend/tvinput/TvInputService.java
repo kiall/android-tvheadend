@@ -14,6 +14,8 @@ under the License.
 */
 package ie.macinnes.tvheadend.tvinput;
 
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.util.Log;
 
 import ie.macinnes.tvheadend.migrate.MigrateUtils;
@@ -22,9 +24,16 @@ import ie.macinnes.tvheadend.migrate.MigrateUtils;
 public class TvInputService extends android.media.tv.TvInputService {
     private static final String TAG = TvInputService.class.getName();
 
+    private HandlerThread mHandlerThread;
+    private Handler mHandler;
+
     @Override
     public void onCreate() {
         super.onCreate();
+
+        mHandlerThread = new HandlerThread(getClass().getSimpleName());
+        mHandlerThread.start();
+        mHandler = new Handler(mHandlerThread.getLooper());
 
         // TODO: Find a better (+ out of UI thread) way to do this.
         MigrateUtils.doMigrate(getBaseContext());
@@ -33,13 +42,17 @@ public class TvInputService extends android.media.tv.TvInputService {
     @Override
     public void onDestroy() {
         super.onDestroy();
+
+        mHandlerThread.quit();
+        mHandlerThread = null;
+        mHandler = null;
     }
 
     @Override
     public final Session onCreateSession(String inputId) {
         Log.d(TAG, "Creating new TvInputService Session for input ID: " + inputId + ".");
 
-        return new MediaPlayerSession(this);
+        return new MediaPlayerSession(this, mHandler);
     }
 
 }

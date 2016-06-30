@@ -24,8 +24,11 @@ import android.net.Uri;
 import android.util.Log;
 import android.util.SparseArray;
 
+import java.util.List;
+
 import ie.macinnes.tvheadend.model.Channel;
 import ie.macinnes.tvheadend.model.ChannelList;
+import ie.macinnes.tvheadend.model.Program;
 import ie.macinnes.tvheadend.model.ProgramList;
 
 public class TvContractUtils {
@@ -85,6 +88,10 @@ public class TvContractUtils {
         }
     }
 
+    public static ProgramList getPrograms(Context context, Uri channelUri) {
+        return getPrograms(context, getChannelFromChannelUri(context, channelUri));
+    }
+
     public static SparseArray<Long> buildChannelMap(Context context, ChannelList channelList) {
         // Create a map from original network ID to channel row ID for existing channels.
         SparseArray<Long> channelMap = new SparseArray<>();
@@ -102,5 +109,21 @@ public class TvContractUtils {
         }
 
         return channelMap;
+    }
+
+    public static Program getCurrentProgram(Context context, Uri channelUri) {
+        ContentResolver resolver = context.getContentResolver();
+
+        ProgramList programs = getPrograms(context, channelUri);
+
+        long nowMs = System.currentTimeMillis();
+
+        for (Program program : programs) {
+            if (program.getStartTimeUtcMillis() <= nowMs && program.getEndTimeUtcMillis() > nowMs) {
+                return program;
+            }
+        }
+
+        return null;
     }
 }

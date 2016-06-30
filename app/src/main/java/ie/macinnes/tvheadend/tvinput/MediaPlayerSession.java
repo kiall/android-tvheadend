@@ -21,14 +21,13 @@ import android.content.Context;
 import android.media.MediaPlayer;
 import android.media.tv.TvInputManager;
 import android.net.Uri;
-import android.os.AsyncTask;
+import android.os.Handler;
 import android.util.Log;
 import android.view.Surface;
 
 import java.util.Map;
 
 import ie.macinnes.tvheadend.Constants;
-import ie.macinnes.tvheadend.TvContractUtils;
 import ie.macinnes.tvheadend.account.AccountUtils;
 import ie.macinnes.tvheadend.client.ClientUtils;
 import ie.macinnes.tvheadend.model.Channel;
@@ -37,15 +36,14 @@ public class MediaPlayerSession extends BaseSession {
     private static final String TAG = MediaPlayerSession.class.getName();
 
     private MediaPlayer mMediaPlayer;
-    private PrepareVideoTask mPrepareVideoTask;
 
     /**
      * Creates a new Session.
      *
      * @param context The context of the application
      */
-    public MediaPlayerSession(Context context) {
-        super(context);
+    public MediaPlayerSession(Context context, Handler serviceHandler) {
+        super(context, serviceHandler);
         Log.d(TAG, "Session created (" + mSessionNumber + ")");
     }
 
@@ -73,56 +71,39 @@ public class MediaPlayerSession extends BaseSession {
         }
     }
 
-    @Override
-    public boolean onTune(Uri channelUri) {
-        Log.d(TAG, "Session onTune: " + channelUri + " (" + mSessionNumber + ")");
-
-        // Notify we are busy tuning
-        notifyVideoUnavailable(TvInputManager.VIDEO_UNAVAILABLE_REASON_TUNING);
-
+    protected boolean playChannel(Channel channel) {
         // Stop any existing playback
         stopPlayback();
 
-        // Prepare for a new playback
-        mPrepareVideoTask = new PrepareVideoTask(mContext, channelUri, 30000) {
-            @Override
-            protected void onPostExecute(MediaPlayer mediaPlayer) {
-                if (mediaPlayer != null) {
-                    mMediaPlayer = mediaPlayer;
+        // Gather Details on the Channel
+        String channelUuid = channel.getInternalProviderData().getUuid();
 
-                    mediaPlayer.setSurface(mSurface);
-                    mediaPlayer.setVolume(mVolume, mVolume);
-                    mediaPlayer.start();
+        // Gather Details on the TVHeadend Instance
+        AccountManager accountManager = AccountManager.get(mContext);;
+        Account account = AccountUtils.getActiveAccount(mContext);
 
-                    notifyVideoAvailable();
-                } else {
-                    Log.e(TAG, "Error preparing media playback");
-                    notifyVideoUnavailable(TvInputManager.VIDEO_UNAVAILABLE_REASON_UNKNOWN);
-                }
-            }
-        };
+        String username = account.name;
+        String password = accountManager.getPassword(account);
+        String hostname = accountManager.getUserData(account, Constants.KEY_HOSTNAME);
+        String httpPort = accountManager.getUserData(account, Constants.KEY_HTTP_PORT);
 
-        mPrepareVideoTask.execute();
+        // Create authentication headers and streamUri
+        Map<String, String> headers = ClientUtils.createBasicAuthHeader(username, password);
+        Uri videoUri = Uri.parse("http://" + hostname + ":" + httpPort + "/stream/channel/" + channelUuid + "?profile=tif");
 
-        return true;
+        // Prepare the media player
+        mMediaPlayer = prepareMediaPlayer(videoUri, headers);
+
+        // Start the media playback
+        Log.d(TAG, "Starting playback of channel: " + channel.toString());
+        mMediaPlayer.start();
+        notifyVideoAvailable();
+
+        return mMediaPlayer != null;
     }
 
-    @Override
-    public void onSetCaptionEnabled(boolean enabled) {
-        Log.d(TAG, "Session onSetCaptionEnabled: " + enabled + " (" + mSessionNumber + ")");
-    }
-
-    @Override
-    public void onRelease() {
-        Log.d(TAG, "Session onRelease (" + mSessionNumber + ")");
-        stopPlayback();
-    }
-
-    private void stopPlayback() {
+    protected void stopPlayback() {
         Log.d(TAG, "Session stopPlayback (" + mSessionNumber + ")");
-        if (mPrepareVideoTask != null) {
-            mPrepareVideoTask.cancel(true);
-        }
 
         if (mMediaPlayer != null) {
             mMediaPlayer.setSurface(null);
@@ -132,155 +113,74 @@ public class MediaPlayerSession extends BaseSession {
         }
     }
 
-    public class PrepareVideoTask extends AsyncTask<Void, Void, MediaPlayer> {
-        public final String TAG = PrepareVideoTask.class.getSimpleName();
+    private MediaPlayer prepareMediaPlayer(Uri videoUri, Map<String, String> headers) {
+        // Create and prep the MediaPlayer instance
+        MediaPlayer mediaPlayer = new MediaPlayer();
 
-        private final Context mContext;
-        private final Uri mChannelUri;
-        private final long mTimeout;
+        mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+            @Override
+            public boolean onError(MediaPlayer mp, int what, int extra) {
+                Log.e(TAG, "MediaPlayer error: " + what + ". Extra = " + extra);
+                return true;
+            }
+        });
 
-        private Channel mChannel;
-        private boolean prepared;
+        mediaPlayer.setOnBufferingUpdateListener(new MediaPlayer.OnBufferingUpdateListener() {
+            @Override
+            public void onBufferingUpdate(MediaPlayer mp, int percent) {
+                Log.d(TAG, "Video buffering: " + percent + "%");
+            }
+        });
 
-        protected PrepareVideoTask(Context context, Uri channelUri, long timeout) {
-            Log.d(TAG, "Prepare video task created for " + channelUri.toString());
+        mediaPlayer.setOnInfoListener(new MediaPlayer.OnInfoListener() {
+            @Override
+            public boolean onInfo(MediaPlayer mp, int what, int extra) {
 
-            mContext = context;
-            mChannelUri = channelUri;
-            mTimeout = timeout;
+                boolean handled = false;
 
+                switch (what) {
+                    case MediaPlayer.MEDIA_INFO_BUFFERING_START:
+                        Log.d(TAG, "Buffering Start");
+                        notifyVideoUnavailable(TvInputManager.VIDEO_UNAVAILABLE_REASON_BUFFERING);
+                        handled = true;
+                        break;
+                    case MediaPlayer.MEDIA_INFO_BUFFERING_END:
+                        Log.d(TAG, "Buffering End");
+                        notifyVideoAvailable();
+                        handled = true;
+                        break;
+                    case MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START:
+                        Log.d(TAG, "Rendering Start");
+                        notifyVideoAvailable();
+                        handled = true;
+                        break;
+                    default:
+                        Log.d(TAG, "Video info: " + what + ", Extra = " + extra);
+                        break;
+                }
+
+                return handled;
+            }
+        });
+
+
+        try {
+            Log.d(TAG, "Preparing video: " + videoUri + ".");
+
+            mediaPlayer.setDataSource(mContext, videoUri, headers);
+            mediaPlayer.prepare();
+
+        } catch (Throwable e) {
+            Log.e(TAG, "Error preparing video: " + e);
+
+            mediaPlayer.release();
+
+            return null;
         }
 
-        @Override
-        protected MediaPlayer doInBackground(Void... params) {
-            Log.d(TAG, "Started play video task created for " + mChannelUri.toString());
+        mediaPlayer.setSurface(mSurface);
+        mediaPlayer.setVolume(mVolume, mVolume);
 
-            if (isCancelled()) {
-                return null;
-            }
-
-            // Gather Details on the Channel
-            mChannel = TvContractUtils.getChannelFromChannelUri(mContext, mChannelUri);
-            String channelUuid = mChannel.getInternalProviderData().getUuid();
-
-            // Gather Details on the TVHeadend Instance
-            AccountManager accountManager = AccountManager.get(mContext);;
-            Account account = AccountUtils.getActiveAccount(mContext);
-
-            String username = account.name;
-            String password = accountManager.getPassword(account);
-            String hostname = accountManager.getUserData(account, Constants.KEY_HOSTNAME);
-            String httpPort = accountManager.getUserData(account, Constants.KEY_HTTP_PORT);
-
-            // Create authentication headers and streamUri
-            Map<String, String> headers = ClientUtils.createBasicAuthHeader(username, password);
-            Uri videoUri = Uri.parse("http://" + hostname + ":" + httpPort + "/stream/channel/" + channelUuid + "?profile=tif");
-
-            if (isCancelled()) {
-                return null;
-            }
-
-            // Prepare the media player
-            return prepareMediaPlayer(videoUri, headers);
-        }
-
-        private MediaPlayer prepareMediaPlayer(Uri videoUri, Map<String, String> headers) {
-            final Object prepareLock = new Object();
-
-            // Create and prep the MediaPlayer
-            MediaPlayer mediaPlayer = new MediaPlayer();
-
-            mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-                @Override
-                public boolean onError(MediaPlayer mp, int what, int extra) {
-                    Log.e(TAG, "MediaPlayer error: " + what + ". Extra = " + extra);
-                    return true;
-                }
-            });
-
-            mediaPlayer.setOnBufferingUpdateListener(new MediaPlayer.OnBufferingUpdateListener() {
-                @Override
-                public void onBufferingUpdate(MediaPlayer mp, int percent) {
-                    Log.d(TAG, "Video buffering: " + percent + "%");
-                }
-            });
-
-            mediaPlayer.setOnInfoListener(new MediaPlayer.OnInfoListener() {
-                @Override
-                public boolean onInfo(MediaPlayer mp, int what, int extra) {
-
-                    boolean handled = false;
-
-                    switch (what) {
-                        case MediaPlayer.MEDIA_INFO_BUFFERING_START:
-                            Log.d(TAG, "Buffering Start");
-                            notifyVideoUnavailable(TvInputManager.VIDEO_UNAVAILABLE_REASON_BUFFERING);
-                            handled = true;
-                            break;
-                        case MediaPlayer.MEDIA_INFO_BUFFERING_END:
-                            Log.d(TAG, "Buffering End");
-                            notifyVideoAvailable();
-                            handled = true;
-                            break;
-                        case MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START:
-                            Log.d(TAG, "Rendering Start");
-                            notifyVideoAvailable();
-                            handled = true;
-                            break;
-                        default:
-                            Log.d(TAG, "Video info: " + what + ", Extra = " + extra);
-                            break;
-                    }
-
-                    return handled;
-                }
-            });
-
-            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                @Override
-                public void onPrepared(MediaPlayer mp) {
-                    Log.d(TAG, "MediaPlayer video prepared");
-                    prepared = true;
-                    synchronized (prepareLock) {
-                        prepareLock.notifyAll();
-                    }
-                }
-            });
-
-            if (isCancelled()) {
-                return null;
-            }
-
-            try {
-                mediaPlayer.setDataSource(mContext, videoUri, headers);
-
-                if (isCancelled()) {
-                    return null;
-                }
-
-                Log.d(TAG, "Preparing video: " + videoUri + ".");
-                mediaPlayer.prepareAsync();
-
-                synchronized (prepareLock) {
-                    prepareLock.wait(mTimeout);
-                    if (!prepared) {
-                        throw new InterruptedException("Video prepare timed out after " + mTimeout + " ms.");
-                    }
-                }
-
-                if (isCancelled()) {
-                    return null;
-                }
-
-                return mediaPlayer;
-
-            } catch (Throwable e) {
-                Log.e(TAG, "Error preparing video: " + e);
-
-                mediaPlayer.release();
-
-                return null;
-            }
-        }
+        return mediaPlayer;
     }
 }
