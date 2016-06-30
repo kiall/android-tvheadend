@@ -72,6 +72,18 @@ abstract public class BaseSession extends android.media.tv.TvInputService.Sessio
     }
 
     @Override
+    public void notifyVideoAvailable() {
+        Log.d(TAG, "Notifying video is available");
+        super.notifyVideoAvailable();
+    }
+
+    @Override
+    public void notifyVideoUnavailable(int reason) {
+        Log.d(TAG, "Notifying video is unavailable, reason: " + Integer.toString(reason));
+        super.notifyVideoUnavailable(reason);
+    }
+
+    @Override
     public boolean handleMessage(Message msg) {
         switch (msg.what) {
             case MSG_PLAY_CHANNEL:
