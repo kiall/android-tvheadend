@@ -26,6 +26,12 @@ public class Constants {
     // Preferences Files and Keys
     public static final String PREFERENCE_TVHEADEND = "tvheadend";
 
+    // Session Selection Preference Keys and Values
+    public static final String KEY_SESSION = "SESSION";
+    public static final String MEDIA_PLAYER = "MEDIA-PLAYER";
+    public static final String EXO_PLAYER = "EXO-PLAYER";
+    public static final String VLC = "VLC";
+
     // Bundle and Preference Keys
     public static final String KEY_APP_VERSION = "APP-VERSION";
     public static final String KEY_HOSTNAME = "HOSTNAME";

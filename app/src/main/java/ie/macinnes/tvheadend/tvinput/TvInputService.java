@@ -14,10 +14,13 @@ under the License.
 */
 package ie.macinnes.tvheadend.tvinput;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
 
+import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.migrate.MigrateUtils;
 
 
@@ -26,6 +29,8 @@ public class TvInputService extends android.media.tv.TvInputService {
 
     private HandlerThread mHandlerThread;
     private Handler mHandler;
+
+    private String mSessionType;
 
     @Override
     public void onCreate() {
@@ -37,6 +42,12 @@ public class TvInputService extends android.media.tv.TvInputService {
 
         // TODO: Find a better (+ out of UI thread) way to do this.
         MigrateUtils.doMigrate(getBaseContext());
+
+        // Store the chosen session type
+        SharedPreferences sharedPreferences = getSharedPreferences(
+                Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
+
+        mSessionType = sharedPreferences.getString(Constants.KEY_SESSION, Constants.MEDIA_PLAYER);
     }
 
     @Override
@@ -52,7 +63,13 @@ public class TvInputService extends android.media.tv.TvInputService {
     public final Session onCreateSession(String inputId) {
         Log.d(TAG, "Creating new TvInputService Session for input ID: " + inputId + ".");
 
-        return new VlcSession(this, mHandler);
+        if (mSessionType != null && mSessionType.equals(Constants.VLC)) {
+            return new VlcSession(this, mHandler);
+        } else if (mSessionType != null && mSessionType.equals(Constants.EXO_PLAYER)) {
+            return new DemoPlayerSession(this, mHandler);
+        } else {
+            return new MediaPlayerSession(this, mHandler);
+        }
     }
 
 }

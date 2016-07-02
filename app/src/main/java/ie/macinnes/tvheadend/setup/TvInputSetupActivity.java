@@ -20,7 +20,9 @@ import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.app.Activity;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.SyncStatusObserver;
 import android.media.tv.TvInputInfo;
 import android.os.Bundle;
@@ -309,10 +311,88 @@ public class TvInputSetupActivity extends Activity {
                 sClient.setConnectionInfo(sAccount);
 
                 // Move onto the next step
-                GuidedStepFragment fragment = new SyncingFragment();
+                GuidedStepFragment fragment = new SessionSelectorFragment();
                 fragment.setArguments(getArguments());
                 add(getFragmentManager(), fragment);
             }
+        }
+    }
+
+    public static class SessionSelectorFragment extends BaseGuidedStepFragment {
+        private static final int ACTION_ID_MEDIA_PLAYER = 1;
+        private static final int ACTION_ID_EXO_PLAYER = 2;
+        private static final int ACTION_ID_VLC = 3;
+
+        @NonNull
+        @Override
+        public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
+            GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
+                    "Session Selector",
+                    "There are several Session implementatioms, please choose one",
+                    "TVHeadend",
+                    null);
+
+            return guidance;
+        }
+
+        @Override
+        public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
+            List<GuidedAction> subActions = new ArrayList();
+
+            GuidedAction action = new GuidedAction.Builder(getActivity())
+                    .id(ACTION_ID_MEDIA_PLAYER)
+                    .title("Media Player")
+                    .description("Android Media Player")
+                    .editable(false)
+                    .build();
+
+            actions.add(action);
+
+            action = new GuidedAction.Builder(getActivity())
+                    .id(ACTION_ID_EXO_PLAYER)
+                    .title("ExoPlayer")
+                    .description("Google ExoPlayer (Experimental)")
+                    .editable(false)
+                    .build();
+
+            actions.add(action);
+
+            action = new GuidedAction.Builder(getActivity())
+                    .id(ACTION_ID_VLC)
+                    .title("VLC")
+                    .description("VideoLAN VLC (Experimental)")
+                    .editable(false)
+                    .build();
+
+            actions.add(action);
+        }
+
+        @Override
+        public void onGuidedActionClicked(GuidedAction action) {
+            String session;
+
+            if (action.getId() == ACTION_ID_MEDIA_PLAYER) {
+                session = Constants.MEDIA_PLAYER;
+            } else if (action.getId() == ACTION_ID_EXO_PLAYER) {
+                session = Constants.EXO_PLAYER;
+            } else if (action.getId() == ACTION_ID_VLC) {
+                session = Constants.VLC;
+            } else {
+                return;
+            }
+
+            // Store the chosen session type
+            SharedPreferences sharedPreferences = getActivity().getSharedPreferences(
+                    Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
+
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString(Constants.KEY_SESSION, session);
+            editor.commit();
+
+            // Move onto the next step
+            GuidedStepFragment fragment = new SyncingFragment();
+            fragment.setArguments(getArguments());
+            add(getFragmentManager(), fragment);
         }
     }
 
