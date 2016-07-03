@@ -23,6 +23,12 @@ android {
     }
 }
 
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+}
+
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:support-v4:24.0.0'
@@ -35,6 +41,7 @@ dependencies {
     compile 'us.feras.mdv:markdownview:1.1.0'
     compile 'com.google.android.exoplayer:exoplayer:r1.5.9'
     compile 'de.mrmaffen:vlc-android-sdk:1.9.8'
+//    compile(name:'vlc-android-sdk-release', ext:'aar') // Used for testing local libvlc builds
 }
 
 if (project.file('google-services.json').exists()) {

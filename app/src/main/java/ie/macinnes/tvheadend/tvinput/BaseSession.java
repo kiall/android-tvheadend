@@ -2,6 +2,7 @@ package ie.macinnes.tvheadend.tvinput;
 
 import android.content.Context;
 import android.media.tv.TvInputManager;
+import android.media.tv.TvTrackInfo;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
@@ -81,6 +82,18 @@ abstract public class BaseSession extends android.media.tv.TvInputService.Sessio
     public void notifyVideoUnavailable(int reason) {
         Log.d(TAG, "Notifying video is unavailable, reason: " + Integer.toString(reason));
         super.notifyVideoUnavailable(reason);
+    }
+
+    @Override
+    public void notifyTrackSelected(int type, String trackId) {
+        if (type == TvTrackInfo.TYPE_VIDEO) {
+            Log.d(TAG, "Notifying video track selected: " + trackId);
+        } else if (type == TvTrackInfo.TYPE_AUDIO) {
+            Log.d(TAG, "Notifying audio track selected: " + trackId);
+        } else if (type == TvTrackInfo.TYPE_SUBTITLE) {
+            Log.d(TAG, "Notifying subtitle track selected: " + trackId);
+        }
+        super.notifyTrackSelected(type, trackId);
     }
 
     @Override
