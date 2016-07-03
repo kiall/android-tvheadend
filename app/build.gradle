@@ -7,7 +7,7 @@ android {
         applicationId "ie.macinnes.tvheadend"
         minSdkVersion 22
         targetSdkVersion 24
-        versionCode 24
+        versionCode 25
         versionName '0.1.' + versionCode
     }
     buildTypes {
@@ -23,12 +23,6 @@ android {
     }
 }
 
-repositories{
-    flatDir{
-        dirs 'libs'
-    }
-}
-
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:support-v4:24.0.0'
@@ -40,7 +34,7 @@ dependencies {
     compile 'com.google.firebase:firebase-crash:9.0.2'
     compile 'us.feras.mdv:markdownview:1.1.0'
     compile 'com.google.android.exoplayer:exoplayer:r1.5.9'
-    compile(name:'libvlc', ext:'aar')
+    compile 'de.mrmaffen:vlc-android-sdk:1.9.8'
 }
 
 if (project.file('google-services.json').exists()) {
