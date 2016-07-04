@@ -337,8 +337,6 @@ public class TvInputSetupActivity extends Activity {
 
         @Override
         public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
-            List<GuidedAction> subActions = new ArrayList();
-
             GuidedAction action = new GuidedAction.Builder(getActivity())
                     .id(ACTION_ID_MEDIA_PLAYER)
                     .title("Media Player")
@@ -360,7 +358,7 @@ public class TvInputSetupActivity extends Activity {
             action = new GuidedAction.Builder(getActivity())
                     .id(ACTION_ID_VLC)
                     .title("VLC")
-                    .description("VideoLAN VLC (Experimental)")
+                    .description("VideoLAN VLC (Recommended)")
                     .editable(false)
                     .build();
 
@@ -372,11 +370,11 @@ public class TvInputSetupActivity extends Activity {
             String session;
 
             if (action.getId() == ACTION_ID_MEDIA_PLAYER) {
-                session = Constants.MEDIA_PLAYER;
+                session = Constants.SESSION_MEDIA_PLAYER;
             } else if (action.getId() == ACTION_ID_EXO_PLAYER) {
-                session = Constants.EXO_PLAYER;
+                session = Constants.SESSION_EXO_PLAYER;
             } else if (action.getId() == ACTION_ID_VLC) {
-                session = Constants.VLC;
+                session = Constants.SESSION_VLC;
             } else {
                 return;
             }

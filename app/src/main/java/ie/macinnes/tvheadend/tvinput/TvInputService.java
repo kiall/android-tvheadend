@@ -47,7 +47,7 @@ public class TvInputService extends android.media.tv.TvInputService {
         SharedPreferences sharedPreferences = getSharedPreferences(
                 Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
 
-        mSessionType = sharedPreferences.getString(Constants.KEY_SESSION, Constants.MEDIA_PLAYER);
+        mSessionType = sharedPreferences.getString(Constants.KEY_SESSION, Constants.SESSION_MEDIA_PLAYER);
     }
 
     @Override
@@ -63,9 +63,9 @@ public class TvInputService extends android.media.tv.TvInputService {
     public final Session onCreateSession(String inputId) {
         Log.d(TAG, "Creating new TvInputService Session for input ID: " + inputId + ".");
 
-        if (mSessionType != null && mSessionType.equals(Constants.VLC)) {
+        if (mSessionType != null && mSessionType.equals(Constants.SESSION_VLC)) {
             return new VlcSession(this, mHandler);
-        } else if (mSessionType != null && mSessionType.equals(Constants.EXO_PLAYER)) {
+        } else if (mSessionType != null && mSessionType.equals(Constants.SESSION_EXO_PLAYER)) {
             return new DemoPlayerSession(this, mHandler);
         } else {
             return new MediaPlayerSession(this, mHandler);

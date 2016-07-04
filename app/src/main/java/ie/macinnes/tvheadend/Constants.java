@@ -28,9 +28,9 @@ public class Constants {
 
     // Session Selection Preference Keys and Values
     public static final String KEY_SESSION = "SESSION";
-    public static final String MEDIA_PLAYER = "MEDIA-PLAYER";
-    public static final String EXO_PLAYER = "EXO-PLAYER";
-    public static final String VLC = "VLC";
+    public static final String SESSION_MEDIA_PLAYER = "SESSION-MEDIA-PLAYER";
+    public static final String SESSION_EXO_PLAYER = "SESSION-EXO-PLAYER";
+    public static final String SESSION_VLC = "SESSION-VLC";
 
     // Bundle and Preference Keys
     public static final String KEY_APP_VERSION = "APP-VERSION";
