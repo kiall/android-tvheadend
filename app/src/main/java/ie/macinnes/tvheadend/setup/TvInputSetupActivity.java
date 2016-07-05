@@ -347,18 +347,18 @@ public class TvInputSetupActivity extends Activity {
             actions.add(action);
 
             action = new GuidedAction.Builder(getActivity())
-                    .id(ACTION_ID_EXO_PLAYER)
-                    .title("ExoPlayer")
-                    .description("Google ExoPlayer (Experimental)")
+                    .id(ACTION_ID_VLC)
+                    .title("LibVLC")
+                    .description("VideoLAN LibVLC (Experimental)")
                     .editable(false)
                     .build();
 
             actions.add(action);
 
             action = new GuidedAction.Builder(getActivity())
-                    .id(ACTION_ID_VLC)
-                    .title("VLC")
-                    .description("VideoLAN VLC (Recommended)")
+                    .id(ACTION_ID_EXO_PLAYER)
+                    .title("ExoPlayer")
+                    .description("Google ExoPlayer (Experimental)")
                     .editable(false)
                     .build();
 
