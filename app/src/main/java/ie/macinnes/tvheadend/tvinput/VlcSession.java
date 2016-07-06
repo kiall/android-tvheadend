@@ -55,6 +55,9 @@ public class VlcSession extends BaseSession {
         ArrayList<String> options = new ArrayList<>();
         options.add("--http-reconnect");
         options.add("--network-caching=2000");
+        options.add("--deinterlace=-1");
+        options.add("--deinterlace-mode=blend"); // discard,blend,mean,bob,linear,x,yadif,yadif2x,phosphor,ivtc
+        options.add("--video-filter=deinterlace");
 
         mLibVLC = new LibVLC(options);
     }
