@@ -66,7 +66,7 @@ public class TvInputSetupActivity extends Activity {
 
         @Override
         public int onProvideTheme() {
-            return R.style.Theme_Wizard;
+            return R.style.Theme_Wizard_Setup;
         }
 
         @Override
@@ -276,7 +276,6 @@ public class TvInputSetupActivity extends Activity {
         @Override
         public boolean onSubGuidedActionClicked(GuidedAction action) {
             if (action.isChecked()) {
-                Log.w(TAG, "WTF: " + action.getTitle().toString());
                 sAccount = getAccountByName(action.getTitle().toString());
 
                 findActionById(ACTION_ID_SELECT_ACCOUNT).setDescription(sAccount.name);
@@ -449,7 +448,7 @@ public class TvInputSetupActivity extends Activity {
 
         @Override
         public int onProvideTheme() {
-            return R.style.Theme_Wizard_NoSelector;
+            return R.style.Theme_Wizard_Setup_NoSelector;
         }
 
         @NonNull

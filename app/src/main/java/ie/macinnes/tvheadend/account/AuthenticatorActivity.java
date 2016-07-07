@@ -81,7 +81,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
 
         @Override
         public int onProvideTheme() {
-            return R.style.Theme_Wizard;
+            return R.style.Theme_Wizard_Account;
         }
 
         @Override
@@ -297,7 +297,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
 
         @Override
         public int onProvideTheme() {
-            return R.style.Theme_Wizard_NoSelector;
+            return R.style.Theme_Wizard_Account_NoSelector;
         }
 
         @NonNull

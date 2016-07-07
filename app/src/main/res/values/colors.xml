@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="app_guidedstep_actions_background">#C03800</color>
-    <color name="app_guidedstep_subactions_background">#C03800</color>
+    <color name="setup_wizard_actions_background">#C03800</color>
+    <color name="setup_wizard_subactions_background">#C03800</color>
+
+    <color name="account_wizard_actions_background">#311b92</color>
+    <color name="account_wizard_subactions_background">#311b92</color>
 </resources>

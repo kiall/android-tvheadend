@@ -17,11 +17,23 @@ under the License.
     <style name="AppTheme" parent="@style/Theme.Leanback"></style>
 
     <style name="Theme.Wizard" parent="Theme.Leanback.GuidedStep">
-        <item name="guidedActionsBackground">@color/app_guidedstep_actions_background</item>
-        <item name="guidedActionsBackgroundDark">@color/app_guidedstep_subactions_background</item>
     </style>
 
-    <style name="Theme.Wizard.NoSelector">
+    <style name="Theme.Wizard.Setup">
+        <item name="guidedActionsBackground">@color/setup_wizard_actions_background</item>
+        <item name="guidedActionsBackgroundDark">@color/setup_wizard_subactions_background</item>
+    </style>
+
+    <style name="Theme.Wizard.Setup.NoSelector">
+        <item name="guidedActionsSelectorDrawable">@null</item>
+    </style>
+
+    <style name="Theme.Wizard.Account">
+        <item name="guidedActionsBackground">@color/account_wizard_actions_background</item>
+        <item name="guidedActionsBackgroundDark">@color/account_wizard_subactions_background</item>
+    </style>
+
+    <style name="Theme.Wizard.Account.NoSelector">
         <item name="guidedActionsSelectorDrawable">@null</item>
     </style>
 </resources>
