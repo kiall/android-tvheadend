@@ -18,8 +18,11 @@ package ie.macinnes.tvheadend.tvinput;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.media.tv.TvTrackInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
 import android.view.Surface;
@@ -60,6 +63,24 @@ public class VlcSession extends BaseSession {
         options.add("--video-filter=deinterlace");
 
         mLibVLC = new LibVLC(options);
+
+        String userAgent = getUserAgent(mContext);
+        mLibVLC.setUserAgent(userAgent, userAgent);
+    }
+
+    public String getUserAgent(Context context) {
+        String versionName;
+
+        try {
+            String packageName = context.getPackageName();
+            PackageInfo info = context.getPackageManager().getPackageInfo(packageName, 0);
+            versionName = info.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            versionName = "?";
+        }
+
+        return "android-tvheadend/" + versionName + " (Linux;Android " + Build.VERSION.RELEASE
+                + ") VLC/" + mLibVLC.version();
     }
 
     @Override
