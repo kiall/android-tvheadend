@@ -122,8 +122,6 @@ public class TvInputSetupActivity extends Activity {
 
         @Override
         public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
-            List<GuidedAction> subActions = new ArrayList();
-
             GuidedAction action = new GuidedAction.Builder(getActivity())
                     .title("Begin")
                     .description("Start Tvheadend Live Channel Setup")
@@ -161,8 +159,6 @@ public class TvInputSetupActivity extends Activity {
 
         @Override
         public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
-            List<GuidedAction> subActions = new ArrayList();
-
             GuidedAction action = new GuidedAction.Builder(getActivity())
                     .id(ACTION_ID_SHOW_ISSUES)
                     .title("Show Issues")
@@ -493,8 +489,6 @@ public class TvInputSetupActivity extends Activity {
 
         @Override
         public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
-            List<GuidedAction> subActions = new ArrayList();
-
             GuidedAction action = new GuidedAction.Builder(getActivity())
                     .title("Complete")
                     .description("You're all set!")
@@ -526,8 +520,6 @@ public class TvInputSetupActivity extends Activity {
 
         @Override
         public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
-            List<GuidedAction> subActions = new ArrayList();
-
             GuidedAction action = new GuidedAction.Builder(getActivity())
                     .title("Complete")
                     .description("Return to the Live Channels app")
