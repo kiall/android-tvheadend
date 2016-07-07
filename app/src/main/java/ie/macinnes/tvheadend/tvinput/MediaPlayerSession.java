@@ -24,6 +24,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.util.Log;
 import android.view.Surface;
+import android.widget.Toast;
 
 import java.util.Map;
 
@@ -94,12 +95,18 @@ public class MediaPlayerSession extends BaseSession {
         // Prepare the media player
         mMediaPlayer = prepareMediaPlayer(videoUri, headers);
 
-        // Start the media playback
-        Log.d(TAG, "Starting playback of channel: " + channel.toString());
-        mMediaPlayer.start();
-        notifyVideoAvailable();
+        if (mMediaPlayer != null) {
+            // Start the media playback
+            Log.d(TAG, "Starting playback of channel: " + channel.toString());
+            mMediaPlayer.start();
+            notifyVideoAvailable();
 
-        return mMediaPlayer != null;
+            return true;
+        } else {
+            Toast.makeText(mContext, "Failed to prepare video", Toast.LENGTH_SHORT).show();
+
+            return false;
+        }
     }
 
     protected void stopPlayback() {

@@ -26,6 +26,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
 import android.view.Surface;
+import android.widget.Toast;
 
 import org.videolan.libvlc.LibVLC;
 import org.videolan.libvlc.Media;
@@ -162,11 +163,17 @@ public class VlcSession extends BaseSession {
         // Prepare the media player
         mMediaPlayer = prepareMediaPlayer(videoUri, headers);
 
-        // Start the media playback
-        Log.d(TAG, "Starting playback of channel: " + channel.toString());
-        mMediaPlayer.play();
+        if (mMediaPlayer != null) {
+            // Start the media playback
+            Log.d(TAG, "Starting playback of channel: " + channel.toString());
+            mMediaPlayer.play();
 
-        return mMediaPlayer != null;
+            return true;
+        } else {
+            Toast.makeText(mContext, "Failed to prepare video", Toast.LENGTH_SHORT).show();
+
+            return false;
+        }
     }
 
     protected void stopPlayback() {

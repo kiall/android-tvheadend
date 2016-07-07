@@ -24,6 +24,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.util.Log;
 import android.view.Surface;
+import android.widget.Toast;
 
 import com.google.android.exoplayer.ExoPlayer;
 import com.google.android.exoplayer.MediaFormat;
@@ -102,11 +103,17 @@ public class DemoPlayerSession extends BaseSession implements DemoPlayer.Listene
         // Prepare the media player
         mDemoPlayer = prepareMediaPlayer(videoUri, headers);
 
-        // Start the media playback
-        Log.d(TAG, "Starting playback of channel: " + channel.toString());
-        mDemoPlayer.setPlayWhenReady(true);
+        if (mDemoPlayer != null) {
+            // Start the media playback
+            Log.d(TAG, "Starting playback of channel: " + channel.toString());
+            mDemoPlayer.setPlayWhenReady(true);
 
-        return mDemoPlayer != null;
+            return true;
+        } else {
+            Toast.makeText(mContext, "Failed to prepare video", Toast.LENGTH_SHORT).show();
+
+            return false;
+        }
     }
 
     protected void stopPlayback() {
