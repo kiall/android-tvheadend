@@ -79,6 +79,14 @@ under the License.
             </intent-filter>
         </activity>
 
+        <activity android:name=".setup.IssuesActivity">
+        </activity>
+
+        <activity
+            android:name=".setup.VlcSetupActivity"
+            android:exported="true">
+        </activity>
+
         <service
             android:name=".tvinput.TvInputService"
             android:permission="android.permission.BIND_TV_INPUT"
@@ -125,9 +133,6 @@ under the License.
                 android:name="android.content.SyncAdapter"
                 android:resource="@xml/syncadapter"/>
         </service>
-
-        <activity android:name=".setup.IssuesActivity">
-        </activity>
     </application>
 
 </manifest>

@@ -39,4 +39,29 @@ public class Constants {
     public static final String KEY_USERNAME = "USERNAME";
     public static final String KEY_PASSWORD = "PASSWORD";
     public static final String KEY_ERROR_MESSAGE = "ERROR-MESSAGE";
+
+    // Deinterlace Preferences Keys and Values
+    public static final String KEY_DEINTERLACE_ENABLED = "DEINTERLACE-ENABLED";
+    public static final String KEY_DEINTERLACE_METHOD = "DEINTERLACE-METHOD";
+    public static final String DEINTERLACE_BLEND = "blend";
+    public static final String DEINTERLACE_MEAN = "mean";
+    public static final String DEINTERLACE_BOB = "bob";
+    public static final String DEINTERLACE_LINEAR = "linear";
+    public static final String DEINTERLACE_YADIF = "yadif";
+    public static final String DEINTERLACE_YADIF2X = "yadif2x";
+    public static final String DEINTERLACE_PHOSPHOR = "phosphor";
+    public static final String DEINTERLACE_IVTC = "ivtc";
+
+    // Scaling Preferences Keys and Values
+    public static final String KEY_SCALING_ENABLED = "SCALING-ENABLED";
+    public static final String KEY_SCALING_METHOD = "SCALING-METHOD";
+    public static final int SCALING_FAST_BILINEAR = 0;
+    public static final int SCALING_BILINEAR = 1;
+    public static final int SCALING_BICUBIC = 2;
+    public static final int SCALING_AREA = 5;
+    public static final int SCALING_LUMA_BICUBIC = 6;
+    public static final int SCALING_GAUSS = 7;
+    public static final int SCALING_SINCR = 8;
+    public static final int SCALING_LANCZOS = 9;
+    public static final int SCALING_BICUBIC_SPLINE = 10;
 }
