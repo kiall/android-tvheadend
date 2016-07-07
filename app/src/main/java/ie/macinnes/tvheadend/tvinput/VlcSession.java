@@ -207,8 +207,10 @@ public class VlcSession extends BaseSession {
         }
 
         mediaPlayer.getMedia().setHWDecoderEnabled(true, false);
-        mediaPlayer.getVLCVout().setVideoSurface(mSurface, null);
-        mediaPlayer.getVLCVout().attachViews();
+        if (mSurface != null) {
+            mediaPlayer.getVLCVout().setVideoSurface(mSurface, null);
+            mediaPlayer.getVLCVout().attachViews();
+        }
         mediaPlayer.setVolume((int) mVolume * 100);
 
         return mediaPlayer;
