@@ -106,7 +106,10 @@ public class DevTestActivity extends Activity {
             String httpPort = mAccountManager.getUserData(account, Constants.KEY_HTTP_PORT);
             appendDebugOutput("Account HTTP Port: " + httpPort);
 
-            mClient.setConnectionInfo(hostname, httpPort, username, password);
+            String httpPath = mAccountManager.getUserData(account, Constants.KEY_HTTP_PATH);
+            appendDebugOutput("Account HTTP Path: " + httpPath);
+
+            mClient.setConnectionInfo(hostname, httpPort, httpPath, username, password);
         }
 
         setOk();

@@ -36,6 +36,7 @@ public class Constants {
     public static final String KEY_APP_VERSION = "APP-VERSION";
     public static final String KEY_HOSTNAME = "HOSTNAME";
     public static final String KEY_HTTP_PORT = "HTTP-PORT";
+    public static final String KEY_HTTP_PATH = "HTTP-PATH";
     public static final String KEY_USERNAME = "USERNAME";
     public static final String KEY_PASSWORD = "PASSWORD";
     public static final String KEY_ERROR_MESSAGE = "ERROR-MESSAGE";

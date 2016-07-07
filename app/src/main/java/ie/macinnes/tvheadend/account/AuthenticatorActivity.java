@@ -94,7 +94,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
     public static class ServerFragment extends BaseGuidedStepFragment {
         private static final int ACTION_ID_HOSTNAME = 1;
         private static final int ACTION_ID_HTTP_PORT = 2;
-        private static final int ACTION_ID_NEXT = 3;
+        private static final int ACTION_ID_HTTP_PATH = 3;
+        private static final int ACTION_ID_NEXT = 4;
 
         @NonNull
         @Override
@@ -129,6 +130,19 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
             actions.add(action);
 
             action = new GuidedAction.Builder(getActivity())
+                    .id(ACTION_ID_HTTP_PATH)
+                    .title("HTTP Path Prefix")
+                    .descriptionEditInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI)
+                    .descriptionInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI)
+                    .descriptionEditable(true)
+                    .build();
+
+            actions.add(action);
+        }
+
+        @Override
+        public void onCreateButtonActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
+            GuidedAction action = new GuidedAction.Builder(getActivity())
                     .id(ACTION_ID_NEXT)
                     .title("Next")
                     .editable(false)
@@ -163,6 +177,16 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
                 }
 
                 args.putString(Constants.KEY_HTTP_PORT, httpPortAction.getDescription().toString());
+
+                // HTTP Path Field
+                GuidedAction httpPathAction = findActionById(ACTION_ID_HTTP_PATH);
+                CharSequence httpPathValue = httpPathAction.getDescription();
+
+                if (httpPathValue == null) {
+                    httpPathValue = "";
+                }
+
+                args.putString(Constants.KEY_HTTP_PATH, httpPathAction.getDescription().toString());
 
                 // Move to the next setup
                 GuidedStepFragment fragment = new AccountFragment();
@@ -208,8 +232,11 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
                     .build();
 
             actions.add(action);
+        }
 
-            action = new GuidedAction.Builder(getActivity())
+        @Override
+        public void onCreateButtonActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
+            GuidedAction action = new GuidedAction.Builder(getActivity())
                     .id(ACTION_ID_ADD_ACCOUNT)
                     .title("Finish")
                     .editable(false)
@@ -304,6 +331,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
             final String accountPassword = args.getString(Constants.KEY_PASSWORD);
             final String accountHostname = args.getString(Constants.KEY_HOSTNAME);
             final String accountHttpPort = args.getString(Constants.KEY_HTTP_PORT);
+            final String accountHttpPath = args.getString(Constants.KEY_HTTP_PATH);
 
             // Validate the User and Pass by connecting to TVHeadend
             Response.Listener<JSONObject> listener = new Response.Listener<JSONObject>() {
@@ -367,7 +395,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
 
             TVHClient client = TVHClient.getInstance(getActivity());
 
-            client.setConnectionInfo(accountHostname, accountHttpPort, accountName, accountPassword);
+            client.setConnectionInfo(accountHostname, accountHttpPort, accountHttpPath, accountName, accountPassword);
 
             client.getServerInfo(listener, errorListener);
         }

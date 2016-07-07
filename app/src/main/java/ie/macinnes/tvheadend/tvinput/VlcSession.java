@@ -155,10 +155,17 @@ public class VlcSession extends BaseSession {
         String password = accountManager.getPassword(account);
         String hostname = accountManager.getUserData(account, Constants.KEY_HOSTNAME);
         String httpPort = accountManager.getUserData(account, Constants.KEY_HTTP_PORT);
+        String httpPath = accountManager.getUserData(account, Constants.KEY_HTTP_PATH);
 
         // Create authentication headers and streamUri
         Map<String, String> headers = ClientUtils.createBasicAuthHeader(username, password);
-        Uri videoUri = Uri.parse("http://" + username + ":" + password + "@" + hostname + ":" + httpPort + "/stream/channel/" + channelUuid + "?profile=tif");
+        Uri videoUri;
+
+        if (httpPath == null) {
+            videoUri = Uri.parse("http://" + username + ":" + password + "@" + hostname + ":" + httpPort + "/stream/channel/" + channelUuid + "?profile=tif");
+        } else {
+            videoUri = Uri.parse("http://" + username + ":" + password + "@" + hostname + ":" + httpPort + "/" + httpPath + "/stream/channel/" + channelUuid + "?profile=tif");
+        }
 
         // Prepare the media player
         mMediaPlayer = prepareMediaPlayer(videoUri, headers);

@@ -45,6 +45,7 @@ public class TVHClient {
 
     private String mAccountHostname;
     private String mAccountPort;
+    private String mAccountPath;
     private String mAccountName;
     private String mAccountPassword;
 
@@ -67,13 +68,15 @@ public class TVHClient {
         String password = accountManager.getPassword(account);
         String hostname = accountManager.getUserData(account, Constants.KEY_HOSTNAME);
         String port = accountManager.getUserData(account, Constants.KEY_HTTP_PORT);
+        String path = accountManager.getUserData(account, Constants.KEY_HTTP_PATH);
 
-        setConnectionInfo(hostname, port, account.name, password);
+        setConnectionInfo(hostname, port, path, account.name, password);
     }
 
-    public void setConnectionInfo(String accountHostname, String accountPort, String accountName, String accountPassword) {
+    public void setConnectionInfo(String accountHostname, String accountPort, String accountPath, String accountName, String accountPassword) {
         mAccountHostname = accountHostname;
         mAccountPort = accountPort;
+        mAccountPath = accountPath;
         mAccountName = accountName;
         mAccountPassword = accountPassword;
     }
@@ -85,10 +88,19 @@ public class TVHClient {
         return mRequestQueue;
     }
 
+    public String getBaseHttpUri() {
+        if (mAccountPath == null) {
+            return "http://" + mAccountHostname + ":" + mAccountPort;
+        } else {
+            return "http://" + mAccountHostname + ":" + mAccountPort + "/" + mAccountPath;
+        }
+
+    }
+
     public void getServerInfo(Response.Listener<JSONObject> listener, Response.ErrorListener errorListener) {
         Log.d(TAG, "Calling getServerInfo");
 
-        String url = "http://" + mAccountHostname + ":" + mAccountPort + "/api/serverinfo";
+        String url = getBaseHttpUri() + "/api/serverinfo";
 
         JsonObjectRequest jsObjRequest = new JsonObjectRequest(
                 Request.Method.GET, url, null, listener, errorListener, mAccountName, mAccountPassword);
@@ -107,7 +119,7 @@ public class TVHClient {
     public void getProfileList(Response.Listener<KeyValList> listener, Response.ErrorListener errorListener) {
         Log.d(TAG, "Calling getProfileList");
 
-        String url = "http://" + mAccountHostname + ":" + mAccountPort + "/api/profile/list";
+        String url = getBaseHttpUri() + "/api/profile/list";
 
         GsonRequest<KeyValList> request = new GsonRequest<KeyValList>(
                 Request.Method.GET, url, KeyValList.class, listener, errorListener, mAccountName, mAccountPassword);
@@ -126,7 +138,7 @@ public class TVHClient {
     public void getChannelGrid(Response.Listener<ChannelList> listener, Response.ErrorListener errorListener) {
         Log.d(TAG, "Calling getChannelGrid");
 
-        String url = "http://" + mAccountHostname + ":" + mAccountPort + "/api/channel/grid?limit=10000";
+        String url = getBaseHttpUri() + "/api/channel/grid?limit=10000";
 
         GsonRequest<ChannelList> request = new GsonRequest<ChannelList>(
                 Request.Method.GET, url, ChannelList.class, listener, errorListener, mAccountName, mAccountPassword);
@@ -145,7 +157,7 @@ public class TVHClient {
     public void getChannelIcon(Response.Listener<Bitmap> listener, Response.ErrorListener errorListener, String channelIconPath) {
         Log.d(TAG, "Calling getChannelIcon");
 
-        String url = "http://" + mAccountHostname + ":" + mAccountPort + "/" + channelIconPath;
+        String url = getBaseHttpUri() + channelIconPath;
 
         ImageRequest request = new ImageRequest(
                 url, listener, errorListener, mAccountName, mAccountPassword);
@@ -164,7 +176,7 @@ public class TVHClient {
     public void getEventGrid(Response.Listener<EventList> listener, Response.ErrorListener errorListener, String channelUuid) {
         Log.d(TAG, "Calling getEventGrid for channel: " + channelUuid);
 
-        String url = "http://" + mAccountHostname + ":" + mAccountPort + "/api/epg/events/grid?limit=10000&channel=" + channelUuid;
+        String url = getBaseHttpUri() + "/api/epg/events/grid?limit=10000&channel=" + channelUuid;
 
         GsonRequest<EventList> request = new GsonRequest<EventList>(
                 Request.Method.GET, url, EventList.class, listener, errorListener, mAccountName, mAccountPassword);
