@@ -50,6 +50,8 @@ public class SyncUtils {
 
     public static void requestSync(Account account) {
         Log.d(TAG, "Requesting immediate sync for account: " + account.toString());
+        ContentResolver.setIsSyncable(account, Constants.CONTENT_AUTHORITY, 1);
+
         Bundle bundle = new Bundle();
 
         bundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
