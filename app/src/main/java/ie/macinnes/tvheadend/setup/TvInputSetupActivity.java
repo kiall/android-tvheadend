@@ -75,7 +75,7 @@ public class TvInputSetupActivity extends Activity {
 
             String inputId = getActivity().getIntent().getStringExtra(TvInputInfo.EXTRA_INPUT_ID);
 
-            if (inputId != null && ! inputId.equals(TvContractUtils.getInputId())) {
+            if (!inputId.equals(TvContractUtils.getInputId())) {
                 // Ensure the provided ID matches what we expect, as we only have a single input.
                 throw new RuntimeException(
                         "Setup Activity called for unknown inputId: " + inputId + " (expected: " + TvContractUtils.getInputId() + ")");
@@ -500,36 +500,6 @@ public class TvInputSetupActivity extends Activity {
         @Override
         public void onGuidedActionClicked(GuidedAction action) {
             getActivity().setResult(Activity.RESULT_OK);
-            getActivity().finish();
-        }
-    }
-
-    public static class FailedFragment extends BaseGuidedStepFragment {
-        @NonNull
-        @Override
-        public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
-            GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
-                    "Setup Failed",
-                    ":(",
-                    "TVHeadend",
-                    null);
-
-            return guidance;
-        }
-
-        @Override
-        public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
-            GuidedAction action = new GuidedAction.Builder(getActivity())
-                    .title("Complete")
-                    .description("Return to the Live Channels app")
-                    .editable(false)
-                    .build();
-
-            actions.add(action);
-        }
-
-        @Override
-        public void onGuidedActionClicked(GuidedAction action) {
             getActivity().finish();
         }
     }

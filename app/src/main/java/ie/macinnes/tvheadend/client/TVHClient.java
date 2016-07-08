@@ -94,7 +94,6 @@ public class TVHClient {
         } else {
             return "http://" + mAccountHostname + ":" + mAccountPort + "/" + mAccountPath;
         }
-
     }
 
     public void getServerInfo(Response.Listener<JSONObject> listener, Response.ErrorListener errorListener) {

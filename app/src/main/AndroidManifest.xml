@@ -64,33 +64,40 @@ under the License.
         android:theme="@style/Theme.Leanback">
 
         <!--
+             Redirects the user to the Input Setup (on N+) or Live Channels app (pre-N)
+        -->
+        <activity
+            android:name=".MainActivity"
+            android:icon="@mipmap/ic_tv_service"
+            android:label="@string/app_name">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+        <!--
              Launched by the TV app before it uses RichTvInputService. This registers channels and
              sets up SyncJobService to provide program information in the background.
         -->
         <activity
             android:name=".setup.TvInputSetupActivity"
-            android:label="TVHeadend"
-            android:theme="@style/Theme.Leanback"
-            android:icon="@mipmap/ic_tv_service">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-
-                <category android:name="android.intent.category.LEANBACK_LAUNCHER"/>
-            </intent-filter>
+            android:icon="@mipmap/ic_tv_service"
+            android:label="@string/app_name"
+            android:exported="true">
         </activity>
 
         <activity android:name=".setup.IssuesActivity">
         </activity>
 
-        <activity
-            android:name=".setup.VlcSetupActivity"
-            android:exported="true">
+        <activity android:name=".setup.VlcSetupActivity">
         </activity>
 
         <service
             android:name=".tvinput.TvInputService"
-            android:permission="android.permission.BIND_TV_INPUT"
-            android:icon="@mipmap/ic_tv_service">
+            android:icon="@mipmap/ic_tv_service"
+            android:permission="android.permission.BIND_TV_INPUT">
 
             <!-- Required filter used by the system to launch our TV service. -->
             <intent-filter>
@@ -125,6 +132,7 @@ under the License.
             android:name=".sync.SyncService"
             android:exported="true"
             android:process=":sync">
+
             <intent-filter>
                 <action android:name="android.content.SyncAdapter"/>
             </intent-filter>
@@ -133,6 +141,7 @@ under the License.
                 android:name="android.content.SyncAdapter"
                 android:resource="@xml/syncadapter"/>
         </service>
+
     </application>
 
 </manifest>
