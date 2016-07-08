@@ -157,7 +157,7 @@ public class TVHClient {
     public void getChannelIcon(Response.Listener<Bitmap> listener, Response.ErrorListener errorListener, String channelIconPath) {
         Log.d(TAG, "Calling getChannelIcon");
 
-        String url = getBaseHttpUri() + channelIconPath;
+        String url = getBaseHttpUri() + "/" + channelIconPath;
 
         ImageRequest request = new ImageRequest(
                 url, listener, errorListener, mAccountName, mAccountPassword);
