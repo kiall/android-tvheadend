@@ -39,6 +39,9 @@ import ie.macinnes.tvheadend.Constants;
 public class TVHClient {
     private static final String TAG = TVHClient.class.getName();
 
+    private static final int DEFAULT_CHANNEL_LIMIT = 10000;
+    private static final int DEFAULT_EVENT_LIMIT = 10000;
+
     private static TVHClient sInstance;
     private final Context mContext;
     private RequestQueue mRequestQueue;
@@ -134,10 +137,10 @@ public class TVHClient {
         return future.get(mTimeout, TimeUnit.SECONDS);
     }
 
-    public void getChannelGrid(Response.Listener<ChannelList> listener, Response.ErrorListener errorListener) {
+    public void getChannelGrid(Response.Listener<ChannelList> listener, Response.ErrorListener errorListener, int channelLimit) {
         Log.d(TAG, "Calling getChannelGrid");
 
-        String url = getBaseHttpUri() + "/api/channel/grid?limit=10000";
+        String url = getBaseHttpUri() + "/api/channel/grid?limit=" + Integer.toString(channelLimit);
 
         GsonRequest<ChannelList> request = new GsonRequest<ChannelList>(
                 Request.Method.GET, url, ChannelList.class, listener, errorListener, mAccountName, mAccountPassword);
@@ -145,12 +148,20 @@ public class TVHClient {
         getRequestQueue().add(request);
     }
 
-    public ChannelList getChannelGrid() throws InterruptedException, ExecutionException, TimeoutException {
+    public void getChannelGrid(Response.Listener<ChannelList> listener, Response.ErrorListener errorListener) {
+        getChannelGrid(listener, errorListener, DEFAULT_CHANNEL_LIMIT);
+    }
+
+    public ChannelList getChannelGrid(int channelLimit) throws InterruptedException, ExecutionException, TimeoutException {
         RequestFuture<ChannelList> future = RequestFuture.newFuture();
 
-        getChannelGrid(future, future);
+        getChannelGrid(future, future, channelLimit);
 
         return future.get(mTimeout, TimeUnit.SECONDS);
+    }
+
+    public ChannelList getChannelGrid() throws InterruptedException, ExecutionException, TimeoutException {
+        return getChannelGrid(DEFAULT_CHANNEL_LIMIT);
     }
 
     public void getChannelIcon(Response.Listener<Bitmap> listener, Response.ErrorListener errorListener, String channelIconPath) {
@@ -172,10 +183,10 @@ public class TVHClient {
         return future.get(mTimeout, TimeUnit.SECONDS);
     }
 
-    public void getEventGrid(Response.Listener<EventList> listener, Response.ErrorListener errorListener, String channelUuid) {
+    public void getEventGrid(Response.Listener<EventList> listener, Response.ErrorListener errorListener, String channelUuid, int eventLimit) {
         Log.d(TAG, "Calling getEventGrid for channel: " + channelUuid);
 
-        String url = getBaseHttpUri() + "/api/epg/events/grid?limit=10000&channel=" + channelUuid;
+        String url = getBaseHttpUri() + "/api/epg/events/grid?limit=" + Integer.toString(eventLimit) + "&channel=" + channelUuid;
 
         GsonRequest<EventList> request = new GsonRequest<EventList>(
                 Request.Method.GET, url, EventList.class, listener, errorListener, mAccountName, mAccountPassword);
@@ -183,14 +194,21 @@ public class TVHClient {
         getRequestQueue().add(request);
     }
 
-    public EventList getEventGrid(String channelUuid) throws InterruptedException, ExecutionException, TimeoutException {
+    public void getEventGrid(Response.Listener<EventList> listener, Response.ErrorListener errorListener, String channelUuid) {
+        getEventGrid(listener, errorListener, channelUuid, DEFAULT_EVENT_LIMIT);
+    }
+
+    public EventList getEventGrid(String channelUuid, int eventLimit) throws InterruptedException, ExecutionException, TimeoutException {
         RequestFuture<EventList> future = RequestFuture.newFuture();
 
-        getEventGrid(future, future, channelUuid);
+        getEventGrid(future, future, channelUuid, eventLimit);
 
         return future.get(mTimeout, TimeUnit.SECONDS);
     }
 
+    public EventList getEventGrid(String channelUuid) throws InterruptedException, ExecutionException, TimeoutException {
+        return getEventGrid(channelUuid, DEFAULT_EVENT_LIMIT);
+    }
 
     public static class KeyVal {
         public String key;
