@@ -40,7 +40,8 @@ public class TVHClient {
     private static final String TAG = TVHClient.class.getName();
 
     private static final int DEFAULT_CHANNEL_LIMIT = 10000;
-    private static final int DEFAULT_EVENT_LIMIT = 10000;
+    public static final int DEFAULT_EVENT_LIMIT = 1000;
+    public static final int QUICK_EVENT_LIMIT = 10;
 
     private static TVHClient sInstance;
     private final Context mContext;

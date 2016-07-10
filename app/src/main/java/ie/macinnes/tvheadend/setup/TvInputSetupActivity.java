@@ -431,7 +431,7 @@ public class TvInputSetupActivity extends Activity {
             super.onStart();
 
             // Force a EPG sync
-            SyncUtils.requestSync(sAccount);
+            SyncUtils.requestSync(sAccount, true);
         }
 
         @Override

@@ -48,7 +48,7 @@ public class SyncUtils {
         ContentResolver.removePeriodicSync(account, Constants.CONTENT_AUTHORITY, bundle);
     }
 
-    public static void requestSync(Account account) {
+    public static void requestSync(Account account, boolean quickSync) {
         Log.d(TAG, "Requesting immediate sync for account: " + account.toString());
         ContentResolver.setIsSyncable(account, Constants.CONTENT_AUTHORITY, 1);
 
@@ -56,7 +56,12 @@ public class SyncUtils {
 
         bundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
         bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+        bundle.putBoolean(Constants.SYNC_EXTRAS_QUICK, quickSync);
 
         ContentResolver.requestSync(account, Constants.CONTENT_AUTHORITY, bundle);
+    }
+
+    public static void requestSync(Account account) {
+        requestSync(account, false);
     }
 }

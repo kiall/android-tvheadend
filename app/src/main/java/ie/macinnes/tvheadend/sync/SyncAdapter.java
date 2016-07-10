@@ -22,7 +22,6 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SyncResult;
-import android.database.Cursor;
 import android.media.tv.TvContract;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -46,6 +45,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.TvContractUtils;
 import ie.macinnes.tvheadend.client.TVHClient;
 import ie.macinnes.tvheadend.model.Channel;
@@ -147,7 +147,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
 
         // Sync Programs
-        if (!syncPrograms()) {
+        final boolean quickSync = extras.getBoolean(Constants.SYNC_EXTRAS_QUICK, false);
+        if (!syncPrograms(quickSync)) {
             return;
         }
 
@@ -252,7 +253,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         return true;
     }
 
-    private boolean syncPrograms() {
+    private boolean syncPrograms(final boolean quickSync) {
         Log.d(TAG, "Starting program sync");
 
         // Gather the list of channels from TvProvider
@@ -271,7 +272,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         final CountDownLatch countDownLatch = new CountDownLatch(channelList.size());
 
         for (Channel channel : channelList) {
-            updateChannelPrograms(countDownLatch, channel);
+            updateChannelPrograms(countDownLatch, channel, quickSync);
         }
 
         // Wait for all tasks to finish
@@ -286,13 +287,21 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         return true;
     }
 
-    private boolean updateChannelPrograms(final CountDownLatch countDownLatch, final Channel channel) {
+    private boolean updateChannelPrograms(final CountDownLatch countDownLatch, final Channel channel, final boolean quickSync) {
         Log.d(TAG, "Fetching events for channel " + channel.toString());
 
         TVHClient.EventList eventList;
 
+        String channelUuid = channel.getInternalProviderData().getUuid();
+
         try {
-            eventList = mClient.getEventGrid(channel.getInternalProviderData().getUuid());
+            if (quickSync) {
+                // Used by the Setup Wizard, we do a quick sync in the forground, then a full sync
+                // in the background.
+                eventList = mClient.getEventGrid(channelUuid, TVHClient.QUICK_EVENT_LIMIT);
+            } else {
+                eventList = mClient.getEventGrid(channelUuid);
+            }
         } catch (InterruptedException|ExecutionException e) {
             // Something went wrong
             Log.w(TAG, "Failed to fetch event list from server: " + e.getLocalizedMessage(), e);
