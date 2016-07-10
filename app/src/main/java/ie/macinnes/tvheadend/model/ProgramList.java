@@ -14,6 +14,7 @@ under the License.
 */
 package ie.macinnes.tvheadend.model;
 
+import android.accounts.Account;
 import android.database.Cursor;
 
 import java.util.ArrayList;
@@ -35,11 +36,11 @@ public class ProgramList extends ArrayList<Program> {
         return programList;
     }
 
-    public static ProgramList fromClientEventList(TVHClient.EventList clientEventList, long channelId) {
+    public static ProgramList fromClientEventList(TVHClient.EventList clientEventList, long channelId, Account account) {
         ProgramList programList = new ProgramList();
 
         for (TVHClient.Event event: clientEventList.entries) {
-            programList.add(Program.fromClientEvent(event, channelId));
+            programList.add(Program.fromClientEvent(event, channelId, account));
         }
 
         return programList;

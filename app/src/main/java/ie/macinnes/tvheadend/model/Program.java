@@ -14,6 +14,7 @@ under the License.
 */
 package ie.macinnes.tvheadend.model;
 
+import android.accounts.Account;
 import android.annotation.TargetApi;
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -205,7 +206,7 @@ public class Program implements Comparable<Program> {
         return program;
     }
 
-    public static Program fromClientEvent(TVHClient.Event clientEvent, long channelId) {
+    public static Program fromClientEvent(TVHClient.Event clientEvent, long channelId, Account account) {
         Program program = new Program();
 
         // Set the provided channelId
@@ -235,6 +236,7 @@ public class Program implements Comparable<Program> {
         InternalProviderData providerData = new InternalProviderData();
 
         providerData.setEventId(clientEvent.eventId);
+        providerData.setAccountName(account.name);
 
         program.setInternalProviderData(providerData);
 
@@ -255,7 +257,8 @@ public class Program implements Comparable<Program> {
                 .append(", startTimeUtcSec=").append(mStartTimeUtcMillis)
                 .append(", endTimeUtcSec=").append(mEndTimeUtcMillis)
                 .append(", seasonDisplayNumber=").append(mSeasonDisplayNumber)
-                .append(", episodeDisplayNumber=").append(mEpisodeDisplayNumber);
+                .append(", episodeDisplayNumber=").append(mEpisodeDisplayNumber)
+                .append(", ipd=").append(mInternalProviderData.toString());
 
         return builder.append(">").toString();
     }
@@ -368,6 +371,7 @@ public class Program implements Comparable<Program> {
     public static class InternalProviderData {
         // TODO: Replace with gson store
         private String mEventId;
+        private String mAccountName;
 
         public static InternalProviderData fromString(String string) {
             InternalProviderData providerData = new InternalProviderData();
@@ -375,11 +379,15 @@ public class Program implements Comparable<Program> {
 
             providerData.mEventId = parts[0];
 
+            if (parts.length == 2) {
+                providerData.mAccountName = parts[1];
+            }
+
             return providerData;
         }
 
         public String toString() {
-            return mEventId;
+            return mEventId + ":" + mAccountName;
         }
 
         public String getEventId() {
@@ -390,13 +398,21 @@ public class Program implements Comparable<Program> {
             mEventId = eventId;
         }
 
+        public String getAccountName() {
+            return mAccountName;
+        }
+
+        public void setAccountName(String accountName) {
+            mAccountName = accountName;
+        }
+
         @Override
         public boolean equals(Object other) {
             if (!(other instanceof InternalProviderData)) {
                 return false;
             }
             InternalProviderData providerData = (InternalProviderData) other;
-            return mEventId.equals(providerData.mEventId);
+            return mEventId.equals(providerData.mEventId) && mAccountName.equals(providerData.mAccountName);
         }
     }
 }

@@ -14,6 +14,7 @@ under the License.
 */
 package ie.macinnes.tvheadend.model;
 
+import android.accounts.Account;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.media.tv.TvContract;
@@ -182,7 +183,7 @@ public class Channel implements Comparable<Channel> {
         return channel;
     }
 
-    public static Channel fromClientChannel(TVHClient.Channel clientChannel) {
+    public static Channel fromClientChannel(TVHClient.Channel clientChannel, Account account) {
         Channel channel = new Channel();
 
         // Set the provided inputId
@@ -203,6 +204,7 @@ public class Channel implements Comparable<Channel> {
         InternalProviderData providerData = new InternalProviderData();
 
         providerData.setUuid(clientChannel.uuid);
+        providerData.setAccountName(account.name);
 
         channel.setInternalProviderData(providerData);
 
@@ -222,7 +224,8 @@ public class Channel implements Comparable<Channel> {
                 .append(", description=").append(mDescription)
                 .append(", originalNetworkId=").append(mOriginalNetworkId)
                 .append(", transportStreamId=").append(mTransportStreamId)
-                .append(", serviceId=").append(mServiceId);
+                .append(", serviceId=").append(mServiceId)
+                .append(", ipd=").append(mInternalProviderData.toString());
 
         return builder.append(">").toString();
     }
@@ -285,6 +288,7 @@ public class Channel implements Comparable<Channel> {
     public static class InternalProviderData {
         // TODO: Replace with gson store
         private String mUuid;
+        private String mAccountName;
 
         public static InternalProviderData fromString(String string) {
             InternalProviderData providerData = new InternalProviderData();
@@ -292,11 +296,15 @@ public class Channel implements Comparable<Channel> {
 
             providerData.mUuid = parts[0];
 
+            if (parts.length == 2) {
+                providerData.mAccountName = parts[1];
+            }
+
             return providerData;
         }
 
         public String toString() {
-            return mUuid;
+            return mUuid + ":" + mAccountName;
         }
 
         public String getUuid() {
@@ -305,6 +313,23 @@ public class Channel implements Comparable<Channel> {
 
         public void setUuid(String uuid) {
             mUuid = uuid;
+        }
+
+        public String getAccountName() {
+            return mAccountName;
+        }
+
+        public void setAccountName(String accountName) {
+            mAccountName = accountName;
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (!(other instanceof InternalProviderData)) {
+                return false;
+            }
+            InternalProviderData providerData = (InternalProviderData) other;
+            return mUuid.equals(providerData.mUuid) && mAccountName.equals(providerData.mAccountName);
         }
     }
 }

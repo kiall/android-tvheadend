@@ -14,6 +14,7 @@ under the License.
 */
 package ie.macinnes.tvheadend.model;
 
+import android.accounts.Account;
 import android.database.Cursor;
 
 import java.util.ArrayList;
@@ -38,11 +39,11 @@ public class ChannelList extends ArrayList<Channel> {
         return channelList;
     }
 
-    public static ChannelList fromClientChannelList(TVHClient.ChannelList clientChannelList) {
+    public static ChannelList fromClientChannelList(TVHClient.ChannelList clientChannelList, Account account) {
         ChannelList channelList = new ChannelList();
 
         for (TVHClient.Channel channel : clientChannelList.entries) {
-            channelList.add(Channel.fromClientChannel(channel));
+            channelList.add(Channel.fromClientChannel(channel, account));
         }
 
         return channelList;

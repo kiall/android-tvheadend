@@ -17,6 +17,7 @@
 package ie.macinnes.tvheadend.tasks;
 
 
+import android.accounts.Account;
 import android.content.ContentProviderOperation;
 import android.content.Context;
 import android.content.OperationApplicationException;
@@ -39,15 +40,17 @@ public class SyncProgramsTask extends AsyncTask<TVHClient.EventList, Void, Boole
 
     private final Context mContext;
     private final Channel mChannel;
+    private final Account mAccount;
 
     private int mAdditions = 0;
     private int mUpdates = 0;
     private int mDeletions = 0;
     private int mNochange = 0;
 
-    protected SyncProgramsTask(Context context, Channel channel) {
+    protected SyncProgramsTask(Context context, Channel channel, Account account) {
         mContext = context;
         mChannel = channel;
+        mAccount = account;
     }
 
     @Override
@@ -63,7 +66,7 @@ public class SyncProgramsTask extends AsyncTask<TVHClient.EventList, Void, Boole
                 return false;
             }
 
-            ProgramList programList = ProgramList.fromClientEventList(eventList, mChannel.getId());
+            ProgramList programList = ProgramList.fromClientEventList(eventList, mChannel.getId(), mAccount);
 
             // Update the programs in the DB
             updatePrograms(programList);

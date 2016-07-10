@@ -137,7 +137,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
 
         // Sync Channels
-        if (!syncChannels()) {
+        if (!syncChannels(account)) {
             return;
         }
 
@@ -148,7 +148,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
         // Sync Programs
         final boolean quickSync = extras.getBoolean(Constants.SYNC_EXTRAS_QUICK, false);
-        if (!syncPrograms(quickSync)) {
+        if (!syncPrograms(account, quickSync)) {
             return;
         }
 
@@ -156,13 +156,13 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         Log.d(TAG, "Completed sync for account: " + account.toString());
     }
 
-    private boolean syncChannels() {
+    private boolean syncChannels(final Account account) {
         Log.d(TAG, "Starting channel sync");
 
         ChannelList channelList;
 
         try {
-            channelList = ChannelList.fromClientChannelList(mClient.getChannelGrid());
+            channelList = ChannelList.fromClientChannelList(mClient.getChannelGrid(), account);
         } catch (InterruptedException|ExecutionException e) {
             // Something went wrong
             Log.w(TAG, "Failed to fetch channel list from server: " + e.getLocalizedMessage(), e);
@@ -253,7 +253,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         return true;
     }
 
-    private boolean syncPrograms(final boolean quickSync) {
+    private boolean syncPrograms(final Account account, final boolean quickSync) {
         Log.d(TAG, "Starting program sync");
 
         // Gather the list of channels from TvProvider
@@ -272,7 +272,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         final CountDownLatch countDownLatch = new CountDownLatch(channelList.size());
 
         for (Channel channel : channelList) {
-            updateChannelPrograms(countDownLatch, channel, quickSync);
+            updateChannelPrograms(account, countDownLatch, channel, quickSync);
         }
 
         // Wait for all tasks to finish
@@ -287,7 +287,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         return true;
     }
 
-    private boolean updateChannelPrograms(final CountDownLatch countDownLatch, final Channel channel, final boolean quickSync) {
+    private boolean updateChannelPrograms(final Account account, final CountDownLatch countDownLatch, final Channel channel, final boolean quickSync) {
         Log.d(TAG, "Fetching events for channel " + channel.toString());
 
         TVHClient.EventList eventList;
@@ -313,7 +313,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
 
         // Prepare the SyncProgramsTask
-        final SyncProgramsTask syncProgramsTask = new SyncProgramsTask(mContext, channel) {
+        final SyncProgramsTask syncProgramsTask = new SyncProgramsTask(mContext, channel, account) {
             @Override
             protected void onPostExecute(Boolean completed) {
                 mPendingTasks.remove(this);
