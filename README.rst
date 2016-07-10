@@ -9,7 +9,7 @@ Sign up for Beta access:
 2. Join the beta on Google Play: https://play.google.com/apps/testing/ie.macinnes.tvheadend
 3. Download from Google Play: https://play.google.com/store/apps/details?id=ie.macinnes.tvheadend
 
-.. image:: https://travis-ci.org/kiall/android-tvheadend.svg
+.. image:: https://travis-ci.org/kiall/android-tvheadend.svg?branch=develop
    :target: https://travis-ci.org/kiall/android-tvheadend
 
 .. image:: screenshots/TVH-1.png
