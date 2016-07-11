@@ -318,6 +318,8 @@ public class TvInputSetupActivity extends Activity {
         private static final int ACTION_ID_EXO_PLAYER = 2;
         private static final int ACTION_ID_VLC = 3;
 
+        private static final int REQUEST_SESSION_SETUP = 100;
+
         @NonNull
         @Override
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
@@ -382,10 +384,27 @@ public class TvInputSetupActivity extends Activity {
             editor.putString(Constants.KEY_SESSION, session);
             editor.commit();
 
-            // Move onto the next step
-            GuidedStepFragment fragment = new SyncingFragment();
-            fragment.setArguments(getArguments());
-            add(getFragmentManager(), fragment);
+            if (session == Constants.SESSION_VLC) {
+                Intent i = new Intent(getActivity(), VlcSetupActivity.class);
+                startActivityForResult(i, REQUEST_SESSION_SETUP);
+            } else {
+                // Move onto the next step
+                GuidedStepFragment fragment = new SyncingFragment();
+                fragment.setArguments(getArguments());
+                add(getFragmentManager(), fragment);
+            }
+        }
+
+        @Override
+        public void onActivityResult(int requestCode, int resultCode, Intent data) {
+            if (requestCode == REQUEST_SESSION_SETUP) {
+                // Move onto the next step
+                GuidedStepFragment fragment = new SyncingFragment();
+                fragment.setArguments(getArguments());
+                add(getFragmentManager(), fragment);
+            } else {
+                throw new RuntimeException("Response for unknown request code received: " + requestCode);
+            }
         }
     }
 
