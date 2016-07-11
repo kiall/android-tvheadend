@@ -22,6 +22,7 @@ import android.support.annotation.NonNull;
 import android.support.v17.leanback.app.GuidedStepFragment;
 import android.support.v17.leanback.widget.GuidanceStylist;
 import android.support.v17.leanback.widget.GuidedAction;
+import android.text.InputType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,10 +91,21 @@ public class VlcSetupActivity extends Activity {
         private static final int ACTION_ID_SCALING_BICUBIC_SPLINE = 309;
         private static final int ACTION_ID_SCALING_DISABLE = 399;
 
+        // Hardware Acceleration are 4xx
+        private static final int ACTION_ID_SELECT_HW_ACCEL = 4;
+        private static final int ACTION_ID_HW_ACCEL_AUTOMATIC = 401;
+        private static final int ACTION_ID_HW_ACCEL_ENABLED = 402;
+        private static final int ACTION_ID_HW_ACCEL_DISABLED = 403;
+
+        // Network Buffering
+        private static final int ACTION_ID_SELECT_NETWORK_BUFFER = 5;
+
         private Boolean mDeinterlace = false;
         private String mDeinterlaceMethod;
         private Boolean mScaling = false;
         private int mScalingMethod;
+        private int mHwAccelMethod;
+        private int mNetworkBuffer;
 
         @NonNull
         @Override
@@ -128,6 +140,29 @@ public class VlcSetupActivity extends Activity {
             actions.add(action);
 
             action = new GuidedAction.Builder(getActivity())
+                    .id(ACTION_ID_SELECT_HW_ACCEL)
+                    .title("Hardware Acceleration")
+                    .description("Choose a hardware acceleration mode")
+                    .subActions(createHardwareAccelerationSubActions())
+                    .build();
+
+            actions.add(action);
+
+            action = new GuidedAction.Builder(getActivity())
+                    .id(ACTION_ID_SELECT_NETWORK_BUFFER)
+                    .title("Network Buffering (in ms)")
+                    .descriptionEditInputType(InputType.TYPE_CLASS_NUMBER)
+                    .descriptionInputType(InputType.TYPE_CLASS_NUMBER)
+                    .descriptionEditable(true)
+                    .editDescription("2000")
+                    .build();
+
+            actions.add(action);
+        }
+
+        @Override
+        public void onCreateButtonActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
+            GuidedAction action = new GuidedAction.Builder(getActivity())
                     .id(ACTION_ID_CONFIRM)
                     .title("Confirm")
                     .build();
@@ -300,6 +335,36 @@ public class VlcSetupActivity extends Activity {
             return actions;
         }
 
+        protected List<GuidedAction> createHardwareAccelerationSubActions() {
+            List<GuidedAction> actions = new ArrayList();
+
+            GuidedAction action = new GuidedAction.Builder(getActivity())
+                    .id(ACTION_ID_HW_ACCEL_AUTOMATIC)
+                    .title("Automatic")
+                    .checkSetId(GuidedAction.DEFAULT_CHECK_SET_ID)
+                    .build();
+
+            actions.add(action);
+
+            action = new GuidedAction.Builder(getActivity())
+                    .id(ACTION_ID_HW_ACCEL_ENABLED)
+                    .title("Enabled")
+                    .checkSetId(GuidedAction.DEFAULT_CHECK_SET_ID)
+                    .build();
+
+            actions.add(action);
+
+            action = new GuidedAction.Builder(getActivity())
+                    .id(ACTION_ID_HW_ACCEL_DISABLED)
+                    .title("Disabled")
+                    .checkSetId(GuidedAction.DEFAULT_CHECK_SET_ID)
+                    .build();
+
+            actions.add(action);
+
+            return actions;
+        }
+
         @Override
         public boolean onSubGuidedActionClicked(GuidedAction action) {
             long actionId = action.getId();
@@ -371,6 +436,20 @@ public class VlcSetupActivity extends Activity {
                     // Unknown method
                     throw new RuntimeException("Unknown scaling method selected");
                 }
+            } else if (actionId >= 400 && actionId <= 499) {
+                // A HW accel method was chosen
+                if (action.getId() == ACTION_ID_HW_ACCEL_AUTOMATIC) {
+                    mHwAccelMethod = Constants.HW_ACCEL_AUTOMATIC;
+                } else if (action.getId() == ACTION_ID_HW_ACCEL_ENABLED) {
+                    mHwAccelMethod = Constants.HW_ACCEL_ENABLED;
+                }  else if (action.getId() == ACTION_ID_HW_ACCEL_DISABLED) {
+                    mHwAccelMethod = Constants.HW_ACCEL_DISABLED;
+                } else {
+                    // Unknown method
+                    throw new RuntimeException("Unknown hardware acceleration mode selected");
+                }
+            } else if (actionId == ACTION_ID_SELECT_NETWORK_BUFFER) {
+                mNetworkBuffer = Integer.parseInt(action.getDescription().toString());
             }
 
             if (action.isChecked()) {
@@ -391,6 +470,10 @@ public class VlcSetupActivity extends Activity {
 
                 editor.putBoolean(Constants.KEY_SCALING_ENABLED, mScaling);
                 if (mScaling) editor.putInt(Constants.KEY_SCALING_METHOD, mScalingMethod);
+
+                editor.putInt(Constants.KEY_HW_ACCEL_METHOD, mHwAccelMethod);
+
+                editor.putInt(Constants.KEY_NETWORK_BUFFER, mNetworkBuffer);
 
                 editor.commit();
 
