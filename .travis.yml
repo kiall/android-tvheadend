@@ -1,5 +1,10 @@
 language: android
 
+branches:
+  only:
+    - master
+    - develop
+
 jdk:
   - oraclejdk8
 
