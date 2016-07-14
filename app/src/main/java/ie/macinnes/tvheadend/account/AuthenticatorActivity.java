@@ -182,11 +182,11 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
                 GuidedAction httpPathAction = findActionById(ACTION_ID_HTTP_PATH);
                 CharSequence httpPathValue = httpPathAction.getDescription();
 
-                if (httpPathValue == null) {
-                    httpPathValue = "";
+                if (httpPathValue != null) {
+                    args.putString(Constants.KEY_HTTP_PATH, httpPathValue.toString());
+                } else {
+                    args.putString(Constants.KEY_HTTP_PATH, "");
                 }
-
-                args.putString(Constants.KEY_HTTP_PATH, httpPathAction.getDescription().toString());
 
                 // Move to the next setup
                 GuidedStepFragment fragment = new AccountFragment();
