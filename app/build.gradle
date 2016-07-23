@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "24.0.0"
+    buildToolsVersion "24.0.1"
     defaultConfig {
         applicationId "ie.macinnes.tvheadend"
         minSdkVersion 22
@@ -32,9 +32,9 @@ repositories {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:support-v4:24.0.0'
-    compile 'com.android.support:leanback-v17:24.0.0'
-    compile 'com.android.support:preference-leanback-v17:24.0.0'
+    compile 'com.android.support:support-v4:24.1.1'
+    compile 'com.android.support:leanback-v17:24.1.1'
+    compile 'com.android.support:preference-leanback-v17:24.1.1'
     compile 'com.google.code.gson:gson:2.6.2'
     compile 'com.android.volley:volley:1.0.0'
     compile 'com.google.firebase:firebase-core:9.0.2'
