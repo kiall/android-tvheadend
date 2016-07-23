@@ -23,13 +23,6 @@ Sign up for Beta access (more frequent, bleeding edge releases):
 
 .. image:: screenshots/TVH-2.png
 
-Outstanding TODOs (not complete in any way, shape or form)
-----------------------------------------------------------
-* Switch to HTSP protocol over JSON
-* Detect removal of account, remove channels etc when detected
-* Support for choosing the stream profile to use
-* Support for choosing the audio track
-
 .. |travis-develop| image:: https://travis-ci.org/kiall/android-tvheadend.svg?branch=develop
    :target: https://travis-ci.org/kiall/android-tvheadend
 
