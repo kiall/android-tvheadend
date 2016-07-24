@@ -4,4 +4,7 @@ node ('debian-android') {
 
   stage 'Build'
   sh './gradlew build connectedCheck'
+
+  stage 'Publish'
+  sh 'echo Publish'
 }
