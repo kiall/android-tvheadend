@@ -1,5 +1,5 @@
 node ('debian-android') {
-  stage 'Checkout Code'
+  stage 'Checkout'
   checkout scm
 
   stage 'Build'
