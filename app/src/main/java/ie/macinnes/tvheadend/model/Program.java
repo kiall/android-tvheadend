@@ -229,8 +229,12 @@ public class Program implements Comparable<Program> {
         }
         program.setStartTimeUtcMillis(clientEvent.start * 1000);
         program.setEndTimeUtcMillis(clientEvent.stop * 1000);
-        program.setSeasonDisplayNumber(Integer.toString(clientEvent.seasonNumber));
-        program.setEpisodeDisplayNumber(Integer.toString(clientEvent.episodeNumber));
+
+        // Skip S0E0, Allow S0E1 and S1E0 etc
+        if (clientEvent.seasonNumber != 0 || clientEvent.episodeNumber != 0) {
+            program.setSeasonDisplayNumber(Integer.toString(clientEvent.seasonNumber));
+            program.setEpisodeDisplayNumber(Integer.toString(clientEvent.episodeNumber));
+        }
 
         // Prep and set a InternalProviderData object
         InternalProviderData providerData = new InternalProviderData();
