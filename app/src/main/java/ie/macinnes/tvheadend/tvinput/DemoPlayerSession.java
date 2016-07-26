@@ -204,7 +204,11 @@ public class DemoPlayerSession extends BaseSession implements DemoPlayer.Listene
                 TvTrackInfo.Builder builder = new TvTrackInfo.Builder(trackType, trackId);
 
                 if (trackType == DemoPlayer.TYPE_VIDEO) {
-                    builder.setVideoWidth(format.width);
+                    if (format.pixelWidthHeightRatio == format.NO_VALUE) {
+                        builder.setVideoWidth(format.width);
+                    } else {
+                        builder.setVideoWidth(Math.round(format.width * format.pixelWidthHeightRatio));
+                    }
                     builder.setVideoHeight(format.height);
                 } else if (trackType == DemoPlayer.TYPE_AUDIO) {
                     builder.setAudioChannelCount(format.channelCount);
