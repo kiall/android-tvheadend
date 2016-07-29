@@ -190,7 +190,7 @@ public class Channel implements Comparable<Channel> {
         channel.setInputId(TvContractUtils.getInputId());
 
         // Copy values from the clientChannel
-        channel.setDisplayNumber(Integer.toString(clientChannel.number));
+        channel.setDisplayNumber(clientChannel.number);
         channel.setDisplayName(clientChannel.name);
         channel.setIconUri(clientChannel.icon_url);
 
@@ -282,7 +282,20 @@ public class Channel implements Comparable<Channel> {
 
     @Override
     public int compareTo(@NonNull Channel other) {
-        return Integer.compare(Integer.parseInt(mDisplayNumber), Integer.parseInt(other.mDisplayNumber));
+        // Sort "numerically". 1,2,10,20 rather than 1,10,2,20.
+
+        // TODO: Correctly sort "1.1", "2.1", "...", "2.20", "3.1"
+
+        if (mDisplayName.length() > other.mDisplayNumber.length()) {
+            // We're longer, therefore bigger.
+            return 1;
+        } else if (mDisplayName.length() < other.mDisplayNumber.length()) {
+            // We're shorter, therefore smaller.
+            return -1;
+        }
+
+        // Length must be equal, lexicographical sort will work here.
+        return mDisplayNumber.compareTo(other.mDisplayNumber);
     }
 
     public static class InternalProviderData {
