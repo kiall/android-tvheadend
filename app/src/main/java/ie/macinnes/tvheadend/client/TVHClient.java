@@ -224,7 +224,7 @@ public class TVHClient {
         public String uuid;
         public Boolean enabled;
         public String name;
-        public int number;
+        public String number;
         @SerializedName("icon_public_url")
         public String icon_url;
         public String bouquet;
@@ -237,7 +237,7 @@ public class TVHClient {
     public static class Event {
         public String eventId;
         public String channelUuid;
-        public int channelNumber;
+        public String channelNumber;
         public long start;
         public long stop;
         public String title;
