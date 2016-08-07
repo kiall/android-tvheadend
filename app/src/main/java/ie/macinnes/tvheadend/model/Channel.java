@@ -286,10 +286,10 @@ public class Channel implements Comparable<Channel> {
 
         // TODO: Correctly sort "1.1", "2.1", "...", "2.20", "3.1"
 
-        if (mDisplayName.length() > other.mDisplayNumber.length()) {
+        if (mDisplayNumber.length() > other.mDisplayNumber.length()) {
             // We're longer, therefore bigger.
             return 1;
-        } else if (mDisplayName.length() < other.mDisplayNumber.length()) {
+        } else if (mDisplayNumber.length() < other.mDisplayNumber.length()) {
             // We're shorter, therefore smaller.
             return -1;
         }
