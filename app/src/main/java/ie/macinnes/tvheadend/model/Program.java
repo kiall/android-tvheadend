@@ -41,6 +41,7 @@ public class Program implements Comparable<Program> {
     private long mEndTimeUtcMillis;
     private String mSeasonDisplayNumber;
     private String mEpisodeDisplayNumber;
+    private String mImage;
 
     private InternalProviderData mInternalProviderData;
 
@@ -123,6 +124,14 @@ public class Program implements Comparable<Program> {
     public void setEpisodeDisplayNumber(String episodeDisplayNumber) {
         mEpisodeDisplayNumber = episodeDisplayNumber;
     }
+    
+    public String getImage() {
+        return mImage;
+    }
+
+    public void setImage(String image) {
+        mImage = image;
+    }
 
     public InternalProviderData getInternalProviderData() {
         return mInternalProviderData;
@@ -197,6 +206,11 @@ public class Program implements Comparable<Program> {
                 program.setEpisodeDisplayNumber(cursor.getString(index));
             }
         }
+        
+        index = cursor.getColumnIndex(TvContract.Programs.COLUMN_POSTER_ART_URI);
+        if (index >= 0 && !cursor.isNull(index)) {
+            program.setImage(cursor.getString(index));
+        }
 
         index = cursor.getColumnIndex(TvContract.Programs.COLUMN_INTERNAL_PROVIDER_DATA);
         if (index >= 0 && !cursor.isNull(index)) {
@@ -235,6 +249,11 @@ public class Program implements Comparable<Program> {
             program.setSeasonDisplayNumber(Integer.toString(clientEvent.seasonNumber));
             program.setEpisodeDisplayNumber(Integer.toString(clientEvent.episodeNumber));
         }
+        
+        // Set image
+        if (clientEvent.image != null) {
+            program.setImage(clientEvent.image);
+        }
 
         // Prep and set a InternalProviderData object
         InternalProviderData providerData = new InternalProviderData();
@@ -262,6 +281,7 @@ public class Program implements Comparable<Program> {
                 .append(", endTimeUtcSec=").append(mEndTimeUtcMillis)
                 .append(", seasonDisplayNumber=").append(mSeasonDisplayNumber)
                 .append(", episodeDisplayNumber=").append(mEpisodeDisplayNumber)
+                .append(", image=").append(mImage)
                 .append(", ipd=").append(mInternalProviderData.toString());
 
         return builder.append(">").toString();
@@ -338,6 +358,12 @@ public class Program implements Comparable<Program> {
                 values.putNull(TvContract.Programs.COLUMN_EPISODE_NUMBER);
             }
         }
+        
+        if (!TextUtils.isEmpty(mImage)) {
+            values.put(TvContract.Programs.COLUMN_POSTER_ART_URI, mImage);
+        } else {
+            values.putNull(TvContract.Programs.COLUMN_POSTER_ART_URI);
+        }
 
         if (mInternalProviderData != null) {
             values.put(TvContract.Programs.COLUMN_INTERNAL_PROVIDER_DATA, mInternalProviderData.toString());
@@ -369,6 +395,7 @@ public class Program implements Comparable<Program> {
                 && Objects.equals(mLongDescription, program.mLongDescription)
                 && Objects.equals(mSeasonDisplayNumber, program.mSeasonDisplayNumber)
                 && Objects.equals(mEpisodeDisplayNumber, program.mEpisodeDisplayNumber)
+                && Objects.equals(mImage, program.mImage)
                 && mInternalProviderData.equals(program.mInternalProviderData);
     }
 
