@@ -246,6 +246,7 @@ public class TVHClient {
         public String description;
         public int seasonNumber;
         public int episodeNumber;
+        public String image;
         public int nextEventId;
     }
 
