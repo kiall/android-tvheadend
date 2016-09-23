@@ -42,6 +42,7 @@ import ie.macinnes.tvheadend.TvContractUtils;
 import ie.macinnes.tvheadend.account.AccountUtils;
 import ie.macinnes.tvheadend.client.TVHClient;
 import ie.macinnes.tvheadend.migrate.MigrateUtils;
+import ie.macinnes.tvheadend.settings.SettingsActivity;
 import ie.macinnes.tvheadend.sync.SyncUtils;
 
 public class TvInputSetupActivity extends Activity {
@@ -475,6 +476,9 @@ public class TvInputSetupActivity extends Activity {
     }
 
     public static class CompletedFragment extends BaseGuidedStepFragment {
+        private static final int ACTION_ID_SETTINGS = 1;
+        private static final int ACTION_ID_COMPLETE = 2;
+
         @NonNull
         @Override
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
@@ -490,6 +494,16 @@ public class TvInputSetupActivity extends Activity {
         @Override
         public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
             GuidedAction action = new GuidedAction.Builder(getActivity())
+                    .id(ACTION_ID_SETTINGS)
+                    .title("Settings")
+                    .description("Advanced Settings")
+                    .editable(false)
+                    .build();
+
+            actions.add(action);
+
+            action = new GuidedAction.Builder(getActivity())
+                    .id(ACTION_ID_COMPLETE)
                     .title("Complete")
                     .description("You're all set!")
                     .editable(false)
@@ -500,8 +514,12 @@ public class TvInputSetupActivity extends Activity {
 
         @Override
         public void onGuidedActionClicked(GuidedAction action) {
-            getActivity().setResult(Activity.RESULT_OK);
-            getActivity().finish();
+            if (action.getId() == ACTION_ID_SETTINGS) {
+                startActivity(SettingsActivity.getPreferencesIntent(getActivity()));
+            } else if (action.getId() == ACTION_ID_COMPLETE) {
+                getActivity().setResult(Activity.RESULT_OK);
+                getActivity().finish();
+            }
         }
     }
 }

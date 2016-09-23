@@ -17,6 +17,7 @@ package ie.macinnes.tvheadend;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
@@ -33,6 +34,7 @@ import ie.macinnes.tvheadend.model.Channel;
 import ie.macinnes.tvheadend.model.ChannelList;
 import ie.macinnes.tvheadend.model.Program;
 import ie.macinnes.tvheadend.model.ProgramList;
+import ie.macinnes.tvheadend.settings.SettingsActivity;
 
 public class DevTestActivity extends Activity {
     private static final String TAG = DevTestActivity.class.getName();
@@ -176,5 +178,9 @@ public class DevTestActivity extends Activity {
         setRunning();
         TvContractUtils.removeChannels(getBaseContext());
         setOk();
+    }
+
+    public void showPreferences(View view) {
+        startActivity(SettingsActivity.getPreferencesIntent(this));
     }
 }

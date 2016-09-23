@@ -36,4 +36,11 @@ under the License.
     <style name="Theme.Wizard.Account.NoSelector">
         <item name="guidedActionsSelectorDrawable">@null</item>
     </style>
+
+    <style name="Theme.Preferences" parent="Theme.Leanback">
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Leanback</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:backgroundDimEnabled">true</item>
+    </style>
 </resources>
