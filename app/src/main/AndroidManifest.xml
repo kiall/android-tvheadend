@@ -33,6 +33,7 @@ under the License.
     <uses-permission android:name="android.permission.READ_SYNC_STATS"/>
     <uses-permission android:name="android.permission.READ_SYNC_SETTINGS"/>
     <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS"/>
+	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <!-- Expose this app in the store only to devices with leanback UI framework -->
     <uses-feature
@@ -141,6 +142,15 @@ under the License.
                 android:name="android.content.SyncAdapter"
                 android:resource="@xml/syncadapter"/>
         </service>
+		
+        <receiver
+            android:enabled="true"
+            android:name=".BootCompletedReceiver"
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
 
     </application>
 
