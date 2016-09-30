@@ -1,4 +1,4 @@
-package ie.macinnes.tvheadend.service;
+package ie.macinnes.tvheadend;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
