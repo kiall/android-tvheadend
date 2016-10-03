@@ -25,7 +25,7 @@ public class AccountUtils {
     public static Account getActiveAccount(Context context) {
         // TODO: We want to support multiple accounts, allowing you to switch between accounts,
         //       which would force a Channel+EPG purge and resync.
-        AccountManager accountManager = AccountManager.get(context);;
+        AccountManager accountManager = AccountManager.get(context);
         Account[] accounts = accountManager.getAccountsByType(Constants.ACCOUNT_TYPE);
 
         if (accounts.length > 0) {
