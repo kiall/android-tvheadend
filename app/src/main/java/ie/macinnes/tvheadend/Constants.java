@@ -68,4 +68,13 @@ public class Constants {
     public static final int SCALING_SINCR = 8;
     public static final int SCALING_LANCZOS = 9;
     public static final int SCALING_BICUBIC_SPLINE = 10;
+
+    // Hardware Acceleration Preferences Keys and Values
+    public static final String KEY_HW_ACCEL_METHOD = "HW-ACCEL-METHOD";
+    public static final int HW_ACCEL_AUTOMATIC = 1;
+    public static final int HW_ACCEL_ENABLED = 2;
+    public static final int HW_ACCEL_DISABLED = 3;
+
+    // Network Buffering Preferences Keys and Values
+    public static final String KEY_NETWORK_BUFFER = "NETWORK-BUFFER";
 }
