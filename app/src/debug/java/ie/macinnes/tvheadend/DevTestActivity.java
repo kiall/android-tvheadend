@@ -26,6 +26,7 @@ import com.android.volley.VolleyError;
 
 import org.json.JSONObject;
 
+import ie.macinnes.tvheadend.account.AccountUtils;
 import ie.macinnes.tvheadend.client.TVHClient;
 import ie.macinnes.tvheadend.migrate.MigrateUtils;
 import ie.macinnes.tvheadend.model.Channel;
@@ -86,7 +87,7 @@ public class DevTestActivity extends Activity {
     public void accountInfo(View view) {
         setRunning();
 
-        Account[] accounts = mAccountManager.getAccountsByType(Constants.ACCOUNT_TYPE);
+        Account[] accounts = AccountUtils.getAllAccounts(this);
 
         appendDebugOutput("Number of Accounts: " + Integer.toString(accounts.length));
 

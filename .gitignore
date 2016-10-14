@@ -1,5 +1,6 @@
 .DS_Store
 google-services.json
+/projectFilesBackup/
 
 ## From: https://github.com/github/gitignore/blob/master/Android.gitignore
 # Built application files

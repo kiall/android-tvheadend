@@ -39,6 +39,7 @@ import java.util.List;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.R;
 import ie.macinnes.tvheadend.TvContractUtils;
+import ie.macinnes.tvheadend.account.AccountUtils;
 import ie.macinnes.tvheadend.client.TVHClient;
 import ie.macinnes.tvheadend.migrate.MigrateUtils;
 import ie.macinnes.tvheadend.sync.SyncUtils;
@@ -88,7 +89,7 @@ public class TvInputSetupActivity extends Activity {
         protected Account getAccountByName(String name) {
             Log.d(TAG, "getAccountByName(" + name + ")");
 
-            Account[] accounts = mAccountManager.getAccountsByType(Constants.ACCOUNT_TYPE);
+            Account[] accounts = AccountUtils.getAllAccounts(getActivity());
 
             Log.d(TAG, "Checking " + Integer.toString(accounts.length) + " accounts");
 
@@ -243,7 +244,7 @@ public class TvInputSetupActivity extends Activity {
             List<GuidedAction> accountSubActions = accountAction.getSubActions();
             accountSubActions.clear();
 
-            Account[] accounts = mAccountManager.getAccountsByType(Constants.ACCOUNT_TYPE);
+            Account[] accounts = AccountUtils.getAllAccounts(getActivity());
 
             for (Account account : accounts) {
                 GuidedAction action = new GuidedAction.Builder(getActivity())

@@ -68,8 +68,8 @@ public class AuthenticatorService extends Service {
     @Override
     public void onCreate() {
         mAccountManager = AccountManager.get(this);
-        mCurrentAccounts = mAccountManager.getAccountsByType(Constants.ACCOUNT_TYPE);
-        mAccountManager.addOnAccountsUpdatedListener(mAccountsUpdateListener, new Handler(), true);
+        mCurrentAccounts = AccountUtils.getAllAccounts(this);
+        AccountUtils.addOnAccountsUpdatedListener(this, mAccountsUpdateListener, new Handler(), true);
     }
 
     @Override
