@@ -15,13 +15,23 @@
  */
 package ie.macinnes.tvheadend.account;
 
+import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.accounts.OnAccountsUpdateListener;
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 
 import ie.macinnes.tvheadend.Constants;
 
 public class AccountUtils {
+    // TODO: Supressing warnings is bad...
+
+    @SuppressLint({"MissingPermission"})
     public static Account getActiveAccount(Context context) {
         // TODO: We want to support multiple accounts, allowing you to switch between accounts,
         //       which would force a Channel+EPG purge and resync.
@@ -33,5 +43,17 @@ public class AccountUtils {
         }
 
         return null;
+    }
+
+    @SuppressLint({"MissingPermission"})
+    public static Account[] getAllAccounts(Context context) {
+        AccountManager accountManager = AccountManager.get(context);
+        return accountManager.getAccountsByType(Constants.ACCOUNT_TYPE);
+    }
+
+    @SuppressLint({"MissingPermission"})
+    public static void addOnAccountsUpdatedListener(Context context, final OnAccountsUpdateListener listener, Handler handler, boolean updateImmediately) {
+        AccountManager accountManager = AccountManager.get(context);
+        accountManager.addOnAccountsUpdatedListener(listener, handler, updateImmediately);
     }
 }

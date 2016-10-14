@@ -23,6 +23,7 @@ import android.content.pm.PackageManager;
 import android.util.Log;
 
 import ie.macinnes.tvheadend.Constants;
+import ie.macinnes.tvheadend.account.AccountUtils;
 
 
 public class MigrateUtils {
@@ -69,7 +70,7 @@ public class MigrateUtils {
         Log.d(TAG, "migrateAccountsPortData()");
 
         AccountManager accountManager = AccountManager.get(context);
-        Account[] accounts = accountManager.getAccountsByType(Constants.ACCOUNT_TYPE);
+        Account[] accounts = AccountUtils.getAllAccounts(context);
 
         for (Account account : accounts) {
             String port = accountManager.getUserData(account, "PORT");
