@@ -136,61 +136,9 @@ public class TvInputSetupActivity extends Activity {
         @Override
         public void onGuidedActionClicked(GuidedAction action) {
             // Move onto the next step
-            GuidedStepFragment fragment = new IssuesFragment();
+            GuidedStepFragment fragment = new AccountSelectorFragment();
             fragment.setArguments(getArguments());
             add(getFragmentManager(), fragment);
-        }
-    }
-
-    public static class IssuesFragment extends BaseGuidedStepFragment {
-        private static final int ACTION_ID_SHOW_ISSUES = 1;
-        private static final int ACTION_ID_LETS_GO = 2;
-
-        @NonNull
-        @Override
-        public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
-            GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
-                    "Known Issues",
-                    "There are several known issues at the moment, without reading this info, it " +
-                    "is extremely unlikely you will get working video!",
-                    "TVHeadend",
-                    null);
-
-            return guidance;
-        }
-
-        @Override
-        public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
-            GuidedAction action = new GuidedAction.Builder(getActivity())
-                    .id(ACTION_ID_SHOW_ISSUES)
-                    .title("Show Issues")
-                    .description("Show the known issues page")
-                    .editable(false)
-                    .build();
-
-            actions.add(action);
-
-            action = new GuidedAction.Builder(getActivity())
-                    .id(ACTION_ID_LETS_GO)
-                    .title("Begin")
-                    .description("Start Tvheadend Live Channel Setup")
-                    .editable(false)
-                    .build();
-
-            actions.add(action);
-        }
-
-        @Override
-        public void onGuidedActionClicked(GuidedAction action) {
-            if (action.getId() == ACTION_ID_SHOW_ISSUES) {
-                Intent intent = new Intent(getActivity(), IssuesActivity.class);
-                startActivity(intent);
-            } else if (action.getId() == ACTION_ID_LETS_GO) {
-                // Move onto the next step
-                GuidedStepFragment fragment = new AccountSelectorFragment();
-                fragment.setArguments(getArguments());
-                add(getFragmentManager(), fragment);
-            }
         }
     }
 

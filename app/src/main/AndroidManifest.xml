@@ -87,9 +87,6 @@ under the License.
             android:exported="true">
         </activity>
 
-        <activity android:name=".setup.IssuesActivity">
-        </activity>
-
         <activity android:name=".setup.VlcSetupActivity">
         </activity>
 
