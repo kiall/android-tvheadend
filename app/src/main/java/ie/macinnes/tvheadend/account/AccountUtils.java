@@ -29,7 +29,9 @@ import android.support.v4.app.ActivityCompat;
 import ie.macinnes.tvheadend.Constants;
 
 public class AccountUtils {
-    // TODO: Supressing warnings is bad...
+    // TODO: Suppressing warnings is bad... But, the Android linter is broken. getAccountsByType
+    // does not require the GET_ACCOUNTS permission, it simply will return other apps accounts if
+    // that permission has been granted. Remove the supression once Android's linter is smarter.
 
     @SuppressLint({"MissingPermission"})
     public static Account getActiveAccount(Context context) {
