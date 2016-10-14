@@ -16,16 +16,26 @@
   -->
 
 <resources>
-    <!-- Video Player Settings -->
-    <string-array name="video_player_names">
-        <item>VLC</item>
-        <item>Media Player</item>
-        <item>ExoPlayer</item>
+    <!-- VLC Deinterlace Settings -->
+    <string-array name="vlc_deinterlace_names">
+        <item>Blend</item>
+        <item>Mean</item>
+        <item>Bob</item>
+        <item>Linear</item>
+        <item>Yadif</item>
+        <item>Yadif 2x</item>
+        <item>Phosphor</item>
+        <item>IVTC</item>
     </string-array>
 
-    <string-array name="video_player_values">
-        <item>SESSION-VLC</item>
-        <item>SESSION-MEDIA-PLAYER</item>
-        <item>SESSION-EXO-PLAYER</item>
+    <string-array name="vlc_deinterlace_values">
+        <item>blend</item>
+        <item>mean</item>
+        <item>bob</item>
+        <item>linear</item>
+        <item>yadif</item>
+        <item>yadif2x</item>
+        <item>phosphor</item>
+        <item>ivtc</item>
     </string-array>
 </resources>

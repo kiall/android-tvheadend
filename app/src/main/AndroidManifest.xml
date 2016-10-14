@@ -87,9 +87,6 @@ under the License.
             android:exported="true">
         </activity>
 
-        <activity android:name=".setup.VlcSetupActivity">
-        </activity>
-
         <activity
             android:name=".settings.SettingsActivity"
             android:theme="@style/Theme.Preferences">
