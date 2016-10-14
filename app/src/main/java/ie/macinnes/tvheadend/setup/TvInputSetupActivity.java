@@ -42,6 +42,7 @@ import ie.macinnes.tvheadend.TvContractUtils;
 import ie.macinnes.tvheadend.account.AccountUtils;
 import ie.macinnes.tvheadend.client.TVHClient;
 import ie.macinnes.tvheadend.migrate.MigrateUtils;
+import ie.macinnes.tvheadend.settings.SettingsActivity;
 import ie.macinnes.tvheadend.sync.SyncUtils;
 
 public class TvInputSetupActivity extends Activity {
@@ -135,61 +136,9 @@ public class TvInputSetupActivity extends Activity {
         @Override
         public void onGuidedActionClicked(GuidedAction action) {
             // Move onto the next step
-            GuidedStepFragment fragment = new IssuesFragment();
+            GuidedStepFragment fragment = new AccountSelectorFragment();
             fragment.setArguments(getArguments());
             add(getFragmentManager(), fragment);
-        }
-    }
-
-    public static class IssuesFragment extends BaseGuidedStepFragment {
-        private static final int ACTION_ID_SHOW_ISSUES = 1;
-        private static final int ACTION_ID_LETS_GO = 2;
-
-        @NonNull
-        @Override
-        public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
-            GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
-                    "Known Issues",
-                    "There are several known issues at the moment, without reading this info, it " +
-                    "is extremely unlikely you will get working video!",
-                    "TVHeadend",
-                    null);
-
-            return guidance;
-        }
-
-        @Override
-        public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
-            GuidedAction action = new GuidedAction.Builder(getActivity())
-                    .id(ACTION_ID_SHOW_ISSUES)
-                    .title("Show Issues")
-                    .description("Show the known issues page")
-                    .editable(false)
-                    .build();
-
-            actions.add(action);
-
-            action = new GuidedAction.Builder(getActivity())
-                    .id(ACTION_ID_LETS_GO)
-                    .title("Begin")
-                    .description("Start Tvheadend Live Channel Setup")
-                    .editable(false)
-                    .build();
-
-            actions.add(action);
-        }
-
-        @Override
-        public void onGuidedActionClicked(GuidedAction action) {
-            if (action.getId() == ACTION_ID_SHOW_ISSUES) {
-                Intent intent = new Intent(getActivity(), IssuesActivity.class);
-                startActivity(intent);
-            } else if (action.getId() == ACTION_ID_LETS_GO) {
-                // Move onto the next step
-                GuidedStepFragment fragment = new AccountSelectorFragment();
-                fragment.setArguments(getArguments());
-                add(getFragmentManager(), fragment);
-            }
         }
     }
 
@@ -475,6 +424,9 @@ public class TvInputSetupActivity extends Activity {
     }
 
     public static class CompletedFragment extends BaseGuidedStepFragment {
+        private static final int ACTION_ID_SETTINGS = 1;
+        private static final int ACTION_ID_COMPLETE = 2;
+
         @NonNull
         @Override
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
@@ -490,6 +442,16 @@ public class TvInputSetupActivity extends Activity {
         @Override
         public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
             GuidedAction action = new GuidedAction.Builder(getActivity())
+                    .id(ACTION_ID_SETTINGS)
+                    .title("Settings")
+                    .description("Advanced Settings")
+                    .editable(false)
+                    .build();
+
+            actions.add(action);
+
+            action = new GuidedAction.Builder(getActivity())
+                    .id(ACTION_ID_COMPLETE)
                     .title("Complete")
                     .description("You're all set!")
                     .editable(false)
@@ -500,8 +462,12 @@ public class TvInputSetupActivity extends Activity {
 
         @Override
         public void onGuidedActionClicked(GuidedAction action) {
-            getActivity().setResult(Activity.RESULT_OK);
-            getActivity().finish();
+            if (action.getId() == ACTION_ID_SETTINGS) {
+                startActivity(SettingsActivity.getPreferencesIntent(getActivity()));
+            } else if (action.getId() == ACTION_ID_COMPLETE) {
+                getActivity().setResult(Activity.RESULT_OK);
+                getActivity().finish();
+            }
         }
     }
 }

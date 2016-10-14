@@ -64,16 +64,14 @@ under the License.
         android:supportsRtl="true"
         android:theme="@style/Theme.Leanback">
 
-        <!--
-             Redirects the user to the Input Setup (on N+) or Live Channels app (pre-N)
-        -->
+        <!-- Redirects the user to the Input Setup (on N+) or Live Channels app (pre-N) -->
         <activity
             android:name=".MainActivity"
             android:icon="@mipmap/ic_tv_service"
             android:label="@string/app_name">
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
+
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER"/>
             </intent-filter>
         </activity>
@@ -89,10 +87,12 @@ under the License.
             android:exported="true">
         </activity>
 
-        <activity android:name=".setup.IssuesActivity">
+        <activity android:name=".setup.VlcSetupActivity">
         </activity>
 
-        <activity android:name=".setup.VlcSetupActivity">
+        <activity
+            android:name=".settings.SettingsActivity"
+            android:theme="@style/Theme.Preferences">
         </activity>
 
         <service
@@ -133,7 +133,6 @@ under the License.
             android:name=".sync.SyncService"
             android:exported="true"
             android:process=":sync">
-
             <intent-filter>
                 <action android:name="android.content.SyncAdapter"/>
             </intent-filter>

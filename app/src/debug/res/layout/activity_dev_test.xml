@@ -76,6 +76,15 @@ under the License.
             android:onClick="deleteChannels"
             android:layout_gravity="center_horizontal"/>
 
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Show Preferences"
+            android:nestedScrollingEnabled="true"
+            android:onClick="showPreferences"
+            android:layout_gravity="center_horizontal"
+            android:id="@+id/button"/>
+
     </LinearLayout>
 
     <ScrollView
