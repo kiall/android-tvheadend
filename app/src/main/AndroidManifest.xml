@@ -142,7 +142,8 @@ under the License.
                 android:name="android.content.SyncAdapter"
                 android:resource="@xml/syncadapter"/>
         </service>
-		
+
+        <!-- This receiver is needed for home screen recommendations -->
         <receiver
             android:enabled="true"
             android:name=".BootCompletedReceiver"
