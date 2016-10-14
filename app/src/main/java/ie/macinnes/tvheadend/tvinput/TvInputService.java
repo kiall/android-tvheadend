@@ -43,7 +43,7 @@ public class TvInputService extends android.media.tv.TvInputService {
         // TODO: Find a better (+ out of UI thread) way to do this.
         MigrateUtils.doMigrate(getBaseContext());
 
-        // Store the chosen session type
+        // Fetch the chosen session type
         SharedPreferences sharedPreferences = getSharedPreferences(
                 Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
 

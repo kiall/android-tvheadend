@@ -20,9 +20,11 @@ import android.accounts.AccountManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
 
 import ie.macinnes.tvheadend.Constants;
+import ie.macinnes.tvheadend.R;
 import ie.macinnes.tvheadend.account.AccountUtils;
 
 
@@ -31,6 +33,9 @@ public class MigrateUtils {
 
     public static void doMigrate(Context context) {
         Log.d(TAG, "doMigrate()");
+
+        // Set all default values
+        PreferenceManager.setDefaultValues(context, R.xml.preferences, false);
 
         // Store the current version
         int currentApplicationVersion = 0;

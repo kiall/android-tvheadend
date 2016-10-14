@@ -18,6 +18,7 @@ package ie.macinnes.tvheadend.tvinput;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.media.tv.TvTrackInfo;
@@ -56,12 +57,21 @@ public class VlcSession extends BaseSession {
         super(context, serviceHandler);
         Log.d(TAG, "Session created (" + mSessionNumber + ")");
 
+        // Fetch the chosen session type
+        SharedPreferences sharedPreferences = context.getSharedPreferences(
+                Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
+
         ArrayList<String> options = new ArrayList<>();
         options.add("--http-reconnect");
         options.add("--network-caching=2000");
-        options.add("--deinterlace=-1");
-        options.add("--deinterlace-mode=blend"); // discard,blend,mean,bob,linear,x,yadif,yadif2x,phosphor,ivtc
-        options.add("--video-filter=deinterlace");
+
+        if (sharedPreferences.getBoolean(Constants.KEY_DEINTERLACE_ENABLED, false)) {
+            String method = sharedPreferences.getString(Constants.KEY_DEINTERLACE_METHOD, null);
+            Log.d(TAG, "Using VLC deinterlace mode: " + method);
+            options.add("--video-filter=deinterlace");
+            options.add("--deinterlace=-1");
+            options.add("--deinterlace-mode="+method);
+        }
 
         mLibVLC = new LibVLC(options);
 

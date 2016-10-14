@@ -16,7 +16,8 @@
   -->
 
 <PreferenceScreen
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="TVHeadend Settings">
 
     <PreferenceCategory android:title="Video Playback">
         <!-- TODO: These all-caps keys just look silly, but are needed for backward compat -->
@@ -27,4 +28,24 @@
             android:entries="@array/video_player_names"
             android:entryValues="@array/video_player_values" />
     </PreferenceCategory>
+
+    <PreferenceCategory android:title="Video Player Settings">
+        <PreferenceScreen android:title="VLC Settings" android:key="vlc_settings" android:persistent="false">
+            <CheckBoxPreference
+                android:key="vlc_deinterlace_enabled"
+                android:title="Deinterlace Enabled"
+                android:summary="Deinterlace Enabled"
+                android:defaultValue="true" />
+
+            <ListPreference
+                android:key="vlc_deinterlace_method"
+                android:title="Deinterlace Method"
+                android:dialogTitle="Deinterlace Method"
+                android:entries="@array/vlc_deinterlace_names"
+                android:entryValues="@array/vlc_deinterlace_values"
+                android:defaultValue="blend"
+                android:dependency="vlc_deinterlace_enabled"/>
+        </PreferenceScreen>
+    </PreferenceCategory>
+
 </PreferenceScreen>
