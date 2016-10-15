@@ -106,6 +106,9 @@ public class DevTestActivity extends Activity {
             String hostname = mAccountManager.getUserData(account, Constants.KEY_HOSTNAME);
             appendDebugOutput("Account Hostname: " + hostname);
 
+            String htspPort = mAccountManager.getUserData(account, Constants.KEY_HTSP_PORT);
+            appendDebugOutput("Account HTSP Port: " + htspPort);
+
             String httpPort = mAccountManager.getUserData(account, Constants.KEY_HTTP_PORT);
             appendDebugOutput("Account HTTP Port: " + httpPort);
 

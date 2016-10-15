@@ -38,6 +38,7 @@ public class Constants {
     // Bundle and Preference Keys
     public static final String KEY_APP_VERSION = "APP-VERSION";
     public static final String KEY_HOSTNAME = "HOSTNAME";
+    public static final String KEY_HTSP_PORT = "HTSP-PORT";
     public static final String KEY_HTTP_PORT = "HTTP-PORT";
     public static final String KEY_HTTP_PATH = "HTTP-PATH";
     public static final String KEY_USERNAME = "USERNAME";
