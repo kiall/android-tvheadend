@@ -25,16 +25,16 @@ import java.util.concurrent.Callable;
 
 import ie.macinnes.htsp.Connection;
 import ie.macinnes.htsp.IMessageListener;
+import ie.macinnes.htsp.MessageListener;
 import ie.macinnes.htsp.ResponseMessage;
 import ie.macinnes.htsp.messages.AuthenticateRequest;
 import ie.macinnes.htsp.messages.AuthenticateResponse;
 import ie.macinnes.htsp.messages.HelloRequest;
 import ie.macinnes.htsp.messages.HelloResponse;
 
-public class AuthenticateTask implements IMessageListener {
+public class AuthenticateTask extends MessageListener {
     private static final String TAG = AuthenticateTask.class.getName();
 
-    private Connection mConnection;
     private String mUsername;
     private String mPassword;
 
@@ -43,11 +43,6 @@ public class AuthenticateTask implements IMessageListener {
     public AuthenticateTask(String username, String password) {
         mUsername = username;
         mPassword = password;
-    }
-
-    @Override
-    public void setConnection(Connection connection) {
-        mConnection = connection;
     }
 
     @Override
