@@ -62,6 +62,8 @@ public class MigrateUtils {
         if (currentApplicationVersion != lastInstalledApplicationVersion) {
             if (lastInstalledApplicationVersion <= 14) {
                 migrateAccountsPortName(context);
+            } else if (lastInstalledApplicationVersion <= 38) {
+                migrateAccountHtspPort(context);
             }
         }
 
@@ -84,6 +86,20 @@ public class MigrateUtils {
                 accountManager.setUserData(account, Constants.KEY_HTTP_PORT, port);
                 accountManager.setUserData(account, "PORT", null);
             }
+        }
+    }
+
+    protected static void migrateAccountHtspPort(Context context) {
+        Log.d(TAG, "migrateAccountHtspPort()");
+
+        AccountManager accountManager = AccountManager.get(context);
+        Account[] accounts = AccountUtils.getAllAccounts(context);
+
+        for (Account account : accounts) {
+            String httpPort = accountManager.getUserData(account, Constants.KEY_HTTP_PORT);
+
+            int htspPort = Integer.parseInt(httpPort) + 1;
+            accountManager.setUserData(account, Constants.KEY_HTSP_PORT, Integer.toString(htspPort));
         }
     }
 }
