@@ -229,17 +229,10 @@ public class Program implements Comparable<Program> {
         // Copy values from the clientEvent
         program.setTitle(clientEvent.title);
         program.setEpisodeTitle(clientEvent.subtitle);
-        // Use summary as short description, otherwise use description
-        if (clientEvent.summary != null) {
-            program.setShortDescription(clientEvent.summary);
-        } else if (clientEvent.description != null) {
-            program.setShortDescription(clientEvent.description);
-        }
-        // Use description as long description, otherwise use summary
+        
+        // Set description
         if (clientEvent.description != null) {
-            program.setLongDescription(clientEvent.description);
-        } else if (clientEvent.summary != null) {
-            program.setLongDescription(clientEvent.summary);
+            program.setShortDescription(clientEvent.description);
         }
         program.setStartTimeUtcMillis(clientEvent.start * 1000);
         program.setEndTimeUtcMillis(clientEvent.stop * 1000);
