@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.CancelledKeyException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -117,31 +116,27 @@ public class Connection implements Runnable {
                     i.remove();
 
                     if (!selectionKey.isValid()) {
-                        continue;
+                        break;
                     }
 
-                    if (selectionKey.isConnectable()) {
+                    if (selectionKey.isValid() && selectionKey.isConnectable()) {
                         processConnectableSelectionKey();
                     }
 
-                    if (selectionKey.isReadable()) {
+                    if (selectionKey.isValid() && selectionKey.isReadable()) {
                         processReadableSelectionKey();
                     }
 
-                    if (selectionKey.isWritable()) {
+                    if (selectionKey.isValid() && selectionKey.isWritable()) {
                         processWritableSelectionKey();
                     }
                 }
 
-                if (mMessageQueue.isEmpty()) {
+                if (mSocketChannel.isConnected() && mMessageQueue.isEmpty()) {
                     mSocketChannel.register(mSelector, SelectionKey.OP_READ);
-                } else {
+                } else if (mSocketChannel.isConnected()) {
                     mSocketChannel.register(mSelector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
                 }
-            } catch (CancelledKeyException e) {
-                Log.d(TAG, "Received CancelledKeyException - shutting down");
-                mRunning = false;
-                setState(STATE_FAILED);
             } catch (Exception e) {
                 Log.e(TAG, "Something failed - shutting down", e);
                 mRunning = false;
@@ -206,6 +201,9 @@ public class Connection implements Runnable {
 
         mRunning = false;
         setState(STATE_CLOSING);
+
+        // Clear out any pending messages
+        mMessageQueue.clear();
 
         if (mSocketChannel != null) {
             try {
