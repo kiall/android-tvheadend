@@ -25,9 +25,7 @@ import ie.macinnes.tvheadend.TvContractUtils;
 import ie.macinnes.tvheadend.client.TVHClient;
 
 public class Channel implements Comparable<Channel> {
-    public static final long INVALID_CHANNEL_ID = -1;
-
-    private long mId = INVALID_CHANNEL_ID;
+    private int mChannelId;
     private String mInputId;
     private String mType;
     private String mDisplayNumber;
@@ -39,12 +37,12 @@ public class Channel implements Comparable<Channel> {
     private int mServiceId = 0;
     private InternalProviderData mInternalProviderData;
 
-    public long getId() {
-        return mId;
+    public int getChannelId() {
+        return mChannelId;
     }
 
-    public void setId(long id) {
-        mId = id;
+    public void setChannelId(int channelId) {
+        mChannelId = channelId;
     }
 
     public String getInputId() {
@@ -132,7 +130,7 @@ public class Channel implements Comparable<Channel> {
 
         int index = cursor.getColumnIndex(TvContract.Channels._ID);
         if (index >= 0 && !cursor.isNull(index)) {
-            channel.setId(cursor.getLong(index));
+            channel.setChannelId(cursor.getInt(index));
         }
 
         index = cursor.getColumnIndex(TvContract.Channels.COLUMN_INPUT_ID);
@@ -216,7 +214,7 @@ public class Channel implements Comparable<Channel> {
         StringBuilder builder = new StringBuilder();
 
         builder.append("<Channel ")
-                .append("id=").append(mId)
+                .append("channelId=").append(mChannelId)
                 .append(", inputId=").append(mInputId)
                 .append(", type=").append(mType)
                 .append(", displayNumber=").append(mDisplayNumber)
@@ -232,10 +230,6 @@ public class Channel implements Comparable<Channel> {
 
     public ContentValues toContentValues() {
         ContentValues values = new ContentValues();
-
-        if (mId != INVALID_CHANNEL_ID) {
-            values.put(TvContract.Channels._ID, mId);
-        }
 
         if (!TextUtils.isEmpty(mInputId)) {
             values.put(TvContract.Channels.COLUMN_INPUT_ID, mInputId);

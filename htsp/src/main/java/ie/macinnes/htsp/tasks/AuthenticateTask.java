@@ -102,7 +102,7 @@ public class AuthenticateTask extends MessageListener {
     }
 
     private void completeAuthentication(AuthenticateResponse response) {
-        if (response.getError() != null || response.getNoAccess() != null) {
+        if (response.getError() != null || response.getNoAccess() == true) {
             mCallback.onFailure();
         } else {
             mCallback.onSuccess();

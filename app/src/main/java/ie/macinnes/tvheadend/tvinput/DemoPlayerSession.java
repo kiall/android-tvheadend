@@ -88,7 +88,7 @@ public class DemoPlayerSession extends BaseSession implements DemoPlayer.Listene
         String channelUuid = channel.getInternalProviderData().getUuid();
 
         // Gather Details on the TVHeadend Instance
-        AccountManager accountManager = AccountManager.get(mContext);;
+        AccountManager accountManager = AccountManager.get(mContext);
         Account account = AccountUtils.getActiveAccount(mContext);
 
         String username = account.name;
@@ -204,7 +204,7 @@ public class DemoPlayerSession extends BaseSession implements DemoPlayer.Listene
                 TvTrackInfo.Builder builder = new TvTrackInfo.Builder(trackType, trackId);
 
                 if (trackType == DemoPlayer.TYPE_VIDEO) {
-                    if (format.pixelWidthHeightRatio == format.NO_VALUE) {
+                    if (format.pixelWidthHeightRatio == MediaFormat.NO_VALUE) {
                         builder.setVideoWidth(format.width);
                     } else {
                         builder.setVideoWidth(Math.round(format.width * format.pixelWidthHeightRatio));

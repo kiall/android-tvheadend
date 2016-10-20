@@ -24,20 +24,20 @@ public class AuthenticateResponse extends ResponseMessage {
         HtspMessage.addMessageResponseType("authenticate", AuthenticateResponse.class);
     }
 
-    protected Long mNoAccess;
+    protected boolean mNoAccess;
 
-    public Long getNoAccess() {
+    public boolean getNoAccess() {
         return mNoAccess;
     }
 
-    public void setNoAccess(Long noAccess) {
+    public void setNoAccess(boolean noAccess) {
         mNoAccess = noAccess;
     }
 
     public void fromHtspMessage(HtspMessage htspMessage) {
         super.fromHtspMessage(htspMessage);
 
-        setNoAccess(htspMessage.getLong("noaccess"));
+        setNoAccess(htspMessage.getBoolean("noaccess", false));
     }
 
     public String toString() {

@@ -80,7 +80,7 @@ public class MediaPlayerSession extends BaseSession {
         String channelUuid = channel.getInternalProviderData().getUuid();
 
         // Gather Details on the TVHeadend Instance
-        AccountManager accountManager = AccountManager.get(mContext);;
+        AccountManager accountManager = AccountManager.get(mContext);
         Account account = AccountUtils.getActiveAccount(mContext);
 
         String username = account.name;

@@ -27,15 +27,15 @@ public class HelloRequest extends RequestMessage {
         HtspMessage.addMessageRequestType(METHOD, HelloRequest.class);
     }
 
-    protected long mHtspVersion;
+    protected int mHtspVersion;
     protected String mClientName;
     protected String mClientVersion;
 
-    public long getHtspVersion() {
+    public int getHtspVersion() {
         return mHtspVersion;
     }
 
-    public void setHtspVersion(long htspVersion) {
+    public void setHtspVersion(int htspVersion) {
         mHtspVersion = htspVersion;
     }
 
@@ -61,7 +61,7 @@ public class HelloRequest extends RequestMessage {
 
         htspMessage.putString("method", METHOD);
 
-        htspMessage.putLong("htspversion", getHtspVersion());
+        htspMessage.putInt("htspversion", getHtspVersion());
         htspMessage.putString("clientname", getClientName());
         htspMessage.putString("clientversion", getClientVersion());
 

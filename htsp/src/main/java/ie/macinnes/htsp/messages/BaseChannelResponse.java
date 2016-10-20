@@ -16,27 +16,98 @@
 
 package ie.macinnes.htsp.messages;
 
+import android.content.ContentValues;
+import android.media.tv.TvContract;
+import android.text.TextUtils;
+
 import ie.macinnes.htsp.HtspMessage;
 import ie.macinnes.htsp.ResponseMessage;
 
 public class BaseChannelResponse extends ResponseMessage {
-    protected Long mChannelId;
+    public static final int INVALID_INT_VALUE = -1;
 
-    public Long getChannelId() {
+    protected int mChannelId;
+    protected int mChannelNumber;
+    protected int mChannelNumberMinor;
+    protected String mChannelName;
+    protected String mChannelIcon;
+
+    public int getChannelId() {
         return mChannelId;
     }
 
-    public void setChannelId(Long channelId) {
+    public void setChannelId(int channelId) {
         mChannelId = channelId;
+    }
+
+    public int getChannelNumber() {
+        return mChannelNumber;
+    }
+
+    public void setChannelNumber(int channelNumber) {
+        mChannelNumber = channelNumber;
+    }
+
+    public int getChannelNumberMinor() {
+        return mChannelNumberMinor;
+    }
+
+    public void setChannelNumberMinor(int channelNumberMinor) {
+        mChannelNumberMinor = channelNumberMinor;
+    }
+
+    public String getChannelName() {
+        return mChannelName;
+    }
+
+    public void setChannelName(String channelName) {
+        mChannelName = channelName;
+    }
+
+    public String getChannelIcon() {
+        return mChannelIcon;
+    }
+
+    public void setChannelIcon(String channelIcon) {
+        mChannelIcon = channelIcon;
     }
 
     public void fromHtspMessage(HtspMessage htspMessage) {
         super.fromHtspMessage(htspMessage);
 
-        setChannelId(htspMessage.getLong("channelId"));
+        setChannelId(htspMessage.getInt("channelId"));
+        setChannelNumber(htspMessage.getInt("channelNumber", INVALID_INT_VALUE));
+        setChannelNumberMinor(htspMessage.getInt("channelNumberMinor", INVALID_INT_VALUE));
+        setChannelName(htspMessage.getString("channelName", null));
+        setChannelIcon(htspMessage.getString("channelIcon", null));
+        setChannelName(htspMessage.getString("channelName", null));
     }
 
     public String toString() {
         return "channelId: " + getChannelId();
+    }
+
+    public ContentValues toContentValues(String inputId, String accountName) {
+        ContentValues values = new ContentValues();
+
+
+        values.put(TvContract.Channels.COLUMN_INPUT_ID, inputId);
+        values.put(TvContract.Channels.COLUMN_TYPE, TvContract.Channels.TYPE_OTHER);
+
+        values.put(TvContract.Channels.COLUMN_ORIGINAL_NETWORK_ID, mChannelId);
+
+        if (mChannelNumber != INVALID_INT_VALUE && mChannelNumberMinor != INVALID_INT_VALUE) {
+            values.put(TvContract.Channels.COLUMN_DISPLAY_NUMBER, mChannelNumber + "." + mChannelNumberMinor);
+        } else if (mChannelNumber != INVALID_INT_VALUE) {
+            values.put(TvContract.Channels.COLUMN_DISPLAY_NUMBER, mChannelNumber);
+        }
+
+        if (!TextUtils.isEmpty(mChannelName)) {
+            values.put(TvContract.Channels.COLUMN_DISPLAY_NAME, mChannelName);
+        }
+
+        values.put(TvContract.Channels.COLUMN_INTERNAL_PROVIDER_DATA, accountName);
+
+        return values;
     }
 }

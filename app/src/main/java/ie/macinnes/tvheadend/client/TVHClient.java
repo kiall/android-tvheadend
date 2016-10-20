@@ -235,7 +235,7 @@ public class TVHClient {
     }
 
     public static class Event {
-        public String eventId;
+        public int eventId;
         public String channelUuid;
         public String channelNumber;
         public long start;

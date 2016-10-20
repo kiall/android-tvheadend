@@ -17,15 +17,16 @@
 package ie.macinnes.htsp;
 
 public class ResponseMessage extends BaseMessage {
-    protected Long mSeq;
-    protected String mError;
-    protected Long mNoAccess;
+    public static final int INVALID_SEQ = -1;
 
-    public Long getSeq() {
+    protected int mSeq;
+    protected String mError;
+
+    public int getSeq() {
         return mSeq;
     }
 
-    public void setSeq(Long seq) {
+    public void setSeq(int seq) {
         mSeq = seq;
     }
 
@@ -37,19 +38,10 @@ public class ResponseMessage extends BaseMessage {
         mError = error;
     }
 
-    public Long getNoAccess() {
-        return mNoAccess;
-    }
-
-    public void setNoAccess(Long noAccess) {
-        mNoAccess = noAccess;
-    }
-
     public void fromHtspMessage(HtspMessage htspMessage) {
         super.fromHtspMessage(htspMessage);
 
-        setSeq(htspMessage.getLong("seq"));
-        setError(htspMessage.getString("error"));
-        setNoAccess(htspMessage.getLong("noaccess"));
+        setSeq(htspMessage.getInt("seq", INVALID_SEQ));
+        setError(htspMessage.getString("error", null));
     }
 }

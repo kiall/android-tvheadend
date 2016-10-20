@@ -43,7 +43,6 @@ import java.util.List;
 
 import ie.macinnes.htsp.Connection;
 import ie.macinnes.htsp.ConnectionListener;
-import ie.macinnes.htsp.IConnectionListener;
 import ie.macinnes.htsp.tasks.AuthenticateTask;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.R;
@@ -469,8 +468,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
             final String accountHttpPath = args.getString(Constants.KEY_HTTP_PATH);
 
             mConnection = new Connection(accountHostname, Integer.parseInt(accountHtspPort));
-
-            final Object connectionLock = new Object();
 
             final AuthenticateTask.IAuthenticateTaskCallback authenticateTaskCallback = new AuthenticateTask.IAuthenticateTaskCallback() {
                 @Override

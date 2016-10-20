@@ -42,32 +42,32 @@ public class EnableAsyncMetadataRequest extends RequestMessage {
         new InitialSyncCompletedResponse();
     }
 
-    protected Long mEpg;
-    protected Long mLastUpdate;
-    protected Long mEpgMaxTime;
+    protected boolean mEpg;
+    protected long mLastUpdate;
+    protected long mEpgMaxTime;
     protected String mLanguage;
 
-    public Long getEpg() {
+    public boolean getEpg() {
         return mEpg;
     }
 
-    public void setEpg(Long epg) {
+    public void setEpg(boolean epg) {
         mEpg = epg;
     }
 
-    public Long getLastUpdate() {
+    public long getLastUpdate() {
         return mLastUpdate;
     }
 
-    public void setLastUpdate(Long lastUpdate) {
+    public void setLastUpdate(long lastUpdate) {
         mLastUpdate = lastUpdate;
     }
 
-    public Long getEpgMaxTime() {
+    public long getEpgMaxTime() {
         return mEpgMaxTime;
     }
 
-    public void setEpgMaxTime(Long epgMaxTime) {
+    public void setEpgMaxTime(long epgMaxTime) {
         mEpgMaxTime = epgMaxTime;
     }
 
@@ -85,7 +85,7 @@ public class EnableAsyncMetadataRequest extends RequestMessage {
 
         htspMessage.putString("method", METHOD);
 
-        htspMessage.putLong("epg", getEpg());
+        htspMessage.putBoolean("epg", getEpg());
         htspMessage.putLong("lastUpdate", getLastUpdate());
         htspMessage.putLong("epgMaxTime", getEpgMaxTime());
         htspMessage.putString("language", getLanguage());

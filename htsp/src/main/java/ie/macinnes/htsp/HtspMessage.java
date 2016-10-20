@@ -22,6 +22,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.PriorityQueue;
 
 /**
  * See: https://tvheadend.org/projects/tvheadend/wiki/Htsp
@@ -252,7 +253,6 @@ public class HtspMessage extends HashMap<String, Object> {
             if (fieldType == FIELD_STR) {
                 Log.v(TAG, "Deserializaing a STR with key " + key);
                 value = new String(valueBytes);
-                if (key.equals("channelName")) Log.w(TAG, "Channel Name: " + value);
 
             } else if (fieldType == FIELD_S64) {
                 Log.v(TAG, "Deserializaing a S64 with key " + key + " and valueBytes length " + valueBytes.length);
@@ -373,40 +373,74 @@ public class HtspMessage extends HashMap<String, Object> {
         return (HtspMessage[]) value.toArray(new HtspMessage[value.size()]);
     }
 
-    public void putLong(String key, Long value) {
-        if (value == null) {
-            put(key, null);
+    public void putLong(String key, long value) {
+        put(key, BigInteger.valueOf(value));
+    }
+
+    public long getLong(String key) {
+        return ((BigInteger) get(key)).longValue();
+    }
+
+    public long getLong(String key, long defaultValue) {
+        if (containsKey(key)) {
+            return getLong(key);
+        }
+
+        return defaultValue;
+    }
+
+    public void putInt(String key, int value) {
+        put(key, BigInteger.valueOf(value));
+    }
+
+    public int getInt(String key) {
+        return ((BigInteger) get(key)).intValue();
+    }
+
+    public int getInt(String key, int defaultValue) {
+        if (containsKey(key)) {
+            return getInt(key);
+        }
+
+        return defaultValue;
+    }
+
+    public void putBoolean(String key, boolean value) {
+        if (value) {
+            put(key, 1);
         } else {
-            put(key, BigInteger.valueOf(value));
+            put(key, 0);
         }
     }
 
-    public Long getLong(String key) {
-        BigInteger value = (BigInteger) get(key);
+    public boolean getBoolean(String key) {
+        return getInt(key) == 1;
+    }
 
-        if (value == null) {
-            return null;
+    public boolean getBoolean(String key, boolean defaultValue) {
+        if (containsKey(key)) {
+            return getBoolean(key);
         }
 
-        return value.longValue();
+        return defaultValue;
     }
 
     public void putString(String key, String value) {
         put(key, value);
     }
 
-    public String getString(String key, String fallback) {
-        if (containsKey(key)) {
-            return getString(key);
-        }
-
-        return fallback;
-    }
-
     public String getString(String key) {
         Object value = get(key);
 
         return (String) value;
+    }
+
+    public String getString(String key, String defaultValue) {
+        if (containsKey(key)) {
+            return getString(key);
+        }
+
+        return defaultValue;
     }
 
     public String[] getStringArray(String key) {

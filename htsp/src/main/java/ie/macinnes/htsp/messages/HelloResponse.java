@@ -24,18 +24,18 @@ public class HelloResponse extends ResponseMessage {
         HtspMessage.addMessageResponseType("hello", HelloResponse.class);
     }
 
-    protected Long mHtspVersion;
+    protected int mHtspVersion;
     protected String mServerName;
     protected String mServerVersion;
     protected String[] mServerCapability;
     protected byte[] mChallenge;
     protected String mWebRoot;
 
-    public Long getHtspVersion() {
+    public int getHtspVersion() {
         return mHtspVersion;
     }
 
-    public void setHtspVersion(Long htspVersion) {
+    public void setHtspVersion(int htspVersion) {
         mHtspVersion = htspVersion;
     }
 
@@ -82,7 +82,7 @@ public class HelloResponse extends ResponseMessage {
     public void fromHtspMessage(HtspMessage htspMessage) {
         super.fromHtspMessage(htspMessage);
 
-        setHtspVersion(htspMessage.getLong("htspversion"));
+        setHtspVersion(htspMessage.getInt("htspversion"));
         setServerName(htspMessage.getString("servername"));
         setServerVersion(htspMessage.getString("serverversion"));
         setServerCapability(htspMessage.getStringArray("servercapability"));

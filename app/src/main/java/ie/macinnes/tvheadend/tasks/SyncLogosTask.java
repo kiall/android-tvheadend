@@ -39,6 +39,7 @@ public class SyncLogosTask extends AsyncTask<Map<Uri, String>, Void, Void> {
     private final ContentResolver mContentResolver;
 
     public SyncLogosTask(Context context) {
+        // TODO: Use HTSP to fetch the images
         mContext = context;
 
         mClient = TVHClient.getInstance(context);
@@ -63,7 +64,7 @@ public class SyncLogosTask extends AsyncTask<Map<Uri, String>, Void, Void> {
         try {
             logo = mClient.getChannelIcon(sourceUrl);
         } catch (InterruptedException|ExecutionException|TimeoutException e) {
-            Log.d(TAG, "Failed to fetch logo from " + sourceUrl, e);
+            Log.w(TAG, "Failed to fetch logo from " + sourceUrl);
             return;
         }
 

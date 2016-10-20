@@ -53,17 +53,20 @@ public class Connection implements Runnable {
 
     protected String mHostname;
     protected int mPort;
+    protected int mBufferSize;
 
     protected List<IConnectionListener> mHTSPConnectionListeners = new ArrayList<>();
     protected List<IMessageListener> mMessageListeners = new ArrayList<>();
 
     public Connection(String hostname, int port) {
+        // 1048576 = 1 MB
+        this(hostname, port, 1048576);
+    }
+
+    public Connection(String hostname, int port, int bufferSize) {
         mHostname = hostname;
         mPort = port;
-
-        // TODO: What size buffers?
-        mReadBuffer = ByteBuffer.allocate(10485760); // 10 MB
-
+        mBufferSize = bufferSize;
         mMessageQueue = new LinkedList<HtspMessage>();
     }
 
@@ -90,6 +93,7 @@ public class Connection implements Runnable {
             open();
         } catch (IOException e) {
             Log.e(TAG, "Failed to open HTSP connection", e);
+            setState(STATE_FAILED);
             return;
         }
 
@@ -144,12 +148,21 @@ public class Connection implements Runnable {
             }
         }
 
-        close();
+        if (getState() != STATE_CLOSED) {
+            close();
+        }
     }
 
     public void open() throws IOException {
         Log.i(TAG, "Opening HTSP Connection");
+
+        if (mSocketChannel != null) {
+            throw new RuntimeException("Attempted to open HTSP connection twice");
+        }
+
         setState(STATE_CONNECTING);
+
+        mReadBuffer = ByteBuffer.allocate(mBufferSize);
 
         final Object openLock = new Object();
 
@@ -197,27 +210,40 @@ public class Connection implements Runnable {
     }
 
     public void close() {
+        close(STATE_CLOSING);
+    }
+
+    public void close(int startState) {
+        if (getState() == STATE_CLOSED) {
+            Log.d(TAG, "Connection already closed, ignoring close request");
+            return;
+        }
+
         Log.i(TAG, "Closing HTSP Connection");
 
         mRunning = false;
-        setState(STATE_CLOSING);
+        setState(startState);
 
         // Clear out any pending messages
         mMessageQueue.clear();
+        mReadBuffer.clear();
 
         if (mSocketChannel != null) {
             try {
                 Log.w(TAG, "Calling SocketChannel close");
                 mSocketChannel.socket().close();
                 mSocketChannel.close();
+                mSocketChannel = null;
                 if (mSelector != null) {
                     mSelector.close();
                 }
+                mSelector = null;
             } catch (IOException e) {
                 Log.w(TAG, "Failed to close socket channel: " + e.getLocalizedMessage());
             }
         }
 
+        mSocketChannel = null;
         setState(STATE_CLOSED);
     }
 
@@ -244,6 +270,13 @@ public class Connection implements Runnable {
     }
 
     protected void setState(int state) {
+        Log.d(TAG, String.format("Transition to state %d from %d", state, mState));
+
+        if (state == mState) {
+            Log.e(TAG, "Attempted to setState to the current state");
+            return;
+        }
+
         int previousState = mState;
         mState = state;
 
@@ -275,11 +308,11 @@ public class Connection implements Runnable {
         int bytesToBeConsumed = bufferStartPosition + bytesRead;
 
         if (bytesRead == -1) {
-            close();
+            close(STATE_FAILED);
         } else if (bytesRead > 0) {
             int bytesConsumed = -1;
 
-            while (bytesConsumed != 0 && bytesToBeConsumed > 0) {
+            while (mRunning && bytesConsumed != 0 && bytesToBeConsumed > 0) {
                 bytesConsumed = processMessage(bytesToBeConsumed);
                 bytesToBeConsumed = bytesToBeConsumed - bytesConsumed;
             }

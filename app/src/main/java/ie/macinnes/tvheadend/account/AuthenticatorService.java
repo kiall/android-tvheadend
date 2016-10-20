@@ -18,16 +18,14 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.OnAccountsUpdateListener;
 import android.app.Service;
-import android.content.ContentResolver;
 import android.content.Intent;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.TvContractUtils;
-import ie.macinnes.tvheadend.sync.SyncUtils;
+import ie.macinnes.tvheadend.sync.EpgSyncService;
 
 public class AuthenticatorService extends Service {
     private static final String TAG = AuthenticatorService.class.getName();
@@ -55,8 +53,8 @@ public class AuthenticatorService extends Service {
                 if (!accountExists && currentAccount.type.equals(Constants.ACCOUNT_TYPE)) {
                     Log.d(TAG, "Account Removed: " + currentAccount.toString());
 
-                    // Remove the Periodic Sync (Is this necessary?)
-                    SyncUtils.removePeriodicSync(currentAccount);
+                    // Stop the EPG Sync Service
+                    getBaseContext().stopService(new Intent(getBaseContext(), EpgSyncService.class));
 
                     // Remove all the channels we added
                     TvContractUtils.removeChannels(getApplicationContext());
