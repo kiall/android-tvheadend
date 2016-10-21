@@ -16,7 +16,7 @@
 
 package ie.macinnes.htsp.messages;
 
-import ie.macinnes.htsp.HtspMessage;
+import ie.macinnes.htsp.ResponseMessage;
 
-public class EnableAsyncMetadataResponse extends BaseEventResponse {
+public class EnableAsyncMetadataResponse extends ResponseMessage {
 }

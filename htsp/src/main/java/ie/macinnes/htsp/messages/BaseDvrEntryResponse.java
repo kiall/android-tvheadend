@@ -20,20 +20,20 @@ import ie.macinnes.htsp.HtspMessage;
 import ie.macinnes.htsp.ResponseMessage;
 
 public class BaseDvrEntryResponse extends ResponseMessage {
-    protected Long mId;
+    protected int mId;
 
-    public Long getId() {
+    public int getId() {
         return mId;
     }
 
-    public void setId(Long id) {
+    public void setId(int id) {
         mId = id;
     }
 
     public void fromHtspMessage(HtspMessage htspMessage) {
         super.fromHtspMessage(htspMessage);
 
-        setId(htspMessage.getLong("id"));
+        setId(htspMessage.getInt("id"));
     }
 
     public String toString() {

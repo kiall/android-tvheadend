@@ -155,10 +155,10 @@ public class VlcSession extends BaseSession {
         stopPlayback();
 
         // Gather Details on the Channel
-        String channelUuid = channel.getInternalProviderData().getUuid();
+        int channelId = channel.getOriginalNetworkId();
 
         // Gather Details on the TVHeadend Instance
-        AccountManager accountManager = AccountManager.get(mContext);;
+        AccountManager accountManager = AccountManager.get(mContext);
         Account account = AccountUtils.getActiveAccount(mContext);
 
         String username = account.name;
@@ -172,9 +172,9 @@ public class VlcSession extends BaseSession {
         Uri videoUri;
 
         if (httpPath == null) {
-            videoUri = Uri.parse("http://" + username + ":" + password + "@" + hostname + ":" + httpPort + "/stream/channel/" + channelUuid + "?profile=tif");
+            videoUri = Uri.parse("http://" + username + ":" + password + "@" + hostname + ":" + httpPort + "/stream/channelid/" + channelId + "?profile=tif");
         } else {
-            videoUri = Uri.parse("http://" + username + ":" + password + "@" + hostname + ":" + httpPort + "/" + httpPath + "/stream/channel/" + channelUuid + "?profile=tif");
+            videoUri = Uri.parse("http://" + username + ":" + password + "@" + hostname + ":" + httpPort + "/" + httpPath + "/stream/channelid/" + channelId + "?profile=tif");
         }
 
         // Prepare the media player

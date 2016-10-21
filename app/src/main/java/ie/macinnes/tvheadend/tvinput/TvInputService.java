@@ -15,6 +15,7 @@ under the License.
 package ie.macinnes.tvheadend.tvinput;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -22,6 +23,7 @@ import android.util.Log;
 
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.migrate.MigrateUtils;
+import ie.macinnes.tvheadend.sync.EpgSyncService;
 
 
 public class TvInputService extends android.media.tv.TvInputService {
@@ -48,6 +50,9 @@ public class TvInputService extends android.media.tv.TvInputService {
                 Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
 
         mSessionType = sharedPreferences.getString(Constants.KEY_SESSION, Constants.SESSION_MEDIA_PLAYER);
+
+        // Start the EPG Sync Service
+        getApplicationContext().startService(new Intent(getApplicationContext(), EpgSyncService.class));
     }
 
     @Override

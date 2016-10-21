@@ -17,8 +17,9 @@
 package ie.macinnes.htsp.messages;
 
 import ie.macinnes.htsp.HtspMessage;
+import ie.macinnes.htsp.ResponseMessage;
 
-public class TagDeleteResponse extends BaseTagResponse {
+public class TagDeleteResponse extends ResponseMessage {
     static {
         HtspMessage.addMessageResponseType("tagDelete", TagDeleteResponse.class);
     }

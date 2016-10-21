@@ -17,8 +17,9 @@
 package ie.macinnes.htsp.messages;
 
 import ie.macinnes.htsp.HtspMessage;
+import ie.macinnes.htsp.ResponseMessage;
 
-public class EventDeleteResponse extends BaseEventResponse {
+public class EventDeleteResponse extends ResponseMessage {
     static {
         HtspMessage.addMessageResponseType("eventDelete", EventDeleteResponse.class);
     }

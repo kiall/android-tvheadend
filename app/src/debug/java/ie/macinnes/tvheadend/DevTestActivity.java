@@ -30,11 +30,8 @@ import org.json.JSONObject;
 import ie.macinnes.tvheadend.account.AccountUtils;
 import ie.macinnes.tvheadend.client.TVHClient;
 import ie.macinnes.tvheadend.migrate.MigrateUtils;
-import ie.macinnes.tvheadend.model.Channel;
-import ie.macinnes.tvheadend.model.ChannelList;
-import ie.macinnes.tvheadend.model.Program;
-import ie.macinnes.tvheadend.model.ProgramList;
 import ie.macinnes.tvheadend.settings.SettingsActivity;
+import ie.macinnes.tvheadend.sync.EpgSyncService;
 
 public class DevTestActivity extends Activity {
     private static final String TAG = DevTestActivity.class.getName();
@@ -119,6 +116,8 @@ public class DevTestActivity extends Activity {
         }
 
         setOk();
+
+        getApplicationContext().startService(new Intent(getApplicationContext(), EpgSyncService.class));
     }
 
     public void serverInfo(View view) {
@@ -142,39 +141,6 @@ public class DevTestActivity extends Activity {
         };
 
         mClient.getServerInfo(listener, errorListener);
-    }
-
-    public void channelList(View view) {
-        setRunning();
-        ChannelList channels = TvContractUtils.getChannels(getBaseContext(), null);
-        for (Channel channel : channels) {
-            appendDebugOutput(channel.toString());
-        }
-        setOk();
-    }
-
-    public void programList(View view) {
-        setRunning();
-        ChannelList channels = TvContractUtils.getChannels(getBaseContext(), null);
-        for (Channel channel : channels) {
-            appendDebugOutput(channel.toString());
-            appendDebugOutput("---");
-
-            ProgramList programs = TvContractUtils.getPrograms(getBaseContext(), channel);
-
-            int i = 0;
-
-            for (Program program : programs) {
-                appendDebugOutput(program.toString());
-                i++;
-
-                if (i == 5) {
-                    break;
-                }
-            }
-        }
-        appendDebugOutput("---");
-        setOk();
     }
 
     public void deleteChannels(View view) {

@@ -34,7 +34,6 @@
             <CheckBoxPreference
                 android:key="vlc_deinterlace_enabled"
                 android:title="Deinterlace Enabled"
-                android:summary="Deinterlace Enabled"
                 android:defaultValue="true" />
 
             <ListPreference
@@ -47,5 +46,4 @@
                 android:dependency="vlc_deinterlace_enabled"/>
         </PreferenceScreen>
     </PreferenceCategory>
-
 </PreferenceScreen>

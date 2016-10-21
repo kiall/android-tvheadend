@@ -19,11 +19,9 @@ import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.app.Activity;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.SyncStatusObserver;
 import android.media.tv.TvInputInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -43,7 +41,7 @@ import ie.macinnes.tvheadend.account.AccountUtils;
 import ie.macinnes.tvheadend.client.TVHClient;
 import ie.macinnes.tvheadend.migrate.MigrateUtils;
 import ie.macinnes.tvheadend.settings.SettingsActivity;
-import ie.macinnes.tvheadend.sync.SyncUtils;
+import ie.macinnes.tvheadend.sync.EpgSyncService;
 
 public class TvInputSetupActivity extends Activity {
     private static final String TAG = TvInputSetupActivity.class.getName();
@@ -334,30 +332,23 @@ public class TvInputSetupActivity extends Activity {
 
             // Move onto the next step
             GuidedStepFragment fragment = new SyncingFragment();
+//            GuidedStepFragment fragment = new CompletedFragment();
             fragment.setArguments(getArguments());
             add(getFragmentManager(), fragment);
         }
     }
 
     public static class SyncingFragment extends BaseGuidedStepFragment {
-        private Object mSyncStatusChangedReceiverHandle;
-        private final SyncStatusObserver mSyncStatusObserver = new SyncStatusObserver() {
 
+        protected Runnable mInitialSyncCompleteCallback = new Runnable() {
             @Override
-            public void onStatusChanged(int which) {
-                if (which == ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE) {
-                    if (!ContentResolver.isSyncActive(sAccount, Constants.CONTENT_AUTHORITY)) {
-                        Log.d(TAG, "Initial Sync Completed");
+            public void run() {
+                Log.d(TAG, "Initial Sync Completed");
 
-                        // Set up a periodic sync from now on
-                        SyncUtils.setUpPeriodicSync(sAccount);
-
-                        // Move to the CompletedFragment
-                        GuidedStepFragment fragment = new CompletedFragment();
-                        fragment.setArguments(getArguments());
-                        add(getFragmentManager(), fragment);
-                    }
-                }
+                // Move to the CompletedFragment
+                GuidedStepFragment fragment = new CompletedFragment();
+                fragment.setArguments(getArguments());
+                add(getFragmentManager(), fragment);
             }
         };
 
@@ -365,23 +356,24 @@ public class TvInputSetupActivity extends Activity {
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
 
-            mSyncStatusChangedReceiverHandle = ContentResolver.addStatusChangeListener(
-                    ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE, mSyncStatusObserver);
+            EpgSyncService.addInitialSyncCompleteCallback(mInitialSyncCompleteCallback);
         }
 
         @Override
         public void onDestroy() {
             super.onDestroy();
 
-            ContentResolver.removeStatusChangeListener(mSyncStatusChangedReceiverHandle);
+            EpgSyncService.removeInitialSyncCompleteCallback(mInitialSyncCompleteCallback);
         }
 
         @Override
         public void onStart() {
             super.onStart();
 
-            // Force a EPG sync
-            SyncUtils.requestSync(sAccount, true);
+            // Start EPG sync service
+            Context context = getActivity().getBaseContext();
+            context.stopService(new Intent(context, EpgSyncService.class));
+            context.startService(new Intent(context, EpgSyncService.class));
         }
 
         @Override
