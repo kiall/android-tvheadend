@@ -31,6 +31,7 @@ import ie.macinnes.htsp.Connection;
 import ie.macinnes.htsp.ConnectionListener;
 import ie.macinnes.htsp.tasks.AuthenticateTask;
 import ie.macinnes.tvheadend.Constants;
+import ie.macinnes.tvheadend.MiscUtils;
 import ie.macinnes.tvheadend.account.AccountUtils;
 
 public class EpgSyncService extends Service {
@@ -193,7 +194,9 @@ public class EpgSyncService extends Service {
             }
         };
 
-        final AuthenticateTask authenticateTask = new AuthenticateTask(username, password);
+        final String versionName = MiscUtils.getAppVersionName(mContext);
+        final AuthenticateTask authenticateTask = new AuthenticateTask(
+                username, password, "android-tvheadend (epg)", versionName);
 
         mConnection.addMessageListener(authenticateTask);
         authenticateTask.authenticate(authenticateTaskCallback);

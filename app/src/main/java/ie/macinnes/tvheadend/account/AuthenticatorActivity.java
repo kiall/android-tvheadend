@@ -45,6 +45,7 @@ import ie.macinnes.htsp.Connection;
 import ie.macinnes.htsp.ConnectionListener;
 import ie.macinnes.htsp.tasks.AuthenticateTask;
 import ie.macinnes.tvheadend.Constants;
+import ie.macinnes.tvheadend.MiscUtils;
 import ie.macinnes.tvheadend.R;
 import ie.macinnes.tvheadend.client.TVHClient;
 import ie.macinnes.tvheadend.migrate.MigrateUtils;
@@ -516,7 +517,9 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
                 }
             };
 
-            final AuthenticateTask authenticateTask = new AuthenticateTask(accountName, accountPassword);
+            final String versionName = MiscUtils.getAppVersionName(getActivity().getBaseContext());
+            final AuthenticateTask authenticateTask = new AuthenticateTask(
+                    accountName, accountPassword, "android-tvheadend (auth)", versionName);
             mConnection.addMessageListener(authenticateTask);
 
             ConnectionListener connectionListener = new ConnectionListener() {

@@ -37,12 +37,16 @@ public class AuthenticateTask extends MessageListener {
 
     private String mUsername;
     private String mPassword;
+    private String mClientName;
+    private String mClientVersion;
 
     private IAuthenticateTaskCallback mCallback;
 
-    public AuthenticateTask(String username, String password) {
+    public AuthenticateTask(String username, String password, String clientName, String clientVersion) {
         mUsername = username;
         mPassword = password;
+        mClientName = clientName;
+        mClientVersion = clientVersion;
     }
 
     @Override
@@ -67,8 +71,8 @@ public class AuthenticateTask extends MessageListener {
         HelloRequest helloRequest = new HelloRequest();
 
         helloRequest.setHtspVersion(23);
-        helloRequest.setClientName("Test");
-        helloRequest.setClientVersion("1.0.0");
+        helloRequest.setClientName(mClientName);
+        helloRequest.setClientVersion(mClientVersion);
         helloRequest.setUsername(mUsername);
 
         Log.d(TAG, "Sending helloRequest");
