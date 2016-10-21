@@ -107,7 +107,7 @@ class EpgSyncTask extends MessageListener {
         long unixTime = System.currentTimeMillis() / 1000L;
 
         EnableAsyncMetadataRequest enableAsyncMetadataRequest = new EnableAsyncMetadataRequest();
-        enableAsyncMetadataRequest.setEpgMaxTime(unixTime + 5 * 60 * 60);
+        enableAsyncMetadataRequest.setEpgMaxTime(unixTime + 6 * 60 * 60);
         enableAsyncMetadataRequest.setEpg(true);
 
         mConnection.sendMessage(enableAsyncMetadataRequest);
