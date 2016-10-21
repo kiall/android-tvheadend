@@ -29,10 +29,11 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.util.SparseArray;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
@@ -48,9 +49,9 @@ import ie.macinnes.htsp.messages.BaseChannelResponse;
 import ie.macinnes.htsp.messages.BaseEventResponse;
 import ie.macinnes.htsp.messages.EnableAsyncMetadataRequest;
 import ie.macinnes.htsp.messages.InitialSyncCompletedResponse;
+import ie.macinnes.htsp.tasks.GetFileTask;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.TvContractUtils;
-import ie.macinnes.tvheadend.tasks.SyncLogosTask;
 
 class EpgSyncTask extends MessageListener {
     // channelId and eventId in this are, ehh, confusing. We have the TVH channel/event IDs, and the
@@ -59,6 +60,8 @@ class EpgSyncTask extends MessageListener {
 
     protected Context mContext;
     protected Account mAccount;
+    protected GetFileTask mGetFileTask;
+
     protected Runnable mInitialSyncCompleteCallback;
 
     protected ContentResolver mContentResolver;
@@ -71,27 +74,10 @@ class EpgSyncTask extends MessageListener {
 
     protected ArrayList<ContentProviderOperation> mPendingProgramOps = new ArrayList<>();
 
-    private static final int CPU_COUNT = Runtime.getRuntime().availableProcessors();
-    private static final int INITIAL_POOL_SIZE = 1;
-    private static final int MAXIMUM_POOL_SIZE = CPU_COUNT * 2;
-    private static final int KEEP_ALIVE_TIME = 1;
-
-    private static final ThreadFactory sThreadFactory = new ThreadFactory() {
-        private final AtomicInteger mCount = new AtomicInteger(1);
-
-        public Thread newThread(Runnable r) {
-            return new Thread(r, "EpgSyncTask #" + mCount.getAndIncrement());
-        }
-    };
-    private static final BlockingQueue<Runnable> sPoolWorkQueue =
-            new LinkedBlockingQueue<Runnable>();
-
-    private static final Executor sExecutor = new ThreadPoolExecutor(INITIAL_POOL_SIZE, MAXIMUM_POOL_SIZE, KEEP_ALIVE_TIME,
-            TimeUnit.SECONDS, sPoolWorkQueue, sThreadFactory);
-
-    public EpgSyncTask(Context context, Account account) {
+    public EpgSyncTask(Context context, Account account, GetFileTask getFileTask) {
         mContext = context;
         mAccount = account;
+        mGetFileTask = getFileTask;
 
         mContentResolver = mContext.getContentResolver();
         mChannelUriMap = buildChannelUriMap();
@@ -158,14 +144,40 @@ class EpgSyncTask extends MessageListener {
         mSeenChannels.add(message.getChannelId());
     }
 
-    private void fetchChannelLogo(Uri channelUri, BaseChannelResponse message) {
-        Uri channelLogoUri = TvContract.buildChannelLogoUri(channelUri);
+    private void fetchChannelLogo(final Uri channelUri, BaseChannelResponse message) {
+        mGetFileTask.getFile(message.getChannelIcon(), new GetFileTask.IFileGetCallback() {
+            @Override
+            public void onSuccess(ByteBuffer buffer) {
+                Log.w(TAG, "onSuccess fetching logo for " + channelUri);
 
-        Map<Uri, String> logos = new HashMap<>();
-        logos.put(channelLogoUri, message.getChannelIcon());
+                Uri channelLogoUri = TvContract.buildChannelLogoUri(channelUri);
 
-        SyncLogosTask syncLogosTask = new SyncLogosTask(mContext);
-        syncLogosTask.executeOnExecutor(sExecutor, logos);
+                OutputStream os = null;
+                byte[] bytes = new byte[buffer.remaining()];
+                buffer.get(bytes);
+
+                try {
+                    os = mContentResolver.openOutputStream(channelLogoUri);
+                    os.write(bytes);
+                    Log.d(TAG, "Successfully stored logo to " + channelLogoUri);
+                } catch (IOException ioe) {
+                    Log.e(TAG, "Failed to store logo to " + channelLogoUri, ioe);
+                } finally {
+                    if (os != null) {
+                        try {
+                            os.close();
+                        } catch (IOException e) {
+                            // Ignore...
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure() {
+                Log.w(TAG, "onFailure fetching logo for " + channelUri);
+            }
+        });
     }
 
     private void handleEvent(BaseEventResponse message) {

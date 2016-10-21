@@ -14,15 +14,17 @@
  * under the License.
  */
 
-package ie.macinnes.htsp;
+package ie.macinnes.htsp.messages;
 
-public class BaseMessage {
-    public static final int INVALID_INT_VALUE = -1;
-    public static final long INVALID_LONG_VALUE = -1;
+import ie.macinnes.htsp.HtspMessage;
+import ie.macinnes.htsp.ResponseMessage;
 
-    public HtspMessage toHtspMessage() {
-        return new HtspMessage();
+public class FileCloseResponse extends ResponseMessage {
+    static {
+        HtspMessage.addMessageResponseType("fileClose", FileCloseResponse.class);
     }
 
-    public void fromHtspMessage(HtspMessage htspMessage) {}
+    public String toString() {
+        return "FileClose";
+    }
 }

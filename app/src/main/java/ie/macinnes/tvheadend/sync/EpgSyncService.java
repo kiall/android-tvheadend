@@ -30,6 +30,7 @@ import java.util.List;
 import ie.macinnes.htsp.Connection;
 import ie.macinnes.htsp.ConnectionListener;
 import ie.macinnes.htsp.tasks.AuthenticateTask;
+import ie.macinnes.htsp.tasks.GetFileTask;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.MiscUtils;
 import ie.macinnes.tvheadend.account.AccountUtils;
@@ -47,6 +48,7 @@ public class EpgSyncService extends Service {
     protected Connection mConnection;
     protected Thread mConnectionThread;
     protected EpgSyncTask mEpgSyncTask;
+    protected GetFileTask mGetFileTask;
 
     protected static List<Runnable> sInitialSyncCompleteCallbacks = new ArrayList<>();
 
@@ -115,6 +117,7 @@ public class EpgSyncService extends Service {
         }
 
         initHtspConnection();
+        installTasks();
         enableAsyncMetadata();
     }
 
@@ -215,10 +218,18 @@ public class EpgSyncService extends Service {
         }
     }
 
+    protected void installTasks() {
+        Log.d(TAG, "Adding GetFileTask");
+        mGetFileTask = new GetFileTask(mContext);
+        mConnection.addMessageListener(mGetFileTask);
+
+        Log.d(TAG, "Adding EpgSyncTask");
+        mEpgSyncTask = new EpgSyncTask(mContext, mAccount, mGetFileTask);
+        mConnection.addMessageListener(mEpgSyncTask);
+    }
+
     protected void enableAsyncMetadata() {
         Log.d(TAG, "Enabling Async Metadata");
-        mEpgSyncTask = new EpgSyncTask(mContext, mAccount);
-        mConnection.addMessageListener(mEpgSyncTask);
         mEpgSyncTask.enableAsyncMetadata(mInitialSyncCompleteCallback);
     }
 

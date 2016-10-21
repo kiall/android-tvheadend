@@ -19,40 +19,28 @@ package ie.macinnes.htsp.messages;
 import ie.macinnes.htsp.HtspMessage;
 import ie.macinnes.htsp.ResponseMessage;
 
-public class GetEventsResponse extends ResponseMessage {
+public class FileReadResponse extends ResponseMessage {
     static {
-        HtspMessage.addMessageResponseType("getEvents", GetEventsResponse.class);
+        HtspMessage.addMessageResponseType("fileRead", FileReadResponse.class);
     }
 
-    protected BaseEventResponse[] mEvents;
+    protected byte[] mData;
 
-    public Object[] getEvents() {
-        return mEvents;
+    public byte[] getData() {
+        return mData;
     }
 
-    public void setEvents(BaseEventResponse[] events) {
-        mEvents = events;
+    public void setData(byte[] data) {
+        mData = data;
     }
 
     public void fromHtspMessage(HtspMessage htspMessage) {
         super.fromHtspMessage(htspMessage);
 
-        HtspMessage[] htspMessages = htspMessage.getHtspMessageArray("events");
-
-        BaseEventResponse[] events = new BaseEventResponse[htspMessages.length];
-
-        int i = 0;
-
-        for (HtspMessage m : htspMessages) {
-            events[i] = new EventAddResponse();
-            events[i].fromHtspMessage(m);
-            i++;
-        }
-
-        setEvents(events);
+        setData(htspMessage.getByteArray("data"));
     }
 
     public String toString() {
-        return "Event Count: " + mEvents.length;
+        return "FileRead";
     }
 }
