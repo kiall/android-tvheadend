@@ -19,12 +19,14 @@ package ie.macinnes.tvheadend;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.util.Base64;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class MiscUtils {
     public static String getAppVersionName(Context context) {
-        String versionName;
-
         try {
             String packageName = context.getPackageName();
             PackageInfo info = context.getPackageManager().getPackageInfo(packageName, 0);
@@ -32,5 +34,17 @@ public class MiscUtils {
         } catch (PackageManager.NameNotFoundException e) {
             return "?";
         }
+    }
+
+    public static Map<String, String> createBasicAuthHeader(String username, String password) {
+        Map<String, String> headerMap = new HashMap<String, String>();
+
+        String credentials = username + ":" + password;
+
+        String base64EncodedCredentials =
+                Base64.encodeToString(credentials.getBytes(), Base64.NO_WRAP);
+        headerMap.put("Authorization", "Basic " + base64EncodedCredentials);
+
+        return headerMap;
     }
 }

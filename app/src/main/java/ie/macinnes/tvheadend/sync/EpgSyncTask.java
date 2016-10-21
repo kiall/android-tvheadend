@@ -148,7 +148,7 @@ class EpgSyncTask extends MessageListener {
         mGetFileTask.getFile(message.getChannelIcon(), new GetFileTask.IFileGetCallback() {
             @Override
             public void onSuccess(ByteBuffer buffer) {
-                Log.w(TAG, "onSuccess fetching logo for " + channelUri);
+                Log.d(TAG, "Storing logo for " + channelUri);
 
                 Uri channelLogoUri = TvContract.buildChannelLogoUri(channelUri);
 
@@ -175,7 +175,7 @@ class EpgSyncTask extends MessageListener {
 
             @Override
             public void onFailure() {
-                Log.w(TAG, "onFailure fetching logo for " + channelUri);
+                Log.w(TAG, "Failed to fetch logo for " + channelUri);
             }
         });
     }

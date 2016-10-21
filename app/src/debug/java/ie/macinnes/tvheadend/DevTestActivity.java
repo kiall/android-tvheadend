@@ -22,13 +22,9 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-
 import org.json.JSONObject;
 
 import ie.macinnes.tvheadend.account.AccountUtils;
-import ie.macinnes.tvheadend.client.TVHClient;
 import ie.macinnes.tvheadend.migrate.MigrateUtils;
 import ie.macinnes.tvheadend.settings.SettingsActivity;
 import ie.macinnes.tvheadend.sync.EpgSyncService;
@@ -38,7 +34,6 @@ public class DevTestActivity extends Activity {
     private static final String NEWLINE = System.getProperty("line.separator");
 
     private AccountManager mAccountManager;
-    private TVHClient mClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +44,6 @@ public class DevTestActivity extends Activity {
         setContentView(R.layout.activity_dev_test);
 
         mAccountManager = AccountManager.get(getBaseContext());
-        mClient = TVHClient.getInstance(getBaseContext());
     }
 
     private void setRunning() {
@@ -111,36 +105,11 @@ public class DevTestActivity extends Activity {
 
             String httpPath = mAccountManager.getUserData(account, Constants.KEY_HTTP_PATH);
             appendDebugOutput("Account HTTP Path: " + httpPath);
-
-            mClient.setConnectionInfo(hostname, httpPort, httpPath, username, password);
         }
 
         setOk();
 
         getApplicationContext().startService(new Intent(getApplicationContext(), EpgSyncService.class));
-    }
-
-    public void serverInfo(View view) {
-        setRunning();
-
-        Response.Listener<JSONObject> listener = new Response.Listener<JSONObject>() {
-
-            @Override
-            public void onResponse(JSONObject response) {
-                setOk();
-                setDebugOutput(response.toString());
-            }
-        };
-
-        Response.ErrorListener errorListener = new Response.ErrorListener() {
-
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                setFail();
-            }
-        };
-
-        mClient.getServerInfo(listener, errorListener);
     }
 
     public void deleteChannels(View view) {

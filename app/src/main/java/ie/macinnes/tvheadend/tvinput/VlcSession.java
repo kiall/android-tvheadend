@@ -38,9 +38,8 @@ import java.util.List;
 import java.util.Map;
 
 import ie.macinnes.tvheadend.Constants;
+import ie.macinnes.tvheadend.MiscUtils;
 import ie.macinnes.tvheadend.account.AccountUtils;
-import ie.macinnes.tvheadend.client.ClientUtils;
-import ie.macinnes.tvheadend.model.Channel;
 
 public class VlcSession extends BaseSession {
     private static final String TAG = VlcSession.class.getName();
@@ -150,12 +149,9 @@ public class VlcSession extends BaseSession {
         return result;
     }
 
-    protected boolean playChannel(Channel channel) {
+    protected boolean playChannel(int tvhChannelId) {
         // Stop any existing playback
         stopPlayback();
-
-        // Gather Details on the Channel
-        int channelId = channel.getOriginalNetworkId();
 
         // Gather Details on the TVHeadend Instance
         AccountManager accountManager = AccountManager.get(mContext);
@@ -168,13 +164,13 @@ public class VlcSession extends BaseSession {
         String httpPath = accountManager.getUserData(account, Constants.KEY_HTTP_PATH);
 
         // Create authentication headers and streamUri
-        Map<String, String> headers = ClientUtils.createBasicAuthHeader(username, password);
+        Map<String, String> headers = MiscUtils.createBasicAuthHeader(username, password);
         Uri videoUri;
 
         if (httpPath == null) {
-            videoUri = Uri.parse("http://" + username + ":" + password + "@" + hostname + ":" + httpPort + "/stream/channelid/" + channelId + "?profile=tif");
+            videoUri = Uri.parse("http://" + username + ":" + password + "@" + hostname + ":" + httpPort + "/stream/channelid/" + tvhChannelId + "?profile=tif");
         } else {
-            videoUri = Uri.parse("http://" + username + ":" + password + "@" + hostname + ":" + httpPort + "/" + httpPath + "/stream/channelid/" + channelId + "?profile=tif");
+            videoUri = Uri.parse("http://" + username + ":" + password + "@" + hostname + ":" + httpPort + "/" + httpPath + "/stream/channelid/" + tvhChannelId + "?profile=tif");
         }
 
         // Prepare the media player
@@ -182,7 +178,7 @@ public class VlcSession extends BaseSession {
 
         if (mMediaPlayer != null) {
             // Start the media playback
-            Log.d(TAG, "Starting playback of channel: " + channel.toString());
+            Log.d(TAG, "Starting playback of channel: " + tvhChannelId);
             mMediaPlayer.play();
 
             return true;
