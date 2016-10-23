@@ -17,6 +17,7 @@ package ie.macinnes.tvheadend;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -108,8 +109,6 @@ public class DevTestActivity extends Activity {
         }
 
         setOk();
-
-        getApplicationContext().startService(new Intent(getApplicationContext(), EpgSyncService.class));
     }
 
     public void deleteChannels(View view) {
@@ -120,5 +119,12 @@ public class DevTestActivity extends Activity {
 
     public void showPreferences(View view) {
         startActivity(SettingsActivity.getPreferencesIntent(this));
+    }
+
+    public void restartEpgSyncService(View view) {
+        Context context = getBaseContext();
+        Intent i = new Intent(context, EpgSyncService.class);
+        context.stopService(i);
+        context.startService(i);
     }
 }
