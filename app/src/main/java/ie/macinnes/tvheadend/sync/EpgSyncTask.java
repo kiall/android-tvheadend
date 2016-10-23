@@ -22,6 +22,7 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.OperationApplicationException;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.media.tv.TvContract;
 import android.net.Uri;
@@ -74,6 +75,9 @@ class EpgSyncTask extends MessageListener {
 
     protected ArrayList<ContentProviderOperation> mPendingProgramOps = new ArrayList<>();
 
+    protected SharedPreferences mSharedPreferences;
+    protected SharedPreferences.Editor mSharedPreferencesEditor;
+
     public EpgSyncTask(Context context, Account account, GetFileTask getFileTask) {
         mContext = context;
         mAccount = account;
@@ -85,16 +89,24 @@ class EpgSyncTask extends MessageListener {
 
         mSeenChannels = new HashSet<>();
         mSeenPrograms = new HashSet<>();
+
+        mSharedPreferences = context.getSharedPreferences(
+                Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
+        mSharedPreferencesEditor = mSharedPreferences.edit();
     }
 
     public void enableAsyncMetadata(Runnable initialSyncCompleteCallback) {
+        long lastUpdate = mSharedPreferences.getLong(Constants.KEY_EPG_LAST_UPDATE, 0);
+        long epgMaxTime = (System.currentTimeMillis() / 1000L) + 24 * 60 * 60;
+
+        Log.i(TAG, "Enabling Async Metadata. Last Update: " + lastUpdate + ", EPG max time: " + epgMaxTime);
+
         mInitialSyncCompleteCallback = initialSyncCompleteCallback;
 
-        long unixTime = System.currentTimeMillis() / 1000L;
-
         EnableAsyncMetadataRequest enableAsyncMetadataRequest = new EnableAsyncMetadataRequest();
-        enableAsyncMetadataRequest.setEpgMaxTime(unixTime + 6 * 60 * 60);
+        enableAsyncMetadataRequest.setEpgMaxTime(epgMaxTime);
         enableAsyncMetadataRequest.setEpg(true);
+        enableAsyncMetadataRequest.setLastUpdate(lastUpdate);
 
         mConnection.sendMessage(enableAsyncMetadataRequest);
     }
@@ -104,6 +116,7 @@ class EpgSyncTask extends MessageListener {
         Log.v(TAG, "Received Message: " + message.getClass() + " / " + message.toString());
 
         if (message instanceof InitialSyncCompletedResponse) {
+            // Store the lastUpdate time, used for the next sync.
             flushPendingProgramOps();
             deleteChannels();
             deletePrograms();
@@ -114,10 +127,19 @@ class EpgSyncTask extends MessageListener {
                 mInitialSyncCompleteCallback.run();
             }
         } else if (message instanceof BaseChannelResponse) {
+            storeLastUpdate();
             handleChannel((BaseChannelResponse) message);
         } else if (message instanceof BaseEventResponse) {
+            storeLastUpdate();
             handleEvent((BaseEventResponse) message);
         }
+    }
+
+    protected void storeLastUpdate() {
+        long unixTime = System.currentTimeMillis() / 1000L;
+
+        mSharedPreferencesEditor.putLong(Constants.KEY_EPG_LAST_UPDATE, unixTime);
+        mSharedPreferencesEditor.apply();
     }
 
     private void handleChannel(BaseChannelResponse message) {
