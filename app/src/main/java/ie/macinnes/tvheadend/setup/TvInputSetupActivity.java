@@ -38,7 +38,6 @@ import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.R;
 import ie.macinnes.tvheadend.TvContractUtils;
 import ie.macinnes.tvheadend.account.AccountUtils;
-import ie.macinnes.tvheadend.client.TVHClient;
 import ie.macinnes.tvheadend.migrate.MigrateUtils;
 import ie.macinnes.tvheadend.settings.SettingsActivity;
 import ie.macinnes.tvheadend.sync.EpgSyncService;
@@ -62,7 +61,6 @@ public class TvInputSetupActivity extends Activity {
         protected AccountManager mAccountManager;
 
         protected static Account sAccount;
-        protected static TVHClient sClient;
 
         @Override
         public int onProvideTheme() {
@@ -82,7 +80,6 @@ public class TvInputSetupActivity extends Activity {
             }
 
             mAccountManager = AccountManager.get(getActivity());
-            sClient = TVHClient.getInstance(getActivity());
         }
 
         protected Account getAccountByName(String name) {
@@ -250,9 +247,6 @@ public class TvInputSetupActivity extends Activity {
         @Override
         public void onGuidedActionClicked(GuidedAction action) {
             if (ACTION_ID_CONFIRM == action.getId()) {
-                // Setup the client with the selected account
-                sClient.setConnectionInfo(sAccount);
-
                 // Move onto the next step
                 GuidedStepFragment fragment = new SessionSelectorFragment();
                 fragment.setArguments(getArguments());

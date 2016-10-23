@@ -23,9 +23,6 @@ import android.media.tv.TvContract.Channels;
 import android.net.Uri;
 import android.util.Log;
 
-import ie.macinnes.tvheadend.model.Channel;
-import ie.macinnes.tvheadend.model.ChannelList;
-
 public class TvContractUtils {
     private static final String TAG = TvContractUtils.class.getName();
 
@@ -37,13 +34,19 @@ public class TvContractUtils {
         return TvContract.buildInputId(componentName);
     }
 
-    public static Channel getChannelFromChannelUri(Context context, Uri channelUri) {
+    public static Integer getTvhChannelIdFromChannelUri(Context context, Uri channelUri) {
         ContentResolver resolver = context.getContentResolver();
 
+        String[] projection = {Channels._ID, Channels.COLUMN_ORIGINAL_NETWORK_ID};
+
         // TODO: Handle when more than 1, or 0 results come back
-        try (Cursor cursor = resolver.query(channelUri, null, null,null, null)) {
-            return ChannelList.fromCursor(cursor).get(0);
+        try (Cursor cursor = resolver.query(channelUri, projection, null,null, null)) {
+            while (cursor != null && cursor.moveToNext()) {
+                return cursor.getInt(1);
+            }
         }
+
+        return null;
     }
 
     public static void removeChannels(Context context) {

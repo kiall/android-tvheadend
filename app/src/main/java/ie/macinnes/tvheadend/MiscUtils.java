@@ -1,0 +1,50 @@
+/*
+ * Copyright (c) 2016 Kiall Mac Innes <kiall@macinnes.ie>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain
+ * a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+
+package ie.macinnes.tvheadend;
+
+import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.util.Base64;
+
+import java.util.HashMap;
+import java.util.Map;
+
+
+public class MiscUtils {
+    public static String getAppVersionName(Context context) {
+        try {
+            String packageName = context.getPackageName();
+            PackageInfo info = context.getPackageManager().getPackageInfo(packageName, 0);
+            return info.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            return "?";
+        }
+    }
+
+    public static Map<String, String> createBasicAuthHeader(String username, String password) {
+        Map<String, String> headerMap = new HashMap<String, String>();
+
+        String credentials = username + ":" + password;
+
+        String base64EncodedCredentials =
+                Base64.encodeToString(credentials.getBytes(), Base64.NO_WRAP);
+        headerMap.put("Authorization", "Basic " + base64EncodedCredentials);
+
+        return headerMap;
+    }
+}

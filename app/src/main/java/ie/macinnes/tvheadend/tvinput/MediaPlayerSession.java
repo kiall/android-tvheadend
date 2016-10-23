@@ -29,9 +29,8 @@ import android.widget.Toast;
 import java.util.Map;
 
 import ie.macinnes.tvheadend.Constants;
+import ie.macinnes.tvheadend.MiscUtils;
 import ie.macinnes.tvheadend.account.AccountUtils;
-import ie.macinnes.tvheadend.client.ClientUtils;
-import ie.macinnes.tvheadend.model.Channel;
 
 public class MediaPlayerSession extends BaseSession {
     private static final String TAG = MediaPlayerSession.class.getName();
@@ -72,12 +71,9 @@ public class MediaPlayerSession extends BaseSession {
         }
     }
 
-    protected boolean playChannel(Channel channel) {
+    protected boolean playChannel(int tvhChannelId) {
         // Stop any existing playback
         stopPlayback();
-
-        // Gather Details on the Channel
-        String channelUuid = channel.getInternalProviderData().getUuid();
 
         // Gather Details on the TVHeadend Instance
         AccountManager accountManager = AccountManager.get(mContext);
@@ -90,13 +86,13 @@ public class MediaPlayerSession extends BaseSession {
         String httpPath = accountManager.getUserData(account, Constants.KEY_HTTP_PATH);
 
         // Create authentication headers and streamUri
-        Map<String, String> headers = ClientUtils.createBasicAuthHeader(username, password);
+        Map<String, String> headers = MiscUtils.createBasicAuthHeader(username, password);
         Uri videoUri;
 
         if (httpPath == null) {
-            videoUri = Uri.parse("http://" + hostname + ":" + httpPort + "/stream/channel/" + channelUuid + "?profile=tif");
+            videoUri = Uri.parse("http://" + hostname + ":" + httpPort + "/stream/channelid/" + tvhChannelId + "?profile=tif");
         } else {
-            videoUri = Uri.parse("http://" + hostname + ":" + httpPort + "/" + httpPath + "/stream/channel/" + channelUuid + "?profile=tif");
+            videoUri = Uri.parse("http://" + hostname + ":" + httpPort + "/" + httpPath + "/stream/channelid/" + tvhChannelId + "?profile=tif");
         }
 
         // Prepare the media player
@@ -104,7 +100,7 @@ public class MediaPlayerSession extends BaseSession {
 
         if (mMediaPlayer != null) {
             // Start the media playback
-            Log.d(TAG, "Starting playback of channel: " + channel.toString());
+            Log.d(TAG, "Starting playback of channel: " + tvhChannelId);
             mMediaPlayer.start();
             notifyVideoAvailable();
 

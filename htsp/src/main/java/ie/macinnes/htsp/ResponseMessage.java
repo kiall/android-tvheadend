@@ -41,7 +41,7 @@ public class ResponseMessage extends BaseMessage {
     public void fromHtspMessage(HtspMessage htspMessage) {
         super.fromHtspMessage(htspMessage);
 
-        setSeq(htspMessage.getInt("seq", INVALID_SEQ));
+        setSeq(htspMessage.getInt("seq", INVALID_INT_VALUE));
         setError(htspMessage.getString("error", null));
     }
 }

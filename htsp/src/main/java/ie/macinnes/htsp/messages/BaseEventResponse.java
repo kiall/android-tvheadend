@@ -26,9 +26,6 @@ import ie.macinnes.htsp.HtspMessage;
 import ie.macinnes.htsp.ResponseMessage;
 
 public class BaseEventResponse extends ResponseMessage {
-    public static final int INVALID_INT_VALUE = -1;
-    public static final long INVALID_LONG_VALUE = -1;
-
     protected int mEventId;
     protected int mChannelId;
     protected Long mStart;

@@ -248,7 +248,7 @@ public class Connection implements Runnable {
     }
 
     public void sendMessage(HtspMessage htspMessage) {
-        Log.i(TAG, "Sending HtspMessage: " + htspMessage.toString());
+        Log.d(TAG, "Sending HtspMessage: " + htspMessage.toString());
 
         mMessageQueue.add(htspMessage);
 

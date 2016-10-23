@@ -28,15 +28,6 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.NetworkError;
-import com.android.volley.NoConnectionError;
-import com.android.volley.ParseError;
-import com.android.volley.Response;
-import com.android.volley.ServerError;
-import com.android.volley.TimeoutError;
-import com.android.volley.VolleyError;
-
 import org.json.JSONObject;
 
 import java.util.List;
@@ -45,12 +36,12 @@ import ie.macinnes.htsp.Connection;
 import ie.macinnes.htsp.ConnectionListener;
 import ie.macinnes.htsp.tasks.AuthenticateTask;
 import ie.macinnes.tvheadend.Constants;
+import ie.macinnes.tvheadend.MiscUtils;
 import ie.macinnes.tvheadend.R;
-import ie.macinnes.tvheadend.client.TVHClient;
 import ie.macinnes.tvheadend.migrate.MigrateUtils;
 
 public class AuthenticatorActivity extends AccountAuthenticatorActivity {
-    private static final String TAG = TVHClient.class.getName();
+    private static final String TAG = AuthenticatorActivity.class.getName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -298,114 +289,10 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
                 args.putString(Constants.KEY_PASSWORD, passwordAction.getDescription().toString());
 
                 // Move to the next step
-                GuidedStepFragment fragment = new ValidateHTTPAccountFragment();
+                GuidedStepFragment fragment = new ValidateHTSPAccountFragment();
                 fragment.setArguments(args);
                 add(getFragmentManager(), fragment);
             }
-        }
-    }
-
-    public static class ValidateHTTPAccountFragment extends BaseGuidedStepFragment {
-        private static final int ACTION_ID_PROCESSING = 1;
-
-        @Override
-        public GuidedActionsStylist onCreateActionsStylist() {
-            GuidedActionsStylist stylist = new GuidedActionsStylist() {
-                @Override
-                public int onProvideItemLayoutId() {
-                    return R.layout.setup_progress;
-                }
-
-            };
-            return stylist;
-        }
-
-        @Override
-        public int onProvideTheme() {
-            return R.style.Theme_Wizard_Account_NoSelector;
-        }
-
-        @NonNull
-        @Override
-        public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
-            GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
-                    "Tvheadend Account",
-                    "Checking your HTTP account", null, null);
-
-            return guidance;
-        }
-
-        @Override
-        public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
-            GuidedAction action = new GuidedAction.Builder(getActivity())
-                    .id(ACTION_ID_PROCESSING)
-                    .title("Processing")
-                    .infoOnly(true)
-                    .build();
-            actions.add(action);
-        }
-
-        @Override
-        public void onStart() {
-            super.onStart();
-
-            Bundle args = getArguments();
-
-            final String accountName = args.getString(Constants.KEY_USERNAME);
-            final String accountPassword = args.getString(Constants.KEY_PASSWORD);
-            final String accountHostname = args.getString(Constants.KEY_HOSTNAME);
-            final String accountHttpPort = args.getString(Constants.KEY_HTTP_PORT);
-            final String accountHttpPath = args.getString(Constants.KEY_HTTP_PATH);
-
-            // Validate the User and Pass by connecting to TVHeadend va
-            Response.Listener<JSONObject> listener = new Response.Listener<JSONObject>() {
-
-                @Override
-                public void onResponse(JSONObject response) {
-                    Log.d(TAG, "Successfully validated HTTP credentials");
-
-                    // Move to the ValidateHTSPAccountFragment
-                    GuidedStepFragment fragment = new ValidateHTSPAccountFragment();
-                    fragment.setArguments(getArguments());
-                    add(getFragmentManager(), fragment);
-
-                }
-            };
-
-            Response.ErrorListener errorListener = new Response.ErrorListener() {
-
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    Log.d(TAG, "Failed to validate credentials");
-
-                    Bundle args = getArguments();
-
-                    if (error instanceof TimeoutError || error instanceof NoConnectionError) {
-                        args.putString(Constants.KEY_ERROR_MESSAGE, "Network Timeout!");
-                    } else if (error instanceof AuthFailureError) {
-                        args.putString(Constants.KEY_ERROR_MESSAGE, "Auth Failure!");
-                    } else if (error instanceof ServerError) {
-                        args.putString(Constants.KEY_ERROR_MESSAGE, "Unknown Server Error");
-                    } else if (error instanceof NetworkError) {
-                        args.putString(Constants.KEY_ERROR_MESSAGE, "Unknown Network Error");
-                    } else if (error instanceof ParseError) {
-                        args.putString(Constants.KEY_ERROR_MESSAGE, "Unknown Parse Error");
-                    } else {
-                        args.putString(Constants.KEY_ERROR_MESSAGE, "Unknown Error");
-                    }
-
-                    // Move to the failed step
-                    GuidedStepFragment fragment = new FailedFragment();
-                    fragment.setArguments(args);
-                    add(getFragmentManager(), fragment);
-                }
-            };
-
-            TVHClient client = TVHClient.getInstance(getActivity());
-
-            client.setConnectionInfo(accountHostname, accountHttpPort, accountHttpPath, accountName, accountPassword);
-
-            client.getServerInfo(listener, errorListener);
         }
     }
 
@@ -516,7 +403,9 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
                 }
             };
 
-            final AuthenticateTask authenticateTask = new AuthenticateTask(accountName, accountPassword);
+            final String versionName = MiscUtils.getAppVersionName(getActivity().getBaseContext());
+            final AuthenticateTask authenticateTask = new AuthenticateTask(
+                    accountName, accountPassword, "android-tvheadend (auth)", versionName);
             mConnection.addMessageListener(authenticateTask);
 
             ConnectionListener connectionListener = new ConnectionListener() {
