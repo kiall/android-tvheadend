@@ -136,10 +136,12 @@ public class Connection implements Runnable {
                     }
                 }
 
-                if (mSocketChannel.isConnected() && mMessageQueue.isEmpty()) {
-                    mSocketChannel.register(mSelector, SelectionKey.OP_READ);
-                } else if (mSocketChannel.isConnected()) {
-                    mSocketChannel.register(mSelector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+                if (mSocketChannel != null) {
+                    if (mSocketChannel.isConnected() && mMessageQueue.isEmpty()) {
+                        mSocketChannel.register(mSelector, SelectionKey.OP_READ);
+                    } else if (mSocketChannel.isConnected()) {
+                        mSocketChannel.register(mSelector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+                    }
                 }
             } catch (Exception e) {
                 Log.e(TAG, "Something failed - shutting down", e);
@@ -233,17 +235,24 @@ public class Connection implements Runnable {
                 Log.w(TAG, "Calling SocketChannel close");
                 mSocketChannel.socket().close();
                 mSocketChannel.close();
-                mSocketChannel = null;
-                if (mSelector != null) {
-                    mSelector.close();
-                }
-                mSelector = null;
             } catch (IOException e) {
                 Log.w(TAG, "Failed to close socket channel: " + e.getLocalizedMessage());
+            } finally {
+                mSocketChannel = null;
             }
         }
 
-        mSocketChannel = null;
+        if (mSelector != null) {
+            try {
+                Log.w(TAG, "Calling Selector close");
+                mSelector.close();
+            } catch (IOException e) {
+                Log.w(TAG, "Failed to close socket channel: " + e.getLocalizedMessage());
+            } finally {
+                mSelector = null;
+            }
+        }
+
         setState(STATE_CLOSED);
     }
 
