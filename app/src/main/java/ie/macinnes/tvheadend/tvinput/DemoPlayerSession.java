@@ -100,7 +100,7 @@ public class DemoPlayerSession extends BaseSession implements DemoPlayer.Listene
         if (httpPath == null) {
             videoUri = Uri.parse("http://" + hostname + ":" + httpPort + "/stream/channelid/" + tvhChannelId + "?profile=tif");
         } else {
-            videoUri = Uri.parse("http://" + hostname + ":" + httpPort + "/" + httpPath + "/stream/channel/" + tvhChannelId + "?profile=tif");
+            videoUri = Uri.parse("http://" + hostname + ":" + httpPort + "/" + httpPath + "/stream/channelid/" + tvhChannelId + "?profile=tif");
         }
 
         // Prepare the media player
