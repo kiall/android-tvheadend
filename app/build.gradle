@@ -9,6 +9,7 @@ android {
         targetSdkVersion 24
         versionCode 47
         versionName '0.2.' + versionCode
+        setProperty("archivesBaseName", "$applicationId.$versionName")
     }
 
     buildTypes {
