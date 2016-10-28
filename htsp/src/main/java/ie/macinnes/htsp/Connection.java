@@ -25,6 +25,7 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.nio.channels.UnresolvedAddressException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -100,9 +101,8 @@ public class Connection implements Runnable {
     public void run() {
         try {
             open();
-        } catch (IOException e) {
+        } catch (ConnectionException e) {
             Log.e(TAG, "Failed to open HTSP connection", e);
-            setState(STATE_FAILED);
             return;
         }
 
@@ -166,7 +166,7 @@ public class Connection implements Runnable {
         }
     }
 
-    public void open() throws IOException {
+    public void open() throws ConnectionException {
         Log.i(TAG, "Opening HTSP Connection");
 
         if (mSocketChannel != null) {
@@ -179,27 +179,26 @@ public class Connection implements Runnable {
 
         final Object openLock = new Object();
 
-        mSocketChannel = SocketChannel.open();
-
         try {
+            mSocketChannel = SocketChannel.open();
             mSocketChannel.connect(new InetSocketAddress(mHostname, mPort));
-        } catch (ConnectException e) {
-            Log.w(TAG, "HTSP Connection Failure", e);
+            mSocketChannel.configureBlocking(false);
+            mSelector = Selector.open();
+        } catch (IOException e) {
             setState(STATE_FAILED);
-            return;
+            throw new ConnectionException(e.getLocalizedMessage(), e);
+        } catch (UnresolvedAddressException e) {
+            setState(STATE_FAILED);
+            throw new ConnectionException(e);
         }
 
-        mSocketChannel.configureBlocking(false);
 
         try {
-            mSelector = Selector.open();
-        } catch (ConnectException e) {
-            Log.w(TAG, "HTSP Connection Failure to open Selector", e);
+            mSocketChannel.register(mSelector, SelectionKey.OP_CONNECT, openLock);
+        } catch (ClosedChannelException e) {
             setState(STATE_FAILED);
-            return;
+            throw new ConnectionException(e.getLocalizedMessage(), e);
         }
-
-        mSocketChannel.register(mSelector, SelectionKey.OP_CONNECT, openLock);
 
         mRunning = true;
 
@@ -207,14 +206,12 @@ public class Connection implements Runnable {
             try {
                 openLock.wait(2000);
                 if (mSocketChannel.isConnectionPending()) {
-                    Log.w(TAG, "Timeout while registering selector");
-                    close();
-                    return;
+                    setState(STATE_FAILED);
+                    throw new ConnectionException("Timeout while registering selector");
                 }
             } catch (InterruptedException e) {
-                Log.w(TAG, "Interrupted while registering selector", e);
-                close();
-                return;
+                setState(STATE_FAILED);
+                throw new ConnectionException(e.getLocalizedMessage(), e);
             }
         }
 
