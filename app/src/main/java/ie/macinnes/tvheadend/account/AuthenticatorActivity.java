@@ -28,13 +28,10 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
-import org.json.JSONObject;
-
 import java.util.List;
 
 import ie.macinnes.htsp.Connection;
 import ie.macinnes.htsp.ConnectionListener;
-import ie.macinnes.htsp.tasks.AuthenticateTask;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.MiscUtils;
 import ie.macinnes.tvheadend.R;
@@ -354,68 +351,48 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
             final String accountHttpPort = args.getString(Constants.KEY_HTTP_PORT);
             final String accountHttpPath = args.getString(Constants.KEY_HTTP_PATH);
 
-            mConnection = new Connection(accountHostname, Integer.parseInt(accountHtspPort));
-
-            final AuthenticateTask.IAuthenticateTaskCallback authenticateTaskCallback = new AuthenticateTask.IAuthenticateTaskCallback() {
-                @Override
-                public void onSuccess() {
-                    // Close the connection, it's no longer needed
-                    mConnection.close();
-
-                    // Store the account
-                    final Account account = new Account(accountName, accountType);
-
-                    Bundle userdata = new Bundle();
-
-                    userdata.putString(Constants.KEY_HOSTNAME, accountHostname);
-                    userdata.putString(Constants.KEY_HTSP_PORT, accountHtspPort);
-                    userdata.putString(Constants.KEY_HTTP_PORT, accountHttpPort);
-                    userdata.putString(Constants.KEY_HTTP_PATH, accountHttpPath);
-
-                    mAccountManager.addAccountExplicitly(account, accountPassword, userdata);
-
-                    // Store the result, with the username too
-                    userdata.putString(Constants.KEY_USERNAME, accountName);
-
-                    AuthenticatorActivity activity = (AuthenticatorActivity) getActivity();
-                    activity.setAccountAuthenticatorResult(userdata);
-
-                    // Move to the CompletedFragment
-                    GuidedStepFragment fragment = new CompletedFragment();
-                    fragment.setArguments(getArguments());
-                    add(getFragmentManager(), fragment);
-                }
-
-                @Override
-                public void onFailure() {
-                    // Close the connection, it's no longer needed
-                    mConnection.close();
-
-                    Log.w(TAG, "Failed to validate credentials");
-
-                    Bundle args = getArguments();
-                    args.putString(Constants.KEY_ERROR_MESSAGE, "Failed to validate HTSP Credentials");
-
-                    // Move to the failed step
-                    GuidedStepFragment fragment = new FailedFragment();
-                    fragment.setArguments(args);
-                    add(getFragmentManager(), fragment);
-                }
-            };
-
             final String versionName = MiscUtils.getAppVersionName(getActivity().getBaseContext());
-            final AuthenticateTask authenticateTask = new AuthenticateTask(
-                    accountName, accountPassword, "android-tvheadend (auth)", versionName);
-            mConnection.addMessageListener(authenticateTask);
 
-            ConnectionListener connectionListener = new ConnectionListener() {
+            mConnection = new Connection(accountHostname, Integer.parseInt(accountHtspPort), accountName, accountPassword, "android-tvheadend (auth)", versionName);
+
+            final ConnectionListener connectionListener = new ConnectionListener() {
                 @Override
                 public void onStateChange(int state, int previous) {
-                    if (state == Connection.STATE_CONNECTED) {
-                        authenticateTask.authenticate(authenticateTaskCallback);
+                    Log.d(TAG, "HTSP Connection State Changed: " + state);
+                    if (state == Connection.STATE_READY) {
+                        // Close the connection, it's no longer needed
+                        mConnection.close();
+
+                        // Store the account
+                        final Account account = new Account(accountName, accountType);
+
+                        Bundle userdata = new Bundle();
+
+                        userdata.putString(Constants.KEY_HOSTNAME, accountHostname);
+                        userdata.putString(Constants.KEY_HTSP_PORT, accountHtspPort);
+                        userdata.putString(Constants.KEY_HTTP_PORT, accountHttpPort);
+                        userdata.putString(Constants.KEY_HTTP_PATH, accountHttpPath);
+
+                        mAccountManager.addAccountExplicitly(account, accountPassword, userdata);
+
+                        // Store the result, with the username too
+                        userdata.putString(Constants.KEY_USERNAME, accountName);
+
+                        AuthenticatorActivity activity = (AuthenticatorActivity) getActivity();
+                        activity.setAccountAuthenticatorResult(userdata);
+
+                        // Move to the CompletedFragment
+                        GuidedStepFragment fragment = new CompletedFragment();
+                        fragment.setArguments(getArguments());
+                        add(getFragmentManager(), fragment);
                     } else if (state == Connection.STATE_FAILED) {
+                        // Close the connection, it's no longer needed
+                        mConnection.close();
+
+                        Log.w(TAG, "Failed to validate credentials");
+
                         Bundle args = getArguments();
-                        args.putString(Constants.KEY_ERROR_MESSAGE, "Unknown failure while validating HTSP credentials");
+                        args.putString(Constants.KEY_ERROR_MESSAGE, "Failed to validate HTSP Credentials");
 
                         // Move to the failed step
                         GuidedStepFragment fragment = new FailedFragment();

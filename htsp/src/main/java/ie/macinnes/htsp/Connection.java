@@ -32,14 +32,18 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
+import ie.macinnes.htsp.tasks.AuthenticateTask;
+
 public class Connection implements Runnable {
     private static final String TAG = Connection.class.getName();
 
     public final static int STATE_CLOSED = 0;
     public final static int STATE_CONNECTING = 1;
     public final static int STATE_CONNECTED = 2;
-    public final static int STATE_CLOSING = 3;
-    public final static int STATE_FAILED = 4;
+    public final static int STATE_AUTHENTICATING = 3;
+    public final static int STATE_READY = 4;
+    public final static int STATE_CLOSING = 5;
+    public final static int STATE_FAILED = 6;
 
     protected SocketChannel mSocketChannel;
     protected Selector mSelector;
@@ -49,6 +53,7 @@ public class Connection implements Runnable {
     protected Queue<HtspMessage> mMessageQueue;
 
     protected boolean mRunning = false;
+    protected boolean mAuthenticated = false;
     protected int mState = STATE_CLOSED;
 
     protected String mHostname;
@@ -58,16 +63,19 @@ public class Connection implements Runnable {
     protected List<IConnectionListener> mHTSPConnectionListeners = new ArrayList<>();
     protected List<IMessageListener> mMessageListeners = new ArrayList<>();
 
-    public Connection(String hostname, int port) {
+    protected AuthenticateTask mAuthenticateTask;
+
+    public Connection(String hostname, int port, String username, String password, String clientName, String clientVersion) {
         // 1048576 = 1 MB
-        this(hostname, port, 1048576);
+        this(hostname, port, username, password, clientName, clientVersion, 1048576);
     }
 
-    public Connection(String hostname, int port, int bufferSize) {
+    public Connection(String hostname, int port, String username, String password, String clientName, String clientVersion, int bufferSize) {
         mHostname = hostname;
         mPort = port;
         mBufferSize = bufferSize;
-        mMessageQueue = new LinkedList<HtspMessage>();
+        mMessageQueue = new LinkedList<>();
+        mAuthenticateTask = new AuthenticateTask(username, password, clientName, clientVersion);
     }
 
     public void addConnectionListener(IConnectionListener listener) {
@@ -75,6 +83,7 @@ public class Connection implements Runnable {
             Log.w(TAG, "Attempted to add duplicate connection listener");
             return;
         }
+        listener.setConnection(this);
         mHTSPConnectionListeners.add(listener);
     }
 
@@ -96,6 +105,8 @@ public class Connection implements Runnable {
             setState(STATE_FAILED);
             return;
         }
+
+        authenticate();
 
         while (mRunning) {
             try {
@@ -209,6 +220,34 @@ public class Connection implements Runnable {
 
         Log.i(TAG, "HTSP Connected");
         setState(STATE_CONNECTED);
+    }
+
+    protected void authenticate() {
+        setState(STATE_AUTHENTICATING);
+
+        addMessageListener(mAuthenticateTask);
+
+        final AuthenticateTask.IAuthenticateTaskCallback authenticateTaskCallback = new AuthenticateTask.IAuthenticateTaskCallback() {
+            @Override
+            public void onSuccess() {
+                Log.d(TAG, "HTSP Authentication successful");
+                mAuthenticated = false;
+
+                Log.i(TAG, "HTSP Ready");
+                setState(STATE_READY);
+            }
+
+            @Override
+            public void onFailure() {
+                Log.d(TAG, "HTSP Authentication failed");
+                mAuthenticated = false;
+
+                Log.i(TAG, "HTSP Failed");
+                setState(STATE_FAILED);
+            }
+        };
+
+        mAuthenticateTask.authenticate(authenticateTaskCallback);
     }
 
     public void close() {
