@@ -29,7 +29,6 @@ import java.util.List;
 
 import ie.macinnes.htsp.Connection;
 import ie.macinnes.htsp.ConnectionListener;
-import ie.macinnes.htsp.tasks.AuthenticateTask;
 import ie.macinnes.htsp.tasks.GetFileTask;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.MiscUtils;
@@ -42,8 +41,7 @@ public class EpgSyncService extends Service {
     protected AccountManager mAccountManager;
     protected Account mAccount;
 
-    protected boolean mIsConnected;
-    protected boolean mIsAuthenticated;
+    protected boolean mConnectionReady;
 
     protected Connection mConnection;
     protected Thread mConnectionThread;
@@ -105,7 +103,7 @@ public class EpgSyncService extends Service {
     }
 
     protected void openConnection() {
-        mIsConnected = false;
+        mConnectionReady = false;
 
         mContext = getApplicationContext();
         mAccountManager = AccountManager.get(mContext);
@@ -117,8 +115,16 @@ public class EpgSyncService extends Service {
         }
 
         initHtspConnection();
-        installTasks();
-        enableAsyncMetadata();
+
+        // TODO: Better home needed?
+        if (mConnectionReady) {
+            installTasks();
+            enableAsyncMetadata();
+        } else {
+            Log.e(TAG, "HTSP connection failed, shutting down EpgSync Service");
+            stopSelf();
+            return;
+        }
     }
 
     protected void initHtspConnection() {
@@ -129,10 +135,12 @@ public class EpgSyncService extends Service {
         final String username = mAccount.name;
         final String password = mAccountManager.getPassword(mAccount);
 
+        final String versionName = MiscUtils.getAppVersionName(mContext);
+
         // 20971520 = 20MB
         // 10485760 = 10MB
         // 1048576  = 1MB
-        mConnection = new Connection(hostname, port, 100000);
+        mConnection = new Connection(hostname, port, username, password, "android-tvheadend (epg)", versionName, 100000);
 
         ConnectionListener connectionListener = new ConnectionListener() {
             @Override
@@ -142,7 +150,11 @@ public class EpgSyncService extends Service {
                         Log.d(TAG, "HTSP Connection Connecting");
                     } else if (state == Connection.STATE_CONNECTED) {
                         Log.d(TAG, "HTSP Connection Connected");
-                        mIsConnected = true;
+                    } else if (state == Connection.STATE_AUTHENTICATING) {
+                        Log.d(TAG, "HTSP Connection Authenticating");
+                    } else if (state == Connection.STATE_READY) {
+                        Log.d(TAG, "HTSP Connection Ready");
+                        mConnectionReady = true;
                         connectionLock.notifyAll();
                     } else if (state == Connection.STATE_FAILED) {
                         Log.d(TAG, "HTSP Connection Failed, Reconnection");
@@ -150,7 +162,7 @@ public class EpgSyncService extends Service {
                         openConnection();
                     } else if (state == Connection.STATE_CLOSED) {
                         Log.d(TAG, "HTSP Connection Closed");
-                        mIsConnected = false;
+                        mConnectionReady = false;
                         mConnection = null;
                         connectionLock.notifyAll();
                     }
@@ -166,53 +178,12 @@ public class EpgSyncService extends Service {
         synchronized (connectionLock) {
             try {
                 connectionLock.wait(5000);
-                if (!mIsConnected) {
+                if (!mConnectionReady) {
                     Log.d(TAG, "HTSP Connection timed out, Aborting");
                     return;
                 }
             } catch (InterruptedException e) {
                 Log.d(TAG, "HTSP Connection Interrupted, Aborting");
-                return;
-            }
-        }
-
-        // We're connected, let's authenticate.
-        final Object authenticationLock = new Object();
-
-        final AuthenticateTask.IAuthenticateTaskCallback authenticateTaskCallback = new AuthenticateTask.IAuthenticateTaskCallback() {
-            @Override
-            public void onSuccess() {
-                synchronized (authenticationLock) {
-                    Log.d(TAG, "Authentication successful");
-                    mIsAuthenticated = true;
-                    authenticationLock.notifyAll();
-                }
-            }
-
-            @Override
-            public void onFailure() {
-                Log.d(TAG, "Authentication failed");
-                mIsAuthenticated = false;
-                authenticationLock.notifyAll();
-            }
-        };
-
-        final String versionName = MiscUtils.getAppVersionName(mContext);
-        final AuthenticateTask authenticateTask = new AuthenticateTask(
-                username, password, "android-tvheadend (epg)", versionName);
-
-        mConnection.addMessageListener(authenticateTask);
-        authenticateTask.authenticate(authenticateTaskCallback);
-
-        synchronized (authenticationLock) {
-            try {
-                authenticationLock.wait(5000);
-                if (!mIsAuthenticated) {
-                    Log.d(TAG, "HTSP Authentication failed, Aborting");
-                    return;
-                }
-            } catch (InterruptedException e) {
-                Log.d(TAG, "HTSP Authentication Interrupted, Aborting");
                 return;
             }
         }
