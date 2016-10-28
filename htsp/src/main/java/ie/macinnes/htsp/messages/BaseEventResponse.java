@@ -177,20 +177,32 @@ public class BaseEventResponse extends ResponseMessage {
         values.put(TvContract.Programs.COLUMN_CHANNEL_ID, channelId);
         values.put(TvContract.Programs.COLUMN_INTERNAL_PROVIDER_DATA, mEventId);
 
+        // COLUMN_TITLE, COLUMN_EPISODE_TITLE, and COLUMN_SHORT_DESCRIPTION are used in the
+        // Live Channels app EPG Grid. COLUMN_LONG_DESCRIPTION appears unused.
+        // On Sony TVs, COLUMN_LONG_DESCRIPTION is used for the "more info" display.
+
         if (!TextUtils.isEmpty(mTitle)) {
+            // The title of this TV program.
             values.put(TvContract.Programs.COLUMN_TITLE, mTitle);
         }
 
         if (!TextUtils.isEmpty(mSubTitle)) {
+            // The episode title of this TV program for episodic TV shows.
             values.put(TvContract.Programs.COLUMN_EPISODE_TITLE, mSubTitle);
         }
 
-        if (!TextUtils.isEmpty(mSummary)) {
+        if (!TextUtils.isEmpty(mSummary) && !TextUtils.isEmpty(mDescription)) {
+            // If we have both summary and description... use them both
             values.put(TvContract.Programs.COLUMN_SHORT_DESCRIPTION, mSummary);
-        }
-
-        if (!TextUtils.isEmpty(mDescription)) {
             values.put(TvContract.Programs.COLUMN_LONG_DESCRIPTION, mDescription);
+
+        } else if (!TextUtils.isEmpty(mSummary) && TextUtils.isEmpty(mDescription)) {
+            // If we have only summary, use it.
+            values.put(TvContract.Programs.COLUMN_SHORT_DESCRIPTION, mSummary);
+
+        } else if (TextUtils.isEmpty(mSummary) && !TextUtils.isEmpty(mDescription)) {
+            // If we have only description, use it.
+            values.put(TvContract.Programs.COLUMN_SHORT_DESCRIPTION, mDescription);
         }
 
         if (mStart != INVALID_LONG_VALUE) {
