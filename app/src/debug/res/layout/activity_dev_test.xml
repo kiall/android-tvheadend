@@ -71,6 +71,14 @@ under the License.
             android:onClick="restartEpgSyncService"
             android:layout_gravity="center_horizontal"/>
 
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Send Fake Crash Report"
+            android:nestedScrollingEnabled="true"
+            android:onClick="sendCrashReport"
+            android:layout_gravity="center_horizontal"/>
+
     </LinearLayout>
 
     <ScrollView
