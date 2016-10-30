@@ -19,4 +19,15 @@ under the License.
     <string name="title_activity_authenticator">TVHeadend Authenticator</string>
     <string name="account_label">TVHeadend</string>
     <string name="title_activity_dev_test">TVH DevTest</string>
+
+    <string name="pref_disable_acra">Enable ACRA?</string>
+    <string name="pref_acra_enabled">ACRA enabled</string>
+    <string name="pref_acra_disabled">ACRA disabled</string>
+
+    <string name="pref_acra_syslog">Send system logs?</string>
+    <string name="pref_acra_syslog_enabled">Sending system logs is enabled</string>
+    <string name="pref_acra_syslog_disabled">Sending system logs is disabled</string>
+
+    <string name="pref_acra_user_email">Contact email address (optional)</string>
+    <string name="pref_acra_user_email_summary">Sometimes, the developers may need to contact you for more info</string>
 </resources>

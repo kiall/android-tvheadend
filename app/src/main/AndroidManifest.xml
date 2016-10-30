@@ -59,6 +59,7 @@ under the License.
         android:required="false"/>
 
     <application
+        android:name=".Application"
         android:allowBackup="true"
         android:banner="@drawable/banner"
         android:icon="@mipmap/ic_tv_service"

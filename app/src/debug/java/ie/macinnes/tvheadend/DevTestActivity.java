@@ -23,6 +23,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
+import org.acra.ACRA;
 import org.json.JSONObject;
 
 import ie.macinnes.tvheadend.account.AccountUtils;
@@ -118,6 +119,8 @@ public class DevTestActivity extends Activity {
     }
 
     public void showPreferences(View view) {
+        Exception e = new Exception("Tester 2");
+        ACRA.getErrorReporter().handleException(e);
         startActivity(SettingsActivity.getPreferencesIntent(this));
     }
 
@@ -126,5 +129,10 @@ public class DevTestActivity extends Activity {
         Intent i = new Intent(context, EpgSyncService.class);
         context.stopService(i);
         context.startService(i);
+    }
+
+    public void sendCrashReport(View view) {
+        Exception e = new Exception("Test Crash Report");
+        ACRA.getErrorReporter().handleException(e);
     }
 }
