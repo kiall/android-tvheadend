@@ -89,11 +89,25 @@ public class EpgSyncService extends Service {
     @Override
     public void onCreate() {
         Log.i(TAG, "Starting EPG Sync Service");
+
+        mContext = getApplicationContext();
+        mAccountManager = AccountManager.get(mContext);
+        mAccount = AccountUtils.getActiveAccount(mContext);
+
+        if (mAccount == null) {
+            Log.i(TAG, "No account configured, aborting startup of EPG Sync Service");
+            stopSelf();
+            return;
+        }
+
         openConnection();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (mAccount == null) {
+            return START_NOT_STICKY;
+        }
         return START_STICKY;
     }
 
@@ -105,15 +119,6 @@ public class EpgSyncService extends Service {
 
     protected void openConnection() {
         mConnectionReady = false;
-
-        mContext = getApplicationContext();
-        mAccountManager = AccountManager.get(mContext);
-        mAccount = AccountUtils.getActiveAccount(mContext);
-
-        if (mAccount == null) {
-            Log.i(TAG, "No account configured, aborting startup of EPG Sync Service");
-            stopSelf();
-        }
 
         initHtspConnection();
 
