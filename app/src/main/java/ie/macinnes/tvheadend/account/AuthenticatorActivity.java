@@ -32,6 +32,7 @@ import java.util.List;
 
 import ie.macinnes.htsp.Connection;
 import ie.macinnes.htsp.ConnectionListener;
+import ie.macinnes.tvheadend.BuildConfig;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.MiscUtils;
 import ie.macinnes.tvheadend.R;
@@ -351,9 +352,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
             final String accountHttpPort = args.getString(Constants.KEY_HTTP_PORT);
             final String accountHttpPath = args.getString(Constants.KEY_HTTP_PATH);
 
-            final String versionName = MiscUtils.getAppVersionName(getActivity().getBaseContext());
-
-            mConnection = new Connection(accountHostname, Integer.parseInt(accountHtspPort), accountName, accountPassword, "android-tvheadend (auth)", versionName);
+            mConnection = new Connection(accountHostname, Integer.parseInt(accountHtspPort), accountName, accountPassword, "android-tvheadend (auth)", BuildConfig.VERSION_NAME);
 
             final ConnectionListener connectionListener = new ConnectionListener() {
                 @Override

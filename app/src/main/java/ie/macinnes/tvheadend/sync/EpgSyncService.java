@@ -30,6 +30,7 @@ import java.util.List;
 import ie.macinnes.htsp.Connection;
 import ie.macinnes.htsp.ConnectionListener;
 import ie.macinnes.htsp.tasks.GetFileTask;
+import ie.macinnes.tvheadend.BuildConfig;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.MiscUtils;
 import ie.macinnes.tvheadend.account.AccountUtils;
@@ -135,12 +136,10 @@ public class EpgSyncService extends Service {
         final String username = mAccount.name;
         final String password = mAccountManager.getPassword(mAccount);
 
-        final String versionName = MiscUtils.getAppVersionName(mContext);
-
         // 20971520 = 20MB
         // 10485760 = 10MB
         // 1048576  = 1MB
-        mConnection = new Connection(hostname, port, username, password, "android-tvheadend (epg)", versionName, 100000);
+        mConnection = new Connection(hostname, port, username, password, "android-tvheadend (epg)", BuildConfig.VERSION_NAME, 100000);
 
         ConnectionListener connectionListener = new ConnectionListener() {
             @Override

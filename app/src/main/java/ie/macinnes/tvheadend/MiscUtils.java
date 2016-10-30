@@ -26,16 +26,6 @@ import java.util.Map;
 
 
 public class MiscUtils {
-    public static String getAppVersionName(Context context) {
-        try {
-            String packageName = context.getPackageName();
-            PackageInfo info = context.getPackageManager().getPackageInfo(packageName, 0);
-            return info.versionName;
-        } catch (PackageManager.NameNotFoundException e) {
-            return "?";
-        }
-    }
-
     public static Map<String, String> createBasicAuthHeader(String username, String password) {
         Map<String, String> headerMap = new HashMap<String, String>();
 
