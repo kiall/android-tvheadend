@@ -1,18 +1,38 @@
 apply plugin: 'com.android.application'
 
+ext {
+    git = org.ajoberstar.grgit.Grgit.open()
+    gitVersionName = "${git.describe()}"
+}
+
 android {
     compileSdkVersion 24
     buildToolsVersion "24.0.3"
+
     defaultConfig {
         applicationId "ie.macinnes.tvheadend"
         minSdkVersion 22
         targetSdkVersion 24
-        versionCode 50
-        versionName '0.2.' + versionCode
+        versionCode System.getenv("BUILD_NUMBER") as Integer ?: 0
+        versionName gitVersionName
         setProperty("archivesBaseName", "${applicationId}_${versionName}")
 
         buildConfigField "boolean", "ACRA_ENABLED", "false"
         buildConfigField "String", "ACRA_REPORT_URI", "\"\""
+    }
+
+    signingConfigs {
+        if (rootProject.file("keystore.properties").exists()) {
+            def keystoreProperties = new Properties()
+            keystoreProperties.load(new FileInputStream(rootProject.file("keystore.properties")))
+
+            release {
+                storeFile new File(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
+        }
     }
 
     buildTypes {
@@ -22,6 +42,10 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            if (signingConfigs.hasProperty("release")) {
+                signingConfig signingConfigs.release
+            }
 
             if (rootProject.file("acra.properties").exists()) {
                 buildConfigField "boolean", "ACRA_ENABLED", "true"
@@ -43,7 +67,7 @@ repositories {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    //    compile(name:'vlc-android-sdk-release', ext:'aar') // Used for testing local libvlc builds
+    // compile(name:'vlc-android-sdk-release', ext:'aar') // Used for testing local libvlc builds
     compile project(':htsp')
     compile 'com.android.support:support-v4:24.2.1'
     compile 'com.android.support:leanback-v17:24.2.1'
