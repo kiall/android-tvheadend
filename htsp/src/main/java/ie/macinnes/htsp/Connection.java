@@ -59,7 +59,6 @@ public class Connection implements Runnable {
 
     protected String mHostname;
     protected int mPort;
-    protected int mBufferSize;
 
     protected List<IConnectionListener> mHTSPConnectionListeners = new ArrayList<>();
     protected List<IMessageListener> mMessageListeners = new ArrayList<>();
@@ -74,8 +73,8 @@ public class Connection implements Runnable {
     public Connection(String hostname, int port, String username, String password, String clientName, String clientVersion, int bufferSize) {
         mHostname = hostname;
         mPort = port;
-        mBufferSize = bufferSize;
         mMessageQueue = new LinkedList<>();
+        mReadBuffer = ByteBuffer.allocate(bufferSize);
         mAuthenticateTask = new AuthenticateTask(username, password, clientName, clientVersion);
     }
 
@@ -175,8 +174,6 @@ public class Connection implements Runnable {
 
         setState(STATE_CONNECTING);
 
-        mReadBuffer = ByteBuffer.allocate(mBufferSize);
-
         final Object openLock = new Object();
 
         try {
@@ -264,7 +261,6 @@ public class Connection implements Runnable {
 
         // Clear out any pending messages
         mMessageQueue.clear();
-        mReadBuffer.clear();
 
         if (mSocketChannel != null) {
             try {
@@ -288,6 +284,9 @@ public class Connection implements Runnable {
                 mSelector = null;
             }
         }
+
+        // Wipe the read buffer
+        mReadBuffer.clear();
 
         setState(STATE_CLOSED);
     }
