@@ -36,7 +36,6 @@ public class AuthenticatorService extends Service {
     private Account[] mCurrentAccounts;
 
     protected SharedPreferences mSharedPreferences;
-    protected SharedPreferences.Editor mSharedPreferencesEditor;
 
     private OnAccountsUpdateListener mAccountsUpdateListener = new OnAccountsUpdateListener() {
         @Override
@@ -65,7 +64,7 @@ public class AuthenticatorService extends Service {
                     TvContractUtils.removeChannels(getApplicationContext());
 
                     // Discard the previously saved last EPG update stamp
-                    mSharedPreferencesEditor.remove(Constants.KEY_EPG_LAST_UPDATE).commit();
+                    mSharedPreferences.edit().remove(Constants.KEY_EPG_LAST_UPDATE).apply();
                 }
             }
         }
@@ -78,7 +77,6 @@ public class AuthenticatorService extends Service {
 
         mSharedPreferences = getBaseContext().getSharedPreferences(
                 Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
-        mSharedPreferencesEditor = mSharedPreferences.edit();
 
         AccountUtils.addOnAccountsUpdatedListener(this, mAccountsUpdateListener, new Handler(), true);
     }

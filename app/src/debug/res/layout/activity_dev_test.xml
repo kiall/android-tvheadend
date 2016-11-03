@@ -84,7 +84,6 @@ under the License.
     <ScrollView
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_alignParentTop="true"
         android:layout_toEndOf="@+id/linearLayout"
         android:fillViewport="false">
 
@@ -92,9 +91,8 @@ under the License.
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text="Debug Output will appear here"
-            android:id="@+id/debugOutput"
-            android:layout_alignParentTop="true"
-            android:layout_toEndOf="@+id/linearLayout" />
+            android:id="@+id/debugOutput" />
     </ScrollView>
 
 </RelativeLayout>
+

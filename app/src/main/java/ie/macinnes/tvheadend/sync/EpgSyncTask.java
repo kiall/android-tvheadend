@@ -76,7 +76,6 @@ class EpgSyncTask extends MessageListener {
     protected ArrayList<ContentProviderOperation> mPendingProgramOps = new ArrayList<>();
 
     protected SharedPreferences mSharedPreferences;
-    protected SharedPreferences.Editor mSharedPreferencesEditor;
 
     public EpgSyncTask(Context context, Account account, GetFileTask getFileTask) {
         mContext = context;
@@ -92,7 +91,6 @@ class EpgSyncTask extends MessageListener {
 
         mSharedPreferences = context.getSharedPreferences(
                 Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
-        mSharedPreferencesEditor = mSharedPreferences.edit();
     }
 
     public void enableAsyncMetadata(Runnable initialSyncCompleteCallback) {
@@ -138,8 +136,7 @@ class EpgSyncTask extends MessageListener {
     protected void storeLastUpdate() {
         long unixTime = System.currentTimeMillis() / 1000L;
 
-        mSharedPreferencesEditor.putLong(Constants.KEY_EPG_LAST_UPDATE, unixTime);
-        mSharedPreferencesEditor.apply();
+        mSharedPreferences.edit().putLong(Constants.KEY_EPG_LAST_UPDATE, unixTime).apply();
     }
 
     private void handleChannel(BaseChannelResponse message) {

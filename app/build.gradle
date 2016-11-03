@@ -1,18 +1,20 @@
+import org.ajoberstar.grgit.Grgit
+
 apply plugin: 'com.android.application'
 
 ext {
-    git = org.ajoberstar.grgit.Grgit.open()
+    git = Grgit.open()
     gitVersionName = "${git.describe()}"
 }
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion "24.0.3"
+    compileSdkVersion 25
+    buildToolsVersion "25.0.0"
 
     defaultConfig {
         applicationId "ie.macinnes.tvheadend"
         minSdkVersion 22
-        targetSdkVersion 24
+        targetSdkVersion 25
         versionCode System.getenv("BUILD_NUMBER") as Integer ?: 0
         versionName gitVersionName
         setProperty("archivesBaseName", "${applicationId}_${versionName}")
@@ -55,7 +57,12 @@ android {
             }
         }
     }
+
     productFlavors {
+    }
+
+    lintOptions {
+        disable 'GoogleAppIndexingWarning'
     }
 }
 
@@ -69,9 +76,9 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     // compile(name:'vlc-android-sdk-release', ext:'aar') // Used for testing local libvlc builds
     compile project(':htsp')
-    compile 'com.android.support:support-v4:24.2.1'
-    compile 'com.android.support:leanback-v17:24.2.1'
-    compile 'com.android.support:preference-leanback-v17:24.2.1'
+    compile 'com.android.support:support-v4:25.0.0'
+    compile 'com.android.support:leanback-v17:25.0.0'
+    compile 'com.android.support:preference-leanback-v17:25.0.0'
     compile 'com.google.android.exoplayer:exoplayer:r1.5.9'
     compile 'de.mrmaffen:vlc-android-sdk:1.9.8'
     compile 'ch.acra:acra:4.9.0'

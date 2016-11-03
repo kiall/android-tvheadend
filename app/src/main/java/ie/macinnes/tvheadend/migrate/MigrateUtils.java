@@ -70,7 +70,7 @@ public class MigrateUtils {
         // Store the current version as the last installed version
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putInt(Constants.KEY_APP_VERSION, currentApplicationVersion);
-        editor.commit();
+        editor.apply();
     }
 
     protected static void migrateAccountsPortName(Context context) {

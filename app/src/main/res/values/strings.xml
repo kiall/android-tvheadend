@@ -18,7 +18,6 @@ under the License.
 
     <string name="title_activity_authenticator">TVHeadend Authenticator</string>
     <string name="account_label">TVHeadend</string>
-    <string name="title_activity_dev_test">TVH DevTest</string>
 
     <string name="pref_disable_acra">Enable ACRA?</string>
     <string name="pref_acra_enabled">ACRA enabled</string>
