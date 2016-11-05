@@ -32,7 +32,6 @@ import ie.macinnes.htsp.ConnectionListener;
 import ie.macinnes.htsp.tasks.GetFileTask;
 import ie.macinnes.tvheadend.BuildConfig;
 import ie.macinnes.tvheadend.Constants;
-import ie.macinnes.tvheadend.MiscUtils;
 import ie.macinnes.tvheadend.account.AccountUtils;
 
 public class EpgSyncService extends Service {
@@ -209,8 +208,8 @@ public class EpgSyncService extends Service {
     }
 
     protected void closeConnection() {
-        Log.d(TAG, "Closing HTSP connection");
         if (mConnection != null) {
+            Log.d(TAG, "Closing HTSP connection");
             mConnection.close();
             mConnection = null;
         }
