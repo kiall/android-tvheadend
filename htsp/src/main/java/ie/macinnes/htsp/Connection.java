@@ -18,7 +18,6 @@ package ie.macinnes.htsp;
 import android.util.Log;
 
 import java.io.IOException;
-import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
@@ -32,6 +31,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import ie.macinnes.htsp.tasks.AuthenticateTask;
 
@@ -49,8 +50,9 @@ public class Connection implements Runnable {
     protected SocketChannel mSocketChannel;
     protected Selector mSelector;
 
-    protected ByteBuffer mReadBuffer;
+    protected Lock mLock;
 
+    protected ByteBuffer mReadBuffer;
     protected Queue<HtspMessage> mMessageQueue;
 
     protected boolean mRunning = false;
@@ -73,8 +75,12 @@ public class Connection implements Runnable {
     public Connection(String hostname, int port, String username, String password, String clientName, String clientVersion, int bufferSize) {
         mHostname = hostname;
         mPort = port;
+
+        mLock = new ReentrantLock();
+
         mMessageQueue = new LinkedList<>();
         mReadBuffer = ByteBuffer.allocate(bufferSize);
+
         mAuthenticateTask = new AuthenticateTask(username, password, clientName, clientVersion);
     }
 
@@ -107,13 +113,14 @@ public class Connection implements Runnable {
 
         authenticate();
 
+        mRunning = true;
+
         while (mRunning) {
             try {
                 mSelector.select();
             } catch (IOException e) {
                 Log.e(TAG, "Failed to select from socket channel", e);
-                mRunning = false;
-                setState(STATE_FAILED);
+                close(STATE_FAILED);
                 break;
             }
 
@@ -155,8 +162,7 @@ public class Connection implements Runnable {
                 }
             } catch (Exception e) {
                 Log.e(TAG, "Something failed - shutting down", e);
-                mRunning = false;
-                setState(STATE_FAILED);
+                close(STATE_FAILED);
             }
         }
 
@@ -165,55 +171,58 @@ public class Connection implements Runnable {
         }
     }
 
-    public void open() throws ConnectionException {
+    protected void open() throws ConnectionException {
         Log.i(TAG, "Opening HTSP Connection");
 
         if (mSocketChannel != null) {
             throw new RuntimeException("Attempted to open HTSP connection twice");
         }
 
-        setState(STATE_CONNECTING);
-
-        final Object openLock = new Object();
+        mLock.lock();
 
         try {
-            mSocketChannel = SocketChannel.open();
-            mSocketChannel.connect(new InetSocketAddress(mHostname, mPort));
-            mSocketChannel.configureBlocking(false);
-            mSelector = Selector.open();
-        } catch (IOException e) {
-            setState(STATE_FAILED);
-            throw new ConnectionException(e.getLocalizedMessage(), e);
-        } catch (UnresolvedAddressException e) {
-            setState(STATE_FAILED);
-            throw new ConnectionException(e);
-        }
+            setState(STATE_CONNECTING);
 
+            final Object openLock = new Object();
 
-        try {
-            mSocketChannel.register(mSelector, SelectionKey.OP_CONNECT, openLock);
-        } catch (ClosedChannelException e) {
-            setState(STATE_FAILED);
-            throw new ConnectionException(e.getLocalizedMessage(), e);
-        }
-
-        mRunning = true;
-
-        synchronized (openLock) {
             try {
-                openLock.wait(2000);
-                if (mSocketChannel.isConnectionPending()) {
-                    setState(STATE_FAILED);
-                    throw new ConnectionException("Timeout while registering selector");
-                }
-            } catch (InterruptedException e) {
-                setState(STATE_FAILED);
+                mSocketChannel = SocketChannel.open();
+                mSocketChannel.connect(new InetSocketAddress(mHostname, mPort));
+                mSocketChannel.configureBlocking(false);
+                mSelector = Selector.open();
+            } catch (IOException e) {
+                close(STATE_FAILED);
+                throw new ConnectionException(e.getLocalizedMessage(), e);
+            } catch (UnresolvedAddressException e) {
+                close(STATE_FAILED);
+                throw new ConnectionException(e);
+            }
+
+            try {
+                mSocketChannel.register(mSelector, SelectionKey.OP_CONNECT, openLock);
+            } catch (ClosedChannelException e) {
+                close(STATE_FAILED);
                 throw new ConnectionException(e.getLocalizedMessage(), e);
             }
-        }
 
-        Log.i(TAG, "HTSP Connected");
-        setState(STATE_CONNECTED);
+            synchronized (openLock) {
+                try {
+                    openLock.wait(2000);
+                    if (mSocketChannel.isConnectionPending()) {
+                        close(STATE_FAILED);
+                        throw new ConnectionException("Timeout while registering selector");
+                    }
+                } catch (InterruptedException e) {
+                    close(STATE_FAILED);
+                    throw new ConnectionException(e.getLocalizedMessage(), e);
+                }
+            }
+
+            Log.i(TAG, "HTSP Connected");
+            setState(STATE_CONNECTED);
+        } finally {
+            mLock.unlock();
+        }
     }
 
     protected void authenticate() {
@@ -237,7 +246,7 @@ public class Connection implements Runnable {
                 mAuthenticated = false;
 
                 Log.i(TAG, "HTSP Failed");
-                setState(STATE_FAILED);
+                close(STATE_FAILED);
             }
         };
 
@@ -248,7 +257,7 @@ public class Connection implements Runnable {
         close(STATE_CLOSING);
     }
 
-    public void close(int startState) {
+    protected void close(int startState) {
         if (getState() == STATE_CLOSED) {
             Log.d(TAG, "Connection already closed, ignoring close request");
             return;
@@ -256,39 +265,44 @@ public class Connection implements Runnable {
 
         Log.i(TAG, "Closing HTSP Connection");
 
-        mRunning = false;
-        setState(startState);
+        mLock.lock();
+        try {
+            mRunning = false;
+            setState(startState);
 
-        // Clear out any pending messages
-        mMessageQueue.clear();
+            // Clear out any pending messages
+            mMessageQueue.clear();
 
-        if (mSocketChannel != null) {
-            try {
-                Log.w(TAG, "Calling SocketChannel close");
-                mSocketChannel.socket().close();
-                mSocketChannel.close();
-            } catch (IOException e) {
-                Log.w(TAG, "Failed to close socket channel: " + e.getLocalizedMessage());
-            } finally {
-                mSocketChannel = null;
+            if (mSocketChannel != null) {
+                try {
+                    Log.w(TAG, "Calling SocketChannel close");
+                    mSocketChannel.socket().close();
+                    mSocketChannel.close();
+                } catch (IOException e) {
+                    Log.w(TAG, "Failed to close socket channel: " + e.getLocalizedMessage());
+                } finally {
+                    mSocketChannel = null;
+                }
             }
-        }
 
-        if (mSelector != null) {
-            try {
-                Log.w(TAG, "Calling Selector close");
-                mSelector.close();
-            } catch (IOException e) {
-                Log.w(TAG, "Failed to close socket channel: " + e.getLocalizedMessage());
-            } finally {
-                mSelector = null;
+            if (mSelector != null) {
+                try {
+                    Log.w(TAG, "Calling Selector close");
+                    mSelector.close();
+                } catch (IOException e) {
+                    Log.w(TAG, "Failed to close socket channel: " + e.getLocalizedMessage());
+                } finally {
+                    mSelector = null;
+                }
             }
+
+            // Wipe the read buffer
+            mReadBuffer.clear();
+
+            setState(STATE_CLOSED);
+        } finally {
+            mLock.unlock();
         }
-
-        // Wipe the read buffer
-        mReadBuffer.clear();
-
-        setState(STATE_CLOSED);
     }
 
     public void sendMessage(HtspMessage htspMessage) {
@@ -296,12 +310,15 @@ public class Connection implements Runnable {
 
         mMessageQueue.add(htspMessage);
 
+        mLock.lock();
         try {
             mSocketChannel.register(mSelector, SelectionKey.OP_WRITE | SelectionKey.OP_READ | SelectionKey.OP_CONNECT);
             mSelector.wakeup();
         } catch (ClosedChannelException e) {
             Log.w(TAG, "Failed to send message: " + e.getLocalizedMessage());
             e.printStackTrace();
+        } finally {
+            mLock.unlock();
         }
     }
 

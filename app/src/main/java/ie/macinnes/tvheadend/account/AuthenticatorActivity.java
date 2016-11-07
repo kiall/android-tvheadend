@@ -34,7 +34,6 @@ import ie.macinnes.htsp.Connection;
 import ie.macinnes.htsp.ConnectionListener;
 import ie.macinnes.tvheadend.BuildConfig;
 import ie.macinnes.tvheadend.Constants;
-import ie.macinnes.tvheadend.MiscUtils;
 import ie.macinnes.tvheadend.R;
 import ie.macinnes.tvheadend.migrate.MigrateUtils;
 
