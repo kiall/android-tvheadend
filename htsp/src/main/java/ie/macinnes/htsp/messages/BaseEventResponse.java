@@ -18,6 +18,7 @@ package ie.macinnes.htsp.messages;
 
 import android.annotation.TargetApi;
 import android.content.ContentValues;
+import android.media.tv.TvContentRating;
 import android.media.tv.TvContract;
 import android.os.Build;
 import android.text.TextUtils;
@@ -35,6 +36,7 @@ public class BaseEventResponse extends ResponseMessage {
     protected String mSummary;
     protected String mDescription;
     // Some fields skipped
+    protected int mAgeRating;
     protected int mSeasonNumber;
     protected int mSeasonCount;
     protected int mEpisodeNumber;
@@ -101,6 +103,14 @@ public class BaseEventResponse extends ResponseMessage {
     public String getDescription() {
         return mDescription;
     }
+    
+    public int getAgeRating() {
+        return mAgeRating;
+    }
+
+    public void setAgeRating(int ageRating) {
+        mAgeRating = ageRating;
+    }
 
     public void setDescription(String description) {
         mDescription = description;
@@ -158,6 +168,7 @@ public class BaseEventResponse extends ResponseMessage {
         setSummary(htspMessage.getString("summary", null));
         setDescription(htspMessage.getString("description", null));
         // Some fields skipped
+        setAgeRating(htspMessage.getInt("ageRating", INVALID_INT_VALUE));
         setSeasonNumber(htspMessage.getInt("seasonNumber", INVALID_INT_VALUE));
         setSeasonCount(htspMessage.getInt("seasonCount", INVALID_INT_VALUE));
         setEpisodeNumber(htspMessage.getInt("episodeNumber", INVALID_INT_VALUE));
@@ -203,6 +214,11 @@ public class BaseEventResponse extends ResponseMessage {
         } else if (TextUtils.isEmpty(mSummary) && !TextUtils.isEmpty(mDescription)) {
             // If we have only description, use it.
             values.put(TvContract.Programs.COLUMN_SHORT_DESCRIPTION, mDescription);
+        }
+        
+        if (mAgeRating >= 4 && mAgeRating <= 18) {
+            TvContentRating rating = TvContentRating.createRating("com.android.tv", "DVB", "DVB_" + mAgeRating);
+            values.put(TvContract.Programs.COLUMN_CONTENT_RATING, rating.flattenToString());
         }
 
         if (mStart != INVALID_LONG_VALUE) {
