@@ -322,7 +322,7 @@ public class TvInputSetupActivity extends Activity {
 
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putString(Constants.KEY_SESSION, session);
-            editor.commit();
+            editor.apply();
 
             // Move onto the next step
             GuidedStepFragment fragment = new SyncingFragment();
