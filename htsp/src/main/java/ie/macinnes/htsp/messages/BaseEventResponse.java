@@ -216,7 +216,7 @@ public class BaseEventResponse extends ResponseMessage {
             values.put(TvContract.Programs.COLUMN_SHORT_DESCRIPTION, mDescription);
         }
         
-        if (mAgeRating != INVALID_INT_VALUE) {
+        if (mAgeRating >= 4 && mAgeRating <= 18) {
             TvContentRating rating = TvContentRating.createRating("com.android.tv", "DVB", "DVB_" + mAgeRating);
             values.put(TvContract.Programs.COLUMN_CONTENT_RATING, rating.flattenToString());
         }
