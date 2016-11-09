@@ -141,7 +141,7 @@ public class GetFileTask extends MessageListener {
         FileReadRequest fileReadRequest = new FileReadRequest();
 
         fileReadRequest.setId(mIds.get(openCount));
-        fileReadRequest.setSize(1024);
+        fileReadRequest.setSize(10240);
         fileReadRequest.setOffset(mBuffers.get(openCount).position());
 
         Log.d(TAG, "Sending fileReadRequest");

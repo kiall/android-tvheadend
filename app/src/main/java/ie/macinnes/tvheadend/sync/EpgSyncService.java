@@ -143,7 +143,7 @@ public class EpgSyncService extends Service {
         // 20971520 = 20MB
         // 10485760 = 10MB
         // 1048576  = 1MB
-        mConnection = new Connection(hostname, port, username, password, "android-tvheadend (epg)", BuildConfig.VERSION_NAME, 100000);
+        mConnection = new Connection(hostname, port, username, password, "android-tvheadend (epg)", BuildConfig.VERSION_NAME, 1048576);
 
         ConnectionListener connectionListener = new ConnectionListener() {
             @Override
