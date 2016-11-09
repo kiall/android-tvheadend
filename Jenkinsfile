@@ -31,7 +31,7 @@ node ('android-slave'){
     }
     stage('Publish') {
         def lastTag = sh(returnStdout: true, script: "git describe --tags --abbrev=0").trim()
-        def changeLog = sh(returnStdout: true, script: "git log $lastTag..HEAD --oneline").trim()
+        def changeLog = sh(returnStdout: true, script: "git log $lastTag..HEAD --oneline | grep -v 'Merge pull request' | cut -d' ' -f2- | sed -e 's/^/* /'").trim()
 
         androidApkUpload(
             apkFilesPattern: 'app/build/outputs/apk/ie.macinnes.tvheadend_*-release.apk',
