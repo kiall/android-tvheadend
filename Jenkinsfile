@@ -14,6 +14,7 @@ node ('android-slave'){
     stage('Preparation') {
         step([$class: 'WsCleanup'])
         checkout scm
+        sh 'env > env-dump'
     }
     stage('Assemble') {
         withCredentials([[$class: 'FileBinding', credentialsId: 'android-keystore-tvheadend', variable: 'ANDROID_KEYSTORE'], [$class: 'StringBinding', credentialsId: 'android-keystore-tvheadend-password', variable: 'ANDROID_KEYSTORE_PASSWORD']]) {
