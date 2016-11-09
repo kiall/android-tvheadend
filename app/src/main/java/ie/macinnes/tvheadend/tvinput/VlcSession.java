@@ -29,6 +29,7 @@ import android.util.Log;
 import android.view.Surface;
 import android.widget.Toast;
 
+import org.videolan.libvlc.IVLCVout;
 import org.videolan.libvlc.LibVLC;
 import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaPlayer;
@@ -100,9 +101,17 @@ public class VlcSession extends BaseSession {
         mSurface = surface;
 
         if (mMediaPlayer != null && mSurface != null) {
-            mMediaPlayer.getVLCVout().setVideoSurface(surface, null);
-            mMediaPlayer.getVLCVout().attachViews();
+            IVLCVout vlcVout = mMediaPlayer.getVLCVout();
+
+            if (vlcVout.areViewsAttached()) {
+                // If we're already attached, we need to detach before switching surface
+                vlcVout.detachViews();
+            }
+
+            vlcVout.setVideoSurface(surface, null);
+            vlcVout.attachViews();
         }
+
 
         return true;
     }
