@@ -191,9 +191,11 @@ public class Connection implements Runnable {
                 mSocketChannel.configureBlocking(false);
                 mSelector = Selector.open();
             } catch (IOException e) {
+                Log.e(TAG, "Caught IOException while opening SocketChannel: " + e.getLocalizedMessage());
                 close(STATE_FAILED);
                 throw new ConnectionException(e.getLocalizedMessage(), e);
             } catch (UnresolvedAddressException e) {
+                Log.e(TAG, "Failed to resolve HTSP server address: " + e.getLocalizedMessage());
                 close(STATE_FAILED);
                 throw new ConnectionException(e);
             }
@@ -201,6 +203,7 @@ public class Connection implements Runnable {
             try {
                 mSocketChannel.register(mSelector, SelectionKey.OP_CONNECT, openLock);
             } catch (ClosedChannelException e) {
+                Log.e(TAG, "Failed to register selector, channel closed: " + e.getLocalizedMessage());
                 close(STATE_FAILED);
                 throw new ConnectionException(e.getLocalizedMessage(), e);
             }
@@ -209,10 +212,12 @@ public class Connection implements Runnable {
                 try {
                     openLock.wait(2000);
                     if (mSocketChannel.isConnectionPending()) {
+                        Log.e(TAG, "Failed to register selector, timeout");
                         close(STATE_FAILED);
                         throw new ConnectionException("Timeout while registering selector");
                     }
                 } catch (InterruptedException e) {
+                    Log.e(TAG, "Failed to register selector, interrupted");
                     close(STATE_FAILED);
                     throw new ConnectionException(e.getLocalizedMessage(), e);
                 }
@@ -242,10 +247,8 @@ public class Connection implements Runnable {
 
             @Override
             public void onFailure() {
-                Log.d(TAG, "HTSP Authentication failed");
                 mAuthenticated = false;
-
-                Log.i(TAG, "HTSP Failed");
+                Log.e(TAG, "HTSP Authentication failed");
                 close(STATE_FAILED);
             }
         };
@@ -263,7 +266,7 @@ public class Connection implements Runnable {
             return;
         }
 
-        Log.i(TAG, "Closing HTSP Connection");
+        Log.i(TAG, "Closing HTSP Connection, Start State: " + startState);
 
         mLock.lock();
         try {
@@ -275,7 +278,7 @@ public class Connection implements Runnable {
 
             if (mSocketChannel != null) {
                 try {
-                    Log.w(TAG, "Calling SocketChannel close");
+                    Log.i(TAG, "Calling SocketChannel close");
                     mSocketChannel.socket().close();
                     mSocketChannel.close();
                 } catch (IOException e) {
@@ -369,6 +372,7 @@ public class Connection implements Runnable {
         int bytesToBeConsumed = bufferStartPosition + bytesRead;
 
         if (bytesRead == -1) {
+            Log.e(TAG, "Failed to process readable selection key, read -1 bytes");
             close(STATE_FAILED);
         } else if (bytesRead > 0) {
             int bytesConsumed = -1;
