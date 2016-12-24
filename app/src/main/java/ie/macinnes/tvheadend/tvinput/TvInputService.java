@@ -42,9 +42,6 @@ public class TvInputService extends android.media.tv.TvInputService {
         mHandlerThread.start();
         mHandler = new Handler(mHandlerThread.getLooper());
 
-        // TODO: Find a better (+ out of UI thread) way to do this.
-        MigrateUtils.doMigrate(getBaseContext());
-
         // Fetch the chosen session type
         SharedPreferences sharedPreferences = getSharedPreferences(
                 Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);

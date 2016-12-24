@@ -126,10 +126,7 @@ public class EpgSyncService extends Service {
             return;
         }
 
-        initHtspConnection();
-
-        // TODO: Better home needed?
-        if (mConnectionReady) {
+        if (initHtspConnection()) {
             installTasks();
             enableAsyncMetadata();
         } else {
@@ -139,7 +136,7 @@ public class EpgSyncService extends Service {
         }
     }
 
-    protected void initHtspConnection() {
+    protected boolean initHtspConnection() {
         final Object connectionLock = new Object();
 
         final String hostname = mAccountManager.getUserData(mAccount, Constants.KEY_HOSTNAME);
@@ -190,13 +187,15 @@ public class EpgSyncService extends Service {
                 connectionLock.wait(5000);
                 if (!mConnectionReady) {
                     Log.d(TAG, "HTSP Connection timed out, Aborting");
-                    return;
+                    return mConnectionReady;
                 }
             } catch (InterruptedException e) {
                 Log.d(TAG, "HTSP Connection Interrupted, Aborting");
-                return;
+                return mConnectionReady;
             }
         }
+
+        return mConnectionReady;
     }
 
     protected void installTasks() {

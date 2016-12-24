@@ -44,9 +44,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // TODO: Find a better (+ out of UI thread) way to do this.
-        MigrateUtils.doMigrate(getBaseContext());
-
         GuidedStepFragment fragment = new ServerFragment();
         fragment.setArguments(getIntent().getExtras());
         GuidedStepFragment.addAsRoot(this, fragment, android.R.id.content);

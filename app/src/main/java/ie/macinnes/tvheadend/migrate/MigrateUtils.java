@@ -29,7 +29,7 @@ import ie.macinnes.tvheadend.account.AccountUtils;
 
 
 public class MigrateUtils {
-    public static final String TAG = MigrateUtils.class.getSimpleName();
+    public static final String TAG = MigrateUtils.class.getName();
 
     public static void doMigrate(Context context) {
         Log.d(TAG, "doMigrate()");
@@ -56,7 +56,7 @@ public class MigrateUtils {
         int lastInstalledApplicationVersion = sharedPreferences.getInt(
                 Constants.KEY_APP_VERSION, 0);
 
-        Log.d(TAG, "Migrate from " + lastInstalledApplicationVersion + " to " + currentApplicationVersion);
+        Log.i(TAG, "Migrate from " + lastInstalledApplicationVersion + " to " + currentApplicationVersion);
 
         // Run any migrations
         if (currentApplicationVersion != lastInstalledApplicationVersion) {
