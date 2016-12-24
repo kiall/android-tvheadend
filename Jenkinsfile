@@ -12,12 +12,13 @@ def projectProperties = [
 properties(projectProperties)
 
 node ('android-slave') {
-    def common = load 'Jenkinsfile.groovy'
-
     stage('Preparation') {
         step([$class: 'WsCleanup'])
         checkout scm
     }
+
+    def common = load 'Jenkinsfile.groovy'
+
     stage('Assemble') {
         withCredentials([
             [$class: 'FileBinding', credentialsId: 'android-keystore-tvheadend', variable: 'ANDROID_KEYSTORE'],
@@ -31,12 +32,12 @@ node ('android-slave') {
         }
     }
     stage('Lint') {
-        //common.lint()
+        common.lint()
     }
     stage('Archive APK') {
-        //common.archive()
+        common.archive()
     }
     stage('Publish') {
-        //common.publishApkToStore('alpha')
+        common.publishApkToStore('alpha')
     }
 }
