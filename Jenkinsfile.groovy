@@ -2,7 +2,7 @@ import jenkins.model.*
 
 def getAppVersionCode() {
     def appVersionCode = jenkins.model.Jenkins.instance.getItem("android-tvheadend-version-code").nextBuildNumber
-    build job: 'android-tvheadend-version-code'
+    build job: 'android-tvheadend-version-code', wait: false
     return appVersionCode
 }
 
