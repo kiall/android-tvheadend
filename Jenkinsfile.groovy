@@ -12,7 +12,7 @@ def lint() {
     androidLint canComputeNew: false, canRunOnFailed: true, defaultEncoding: '', healthy: '', pattern: '**/lint-results*.xml', unHealthy: ''
 }
 
-def publishApkToStore(trackName)
+def publishApkToStore(trackName) {
     def changeLog = sh(returnStdout: true, script: "./tools/generate-changelog").trim()
 
     androidApkUpload(

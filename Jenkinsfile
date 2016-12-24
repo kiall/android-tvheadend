@@ -1,7 +1,5 @@
 #!/usr/bin/env groovy
 
-load 'Jenkinsfile.groovy'
-
 /* Only keep the 10 most recent builds. */
 def projectProperties = [
     [$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator', numToKeepStr: '5']],
@@ -13,7 +11,9 @@ def projectProperties = [
 
 properties(projectProperties)
 
-node ('android-slave'){
+node ('android-slave') {
+    load 'Jenkinsfile.groovy'
+
     stage('Preparation') {
         step([$class: 'WsCleanup'])
         checkout scm
