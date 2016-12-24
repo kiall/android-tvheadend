@@ -46,3 +46,6 @@ captures/
 
 # Keystore files
 *.jks
+
+# Editor Save Files
+.*.swp

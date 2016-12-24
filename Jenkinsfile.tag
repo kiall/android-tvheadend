@@ -37,6 +37,6 @@ node ('android-slave'){
         archive()
     }
     stage('Publish') {
-        publishApkToStore('alpha')
+        publishApkToStore('beta')
     }
 }
