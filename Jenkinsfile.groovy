@@ -33,6 +33,15 @@ def publishApkToStore(String trackName) {
     )
 }
 
+def publishApkToGitHub() {
+    def tagName = sh(returnStdout: true, script: "git describe --tags --abbrev=0 --exact-match").trim()
+    withCredentials([
+        [$class: 'StringBinding', credentialsId: '  github-pat-kiall', variable: 'GITHUB_TOKEN'],
+    ]) {
+        sh(script: "github-release upload --user kiall --repo android-tvheadend --tag ${tagName} --name "ie.macinnes.tvheadend_${tagName}-release.apk" --file app/build/outputs/apk/ie.macinnes.tvheadend_${tagName}-release.apk")
+    }
+}
+
 def withGithubNotifier(Closure<Void> job) {
    notifyGithub('STARTED')
    catchError {

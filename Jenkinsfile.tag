@@ -41,6 +41,7 @@ node ('android-slave') {
         }
         stage('Publish') {
             common.publishApkToStore('beta')
+            common.publishApkToGitHub()
         }
     }
 }
