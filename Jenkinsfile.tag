@@ -17,7 +17,7 @@ node ('android-slave') {
         checkout scm
     }
 
-    def common = load 'Jenkinsfile.groovy
+    def common = load 'Jenkinsfile.groovy'
     def appVersionCode = common.getAppVersionCode()
 
     withEnv(["APP_VERSION_CODE=${appVersionCode}"]) {
