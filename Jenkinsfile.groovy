@@ -33,4 +33,30 @@ def publishApkToStore(String trackName) {
     )
 }
 
+def withGithubNotifier(Closure<Void> job) {
+   notifyGithub('STARTED')
+   catchError {
+      currentBuild.result = 'SUCCESS'
+      job()
+   }
+   notifyGithub(currentBuild.result)
+}
+ 
+def notifyGithub(String result) {
+   switch (result) {
+      case 'STARTED':
+         setGitHubPullRequestStatus(context: env.JOB_NAME, message: "Build started", state: 'PENDING')
+         break
+      case 'FAILURE':
+         setGitHubPullRequestStatus(context: env.JOB_NAME, message: "Build error", state: 'FAILURE')
+         break
+      case 'UNSTABLE':
+         setGitHubPullRequestStatus(context: env.JOB_NAME, message: "Build unstable", state: 'FAILURE')
+         break
+      case 'SUCCESS':
+         setGitHubPullRequestStatus(context: env.JOB_NAME, message: "Build finished successfully", state: 'SUCCESS')
+         break
+   }
+}
+
 return this;
