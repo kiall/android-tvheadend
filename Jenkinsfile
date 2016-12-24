@@ -33,12 +33,12 @@ node ('android-slave') {
         }
     }
     stage('Lint') {
-        common.lint()
+        //common.lint()
     }
     stage('Archive APK') {
-        common.archive()
+        //common.archive()
     }
     stage('Publish') {
-        common.publishApkToStore('alpha')
+        //common.publishApkToStore('alpha')
     }
 }
