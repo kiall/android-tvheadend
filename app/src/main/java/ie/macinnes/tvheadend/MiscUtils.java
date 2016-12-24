@@ -17,8 +17,8 @@
 package ie.macinnes.tvheadend;
 
 import android.content.Context;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.Base64;
 
 import java.util.HashMap;
@@ -26,6 +26,8 @@ import java.util.Map;
 
 
 public class MiscUtils {
+    private static final String TAG = MiscUtils.class.getName();
+
     public static Map<String, String> createBasicAuthHeader(String username, String password) {
         Map<String, String> headerMap = new HashMap<String, String>();
 
@@ -36,5 +38,12 @@ public class MiscUtils {
         headerMap.put("Authorization", "Basic " + base64EncodedCredentials);
 
         return headerMap;
+    }
+
+    public static boolean isNetworkAvailable(Context context) {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 }

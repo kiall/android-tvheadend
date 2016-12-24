@@ -20,6 +20,9 @@ under the License.
     <!-- Required to play internet-based streaming contents. -->
     <uses-permission android:name="android.permission.INTERNET"/>
 
+    <!-- Required to check network connection status. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
     <!-- Required to read and update channel and program information in TvProvider. -->
     <uses-permission android:name="com.android.providers.tv.permission.READ_EPG_DATA"/>
     <uses-permission android:name="com.android.providers.tv.permission.WRITE_EPG_DATA"/>

@@ -32,6 +32,7 @@ import ie.macinnes.htsp.ConnectionListener;
 import ie.macinnes.htsp.tasks.GetFileTask;
 import ie.macinnes.tvheadend.BuildConfig;
 import ie.macinnes.tvheadend.Constants;
+import ie.macinnes.tvheadend.MiscUtils;
 import ie.macinnes.tvheadend.account.AccountUtils;
 
 public class EpgSyncService extends Service {
@@ -93,12 +94,6 @@ public class EpgSyncService extends Service {
         mAccountManager = AccountManager.get(mContext);
         mAccount = AccountUtils.getActiveAccount(mContext);
 
-        if (mAccount == null) {
-            Log.i(TAG, "No account configured, aborting startup of EPG Sync Service");
-            stopSelf();
-            return;
-        }
-
         openConnection();
     }
 
@@ -118,6 +113,18 @@ public class EpgSyncService extends Service {
 
     protected void openConnection() {
         mConnectionReady = false;
+
+        if (!MiscUtils.isNetworkAvailable(mContext)) {
+            Log.i(TAG, "No network available, shutting down EPG Sync Service");
+            stopSelf();
+            return;
+        }
+
+        if (mAccount == null) {
+            Log.i(TAG, "No account configured, aborting startup of EPG Sync Service");
+            stopSelf();
+            return;
+        }
 
         initHtspConnection();
 
@@ -160,7 +167,7 @@ public class EpgSyncService extends Service {
                         mConnectionReady = true;
                         connectionLock.notifyAll();
                     } else if (state == Connection.STATE_FAILED) {
-                        Log.d(TAG, "HTSP Connection Failed, Reconnection");
+                        Log.e(TAG, "HTSP Connection Failed, Reconnecting");
                         closeConnection();
                         openConnection();
                     } else if (state == Connection.STATE_CLOSED) {
