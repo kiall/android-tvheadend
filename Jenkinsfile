@@ -11,8 +11,10 @@ def projectProperties = [
 
 properties(projectProperties)
 
+def common
+
 node ('android-slave') {
-    load 'Jenkinsfile.groovy'
+    common = load 'Jenkinsfile.groovy'
 
     stage('Preparation') {
         step([$class: 'WsCleanup'])
@@ -27,16 +29,16 @@ node ('android-slave') {
             writeFile file: 'keystore.properties', text: "storeFile=$ANDROID_KEYSTORE\nstorePassword=$ANDROID_KEYSTORE_PASSWORD\nkeyAlias=Kiall Mac Innes\nkeyPassword=$ANDROID_KEYSTORE_PASSWORD\n"
             writeFile file: 'acra.properties', text: "report_uri=$ACRA_REPORT_URI\n"
 
-            assemble()
+            common.assemble()
         }
     }
     stage('Lint') {
-        lint()
+        common.lint()
     }
     stage('Archive APK') {
-        archive()
+        common.archive()
     }
     stage('Publish') {
-        publishApkToStore('alpha')
+        common.publishApkToStore('alpha')
     }
 }
