@@ -12,13 +12,13 @@ def lint() {
     androidLint canComputeNew: false, canRunOnFailed: true, defaultEncoding: '', healthy: '', pattern: '**/lint-results*.xml', unHealthy: ''
 }
 
-def publishApkToStore(trackName) {
+def publishApkToStore(String trackName) {
     def changeLog = sh(returnStdout: true, script: "./tools/generate-changelog").trim()
 
     androidApkUpload(
         apkFilesPattern: 'app/build/outputs/apk/ie.macinnes.tvheadend_*-release.apk',
         googleCredentialsId: 'android-tvheadend',
-        trackName: $trackName,
+        trackName: trackName,
         recentChangeList: [
             [language: 'en-GB', text: changeLog],
         ],
