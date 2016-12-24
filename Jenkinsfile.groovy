@@ -24,3 +24,5 @@ def publishApkToStore(trackName) {
         ],
     )
 }
+
+return this;
