@@ -19,8 +19,8 @@ node ('android-slave') {
 
     def common = load 'Jenkinsfile.groovy'
     def appVersionCode = common.getAppVersionCode()
-    
-    withEnv(['APP_VERSION_CODE=${appVersionCode}']) {
+
+    withEnv(["APP_VERSION_CODE=${appVersionCode}"]) {
         stage('Assemble') {
             withCredentials([
                 [$class: 'FileBinding', credentialsId: 'android-keystore-tvheadend', variable: 'ANDROID_KEYSTORE'],
