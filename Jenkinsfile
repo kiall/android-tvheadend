@@ -11,10 +11,8 @@ def projectProperties = [
 
 properties(projectProperties)
 
-def common
-
 node ('android-slave') {
-    common = load 'Jenkinsfile.groovy'
+    def common = load 'Jenkinsfile.groovy'
 
     stage('Preparation') {
         step([$class: 'WsCleanup'])
