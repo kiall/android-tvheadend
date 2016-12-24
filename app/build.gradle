@@ -81,5 +81,5 @@ dependencies {
     compile 'com.android.support:preference-leanback-v17:25.0.0'
     compile 'com.google.android.exoplayer:exoplayer:r1.5.9'
     compile 'de.mrmaffen:vlc-android-sdk:1.9.8'
-    compile 'ch.acra:acra:4.9.0'
+    compile 'ch.acra:acra:4.9.1'
 }
