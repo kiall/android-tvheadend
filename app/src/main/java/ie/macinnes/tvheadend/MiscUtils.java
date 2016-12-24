@@ -17,6 +17,7 @@
 package ie.macinnes.tvheadend;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Base64;
@@ -45,5 +46,21 @@ public class MiscUtils {
                 = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
+    public static void setSetupComplete(Context context, boolean isSetupComplete) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(
+                Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
+
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(Constants.KEY_SETUP_COMPLETE, isSetupComplete);
+        editor.apply();
+    }
+
+    public static boolean isSetupComplete(Context context) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(
+                Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
+
+        return sharedPreferences.getBoolean(Constants.KEY_SETUP_COMPLETE, false);
     }
 }

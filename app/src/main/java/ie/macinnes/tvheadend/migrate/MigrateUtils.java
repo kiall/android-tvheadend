@@ -19,11 +19,11 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
 
 import ie.macinnes.tvheadend.Constants;
+import ie.macinnes.tvheadend.MiscUtils;
 import ie.macinnes.tvheadend.R;
 import ie.macinnes.tvheadend.account.AccountUtils;
 
@@ -38,16 +38,7 @@ public class MigrateUtils {
         PreferenceManager.setDefaultValues(context, R.xml.preferences, false);
 
         // Store the current version
-        int currentApplicationVersion = 0;
-
-        try {
-            currentApplicationVersion = context.getPackageManager()
-                    .getPackageInfo(context.getPackageName(), 0)
-                    .versionCode;
-        } catch (PackageManager.NameNotFoundException e) {
-            Log.w(TAG, "Failed to lookup current application version", e);
-            return;
-        }
+        int currentApplicationVersion = Constants.MIGRATE_VERSION;
 
         // Store the last migrated version
         SharedPreferences sharedPreferences = context.getSharedPreferences(
@@ -62,8 +53,12 @@ public class MigrateUtils {
         if (currentApplicationVersion != lastInstalledApplicationVersion) {
             if (lastInstalledApplicationVersion <= 14) {
                 migrateAccountsPortName(context);
-            } else if (lastInstalledApplicationVersion <= 38) {
+            }
+            if (lastInstalledApplicationVersion <= 38) {
                 migrateAccountHtspPort(context);
+            }
+            if (lastInstalledApplicationVersion <= 79) {
+                migrateSetupCompleted(context);
             }
         }
 
@@ -71,6 +66,17 @@ public class MigrateUtils {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putInt(Constants.KEY_APP_VERSION, currentApplicationVersion);
         editor.apply();
+    }
+
+    protected static void migrateSetupCompleted(Context context) {
+        Log.d(TAG, "migrateSetupCompleted()");
+
+        Account account = AccountUtils.getActiveAccount(context);
+
+        if (account != null) {
+            // We have an account, so lets assume the user completed the setup.
+            MiscUtils.setSetupComplete(context, true);
+        }
     }
 
     protected static void migrateAccountsPortName(Context context) {

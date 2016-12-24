@@ -16,7 +16,9 @@ public class BootCompletedReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         Log.i(TAG, "Received intent: " + intent.getAction());
 
-        if (intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
+        if (intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)
+                && MiscUtils.isSetupComplete(context)) {
+            Log.d(TAG, "Starting TVHeadend Services");
             context.startService(new Intent(context, TvInputService.class));
             context.startService(new Intent(context, EpgSyncService.class));
         }

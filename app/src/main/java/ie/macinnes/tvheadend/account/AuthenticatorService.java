@@ -26,6 +26,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 import ie.macinnes.tvheadend.Constants;
+import ie.macinnes.tvheadend.MiscUtils;
 import ie.macinnes.tvheadend.TvContractUtils;
 import ie.macinnes.tvheadend.sync.EpgSyncService;
 
@@ -62,6 +63,9 @@ public class AuthenticatorService extends Service {
 
                     // Remove all the channels we added
                     TvContractUtils.removeChannels(getApplicationContext());
+
+                    // Indicate we've not completed the setup
+                    MiscUtils.setSetupComplete(getBaseContext(), false);
 
                     // Discard the previously saved last EPG update stamp
                     mSharedPreferences.edit().remove(Constants.KEY_EPG_LAST_UPDATE).apply();

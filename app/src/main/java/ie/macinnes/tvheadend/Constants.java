@@ -22,9 +22,13 @@ public class Constants {
     // Misc Things
     public static final String CONTENT_AUTHORITY = TvContract.AUTHORITY;
     public static final String ACCOUNT_TYPE = "ie.macinnes.tvheadend";
+    public static final int MIGRATE_VERSION = 79;
 
     // Preferences Files and Keys
     public static final String PREFERENCE_TVHEADEND = "tvheadend";
+
+    // Misc Preference Keys and Values
+    public static final String KEY_SETUP_COMPLETE = "SETUP-COMPLETE";
 
     // Session Selection Preference Keys and Values
     public static final String KEY_SESSION = "SESSION";

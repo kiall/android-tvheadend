@@ -35,10 +35,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ie.macinnes.tvheadend.Constants;
+import ie.macinnes.tvheadend.MiscUtils;
 import ie.macinnes.tvheadend.R;
 import ie.macinnes.tvheadend.TvContractUtils;
 import ie.macinnes.tvheadend.account.AccountUtils;
-import ie.macinnes.tvheadend.migrate.MigrateUtils;
 import ie.macinnes.tvheadend.settings.SettingsActivity;
 import ie.macinnes.tvheadend.sync.EpgSyncService;
 
@@ -323,7 +323,6 @@ public class TvInputSetupActivity extends Activity {
 
             // Move onto the next step
             GuidedStepFragment fragment = new SyncingFragment();
-//            GuidedStepFragment fragment = new CompletedFragment();
             fragment.setArguments(getArguments());
             add(getFragmentManager(), fragment);
         }
@@ -448,6 +447,7 @@ public class TvInputSetupActivity extends Activity {
             if (action.getId() == ACTION_ID_SETTINGS) {
                 startActivity(SettingsActivity.getPreferencesIntent(getActivity()));
             } else if (action.getId() == ACTION_ID_COMPLETE) {
+                MiscUtils.setSetupComplete(getActivity(), true);
                 getActivity().setResult(Activity.RESULT_OK);
                 getActivity().finish();
             }
