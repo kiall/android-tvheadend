@@ -1,3 +1,11 @@
+import jenkins.model.*
+
+def getAppVersionCode() {
+    def appVersionCode = jenkins.model.Jenkins.instance.getItem("android-tvheadend-version-code").nextBuildNumber
+    build job: 'android-tvheadend-version-code'
+    return appVersionCode
+}
+
 def assemble() {
     sh './gradlew assemble'
 }

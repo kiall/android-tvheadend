@@ -15,7 +15,7 @@ android {
         applicationId "ie.macinnes.tvheadend"
         minSdkVersion 22
         targetSdkVersion 25
-        versionCode System.getenv("BUILD_NUMBER") as Integer ?: 0
+        versionCode System.getenv("APP_VERSION_CODE") as Integer ?: 0
         versionName gitVersionName
         setProperty("archivesBaseName", "${applicationId}_${versionName}")
 
