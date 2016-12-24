@@ -38,7 +38,7 @@ def publishApkToGitHub() {
     withCredentials([
         [$class: 'StringBinding', credentialsId: '  github-pat-kiall', variable: 'GITHUB_TOKEN'],
     ]) {
-        sh(script: "github-release upload --user kiall --repo android-tvheadend --tag ${tagName} --name "ie.macinnes.tvheadend_${tagName}-release.apk" --file app/build/outputs/apk/ie.macinnes.tvheadend_${tagName}-release.apk")
+        sh(script: "github-release upload --user kiall --repo android-tvheadend --tag ${tagName} --name ie.macinnes.tvheadend_${tagName}-release.apk --file app/build/outputs/apk/ie.macinnes.tvheadend_${tagName}-release.apk")
     }
 }
 
