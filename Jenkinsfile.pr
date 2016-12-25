@@ -1,18 +1,16 @@
 #!/usr/bin/env groovy
 
-// /* Only keep the 10 most recent builds. */
+/* Only keep the 10 most recent builds. */
 // def projectProperties = [
 //     [$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator', numToKeepStr: '5']],
-//     [$class: 'GithubProjectProperty', projectUrl: 'https://github.com/kiall/android-tvheadend/'],
-//     [$class: 'PipelineTriggersJobProperty', triggers:
-//         [
-//             $class: 'GitHubPRTrigger', triggerMode: 'HEAVY_HOOKS', cancelQueued: true, abortRunning: true, skipFirstRun: false, preStatus: true, events: [
+//     [$class: 'GithubProjectProperty', projectUrl: 'https://github.com/kiall/android-tvheadend/', displayName: ''],
+//     [$class: 'PipelineTriggersJobProperty', triggers: [
+//             [$class: 'GitHubPRTrigger', triggerMode: 'HEAVY_HOOKS', spec: 'H/5 * * * *', cancelQueued: true, abortRunning: true, skipFirstRun: false, preStatus: true, events: [
 //                 [$class: 'GitHubPROpenEvent'],
 //                 [$class: 'GitHubPRCommitEvent'],
 //                 [$class: 'GitHubPRCommentEvent', comment: "recheck"],
-//             ]
-//         ]
-//     ],
+//             ]]
+//     ]],
 //     [$class: 'DisableConcurrentBuildsJobProperty'],
 //     [$class: 'ParametersDefinitionProperty', parameterDefinitions:
 //         [
