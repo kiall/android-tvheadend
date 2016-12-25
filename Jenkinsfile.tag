@@ -40,8 +40,14 @@ node ('android-slave') {
             common.archive()
         }
         stage('Publish') {
-            common.publishApkToStore('beta')
-            common.publishApkToGitHub()
+            parallel (
+                playStore: {
+                    common.publishApkToStore('beta')
+                },
+                githubRelease: {
+                    common.publishApkToGitHub()
+                }
+            )
         }
     }
 }

@@ -12,11 +12,6 @@
 //             ]]
 //     ]],
 //     [$class: 'DisableConcurrentBuildsJobProperty'],
-//     [$class: 'ParametersDefinitionProperty', parameterDefinitions:
-//         [
-//             [$class: 'StringParameterDefinition', name: 'GITHUB_PR_NUMBER'],
-//         ],
-//     ],
 // ]
 
 // properties(projectProperties)
