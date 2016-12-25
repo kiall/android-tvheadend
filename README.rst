@@ -28,5 +28,3 @@ Sign up for Beta access (more frequent, bleeding edge releases):
 
 .. |travis-master| image:: https://travis-ci.org/kiall/android-tvheadend.svg?branch=master
    :target: https://travis-ci.org/kiall/android-tvheadend
-
-Test
