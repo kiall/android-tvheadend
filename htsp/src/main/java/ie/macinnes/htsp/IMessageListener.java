@@ -15,7 +15,10 @@
  */
 package ie.macinnes.htsp;
 
+import android.os.Handler;
+
 public interface IMessageListener {
     void setConnection(Connection connection);
+    Handler getHandler();
     void onMessage(ResponseMessage message);
 }

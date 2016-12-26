@@ -18,6 +18,7 @@ package ie.macinnes.htsp.tasks;
 
 import android.content.Context;
 import android.media.tv.TvContract;
+import android.os.Handler;
 import android.util.Log;
 
 import java.nio.ByteBuffer;
@@ -51,7 +52,9 @@ public class GetFileTask extends MessageListener {
     // Map of <OpenID, ByteBuffer>'s
     protected Map<Integer, ByteBuffer> mBuffers;
 
-    public GetFileTask(Context context) {
+    public GetFileTask(Context context, Handler handler) {
+        super(handler);
+
         mContext = context;
 
         mOpenCount = new AtomicInteger(1);

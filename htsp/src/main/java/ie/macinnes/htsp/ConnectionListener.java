@@ -18,10 +18,6 @@ package ie.macinnes.htsp;
 
 import android.os.Handler;
 
-/**
- * Created by kiall on 17/10/16.
- */
-
 public abstract class ConnectionListener implements IConnectionListener {
     protected Connection mConnection;
     protected Handler mHandler;

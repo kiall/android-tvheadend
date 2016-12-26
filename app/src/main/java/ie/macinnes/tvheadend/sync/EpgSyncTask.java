@@ -26,6 +26,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.media.tv.TvContract;
 import android.net.Uri;
+import android.os.Handler;
 import android.os.RemoteException;
 import android.util.Log;
 import android.util.SparseArray;
@@ -60,6 +61,8 @@ class EpgSyncTask extends MessageListener {
     private static final String TAG = EpgSyncTask.class.getName();
 
     protected Context mContext;
+    protected Handler mHandler;
+
     protected Account mAccount;
     protected GetFileTask mGetFileTask;
 
@@ -77,7 +80,9 @@ class EpgSyncTask extends MessageListener {
 
     protected SharedPreferences mSharedPreferences;
 
-    public EpgSyncTask(Context context, Account account, GetFileTask getFileTask) {
+    public EpgSyncTask(Context context, Handler handler, Account account, GetFileTask getFileTask) {
+        super(handler);
+
         mContext = context;
         mAccount = account;
         mGetFileTask = getFileTask;

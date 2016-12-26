@@ -413,7 +413,7 @@ public class Connection implements Runnable {
     private int processMessage(int bytesToBeConsumed) throws IOException {
         Log.v(TAG, "Processing a HTSP Message");
 
-        ResponseMessage message = HtspMessage.fromWire(mReadBuffer);
+        final ResponseMessage message = HtspMessage.fromWire(mReadBuffer);
         int bytesConsumed = mReadBuffer.position();
 
         if (message == null) {
@@ -428,8 +428,18 @@ public class Connection implements Runnable {
         mReadBuffer.compact();
 
         if (mMessageListeners != null) {
-            for (IMessageListener listener : mMessageListeners) {
-                listener.onMessage(message);
+            for (final IMessageListener listener : mMessageListeners) {
+                Handler handler = listener.getHandler();
+                if (handler != null) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onMessage(message);
+                        }
+                    });
+                } else {
+                    listener.onMessage(message);
+                }
             }
         } else {
             Log.w(TAG, "Message received, but no listeners.. Discarding.");

@@ -16,6 +16,7 @@
 
 package ie.macinnes.htsp.tasks;
 
+import android.os.Handler;
 import android.util.Log;
 
 import java.io.UnsupportedEncodingException;

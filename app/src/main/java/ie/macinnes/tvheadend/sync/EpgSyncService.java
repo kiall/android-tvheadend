@@ -178,11 +178,11 @@ public class EpgSyncService extends Service {
 
     protected void installTasks() {
         Log.d(TAG, "Adding GetFileTask");
-        mGetFileTask = new GetFileTask(mContext);
+        mGetFileTask = new GetFileTask(mContext, mHandler);
         mConnection.addMessageListener(mGetFileTask);
 
         Log.d(TAG, "Adding EpgSyncTask");
-        mEpgSyncTask = new EpgSyncTask(mContext, mAccount, mGetFileTask);
+        mEpgSyncTask = new EpgSyncTask(mContext, mHandler, mAccount, mGetFileTask);
         mConnection.addMessageListener(mEpgSyncTask);
     }
 

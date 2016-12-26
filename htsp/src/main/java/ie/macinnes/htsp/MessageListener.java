@@ -30,17 +30,25 @@ package ie.macinnes.htsp;/*
  * under the License.
  */
 
-import ie.macinnes.htsp.IMessageListener;
-
-/**
- * Created by kiall on 17/10/16.
- */
+import android.os.Handler;
 
 public abstract class MessageListener implements IMessageListener {
     protected Connection mConnection;
+    protected Handler mHandler;
+
+    public MessageListener() {}
+
+    public MessageListener(Handler handler) {
+        mHandler = handler;
+    }
 
     @Override
     public void setConnection(Connection connection) {
         mConnection = connection;
+    }
+
+    @Override
+    public Handler getHandler() {
+        return mHandler;
     }
 }
