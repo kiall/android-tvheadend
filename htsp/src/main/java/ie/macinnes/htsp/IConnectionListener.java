@@ -15,7 +15,10 @@
  */
 package ie.macinnes.htsp;
 
+import android.os.Handler;
+
 public interface IConnectionListener {
     void setConnection(Connection connection);
+    Handler getHandler();
     void onStateChange(int state, int previous);
 }

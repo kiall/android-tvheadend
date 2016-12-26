@@ -15,6 +15,7 @@
  */
 package ie.macinnes.htsp;
 
+import android.os.Handler;
 import android.util.Log;
 
 import java.io.IOException;
@@ -348,7 +349,7 @@ public class Connection implements Runnable {
         return mState;
     }
 
-    protected void setState(int state) {
+    protected void setState(final int state) {
         Log.d(TAG, String.format("Transition to state %d from %d", state, mState));
 
         if (state == mState) {
@@ -356,12 +357,22 @@ public class Connection implements Runnable {
             return;
         }
 
-        int previousState = mState;
+        final int previousState = mState;
         mState = state;
 
         if (mHTSPConnectionListeners != null) {
-            for (IConnectionListener listener : mHTSPConnectionListeners) {
-                listener.onStateChange(state, previousState);
+            for (final IConnectionListener listener : mHTSPConnectionListeners) {
+                Handler handler = listener.getHandler();
+                if (handler != null) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onStateChange(state, previousState);
+                        }
+                    });
+                } else {
+                    listener.onStateChange(state, previousState);
+                }
             }
         }
     }

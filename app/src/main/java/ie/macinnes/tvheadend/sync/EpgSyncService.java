@@ -21,6 +21,7 @@ import android.accounts.AccountManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -39,6 +40,8 @@ public class EpgSyncService extends Service {
     private static final String TAG = EpgSyncService.class.getName();
 
     protected Context mContext;
+    protected Handler mHandler;
+
     protected AccountManager mAccountManager;
     protected Account mAccount;
 
@@ -91,6 +94,8 @@ public class EpgSyncService extends Service {
         Log.i(TAG, "Starting EPG Sync Service");
 
         mContext = getApplicationContext();
+        mHandler = new Handler();
+
         mAccountManager = AccountManager.get(mContext);
         mAccount = AccountUtils.getActiveAccount(mContext);
 
@@ -126,19 +131,10 @@ public class EpgSyncService extends Service {
             return;
         }
 
-        if (initHtspConnection()) {
-            installTasks();
-            enableAsyncMetadata();
-        } else {
-            Log.e(TAG, "HTSP connection failed, shutting down EpgSync Service");
-            stopSelf();
-            return;
-        }
+        initHtspConnection();
     }
 
-    protected boolean initHtspConnection() {
-        final Object connectionLock = new Object();
-
+    protected void initHtspConnection() {
         final String hostname = mAccountManager.getUserData(mAccount, Constants.KEY_HOSTNAME);
         final int port = Integer.parseInt(mAccountManager.getUserData(mAccount, Constants.KEY_HTSP_PORT));
         final String username = mAccount.name;
@@ -149,30 +145,27 @@ public class EpgSyncService extends Service {
         // 1048576  = 1MB
         mConnection = new Connection(hostname, port, username, password, "android-tvheadend (epg)", BuildConfig.VERSION_NAME, 1048576);
 
-        ConnectionListener connectionListener = new ConnectionListener() {
+        ConnectionListener connectionListener = new ConnectionListener(mHandler) {
             @Override
             public void onStateChange(int state, int previous) {
-                synchronized (connectionLock) {
-                    if (state == Connection.STATE_CONNECTING) {
-                        Log.d(TAG, "HTSP Connection Connecting");
-                    } else if (state == Connection.STATE_CONNECTED) {
-                        Log.d(TAG, "HTSP Connection Connected");
-                    } else if (state == Connection.STATE_AUTHENTICATING) {
-                        Log.d(TAG, "HTSP Connection Authenticating");
-                    } else if (state == Connection.STATE_READY) {
-                        Log.d(TAG, "HTSP Connection Ready");
-                        mConnectionReady = true;
-                        connectionLock.notifyAll();
-                    } else if (state == Connection.STATE_FAILED) {
-                        Log.e(TAG, "HTSP Connection Failed, Reconnecting");
-                        closeConnection();
-                        openConnection();
-                    } else if (state == Connection.STATE_CLOSED) {
-                        Log.d(TAG, "HTSP Connection Closed");
-                        mConnectionReady = false;
-                        mConnection = null;
-                        connectionLock.notifyAll();
-                    }
+                if (state == Connection.STATE_CONNECTING) {
+                    Log.d(TAG, "HTSP Connection Connecting");
+                } else if (state == Connection.STATE_CONNECTED) {
+                    Log.d(TAG, "HTSP Connection Connected");
+                } else if (state == Connection.STATE_AUTHENTICATING) {
+                    Log.d(TAG, "HTSP Connection Authenticating");
+                } else if (state == Connection.STATE_READY) {
+                    Log.d(TAG, "HTSP Connection Ready");
+                    installTasks();
+                    enableAsyncMetadata();
+                } else if (state == Connection.STATE_FAILED) {
+                    Log.e(TAG, "HTSP Connection Failed, Reconnecting");
+                    closeConnection();
+                    openConnection();
+                } else if (state == Connection.STATE_CLOSED) {
+                    Log.i(TAG, "HTSP Connection Closed, shutting down EpgSync Service");
+                    cleanupConnection();
+                    stopSelf();
                 }
             }
         };
@@ -181,21 +174,6 @@ public class EpgSyncService extends Service {
 
         mConnectionThread = new Thread(mConnection);
         mConnectionThread.start();
-
-        synchronized (connectionLock) {
-            try {
-                connectionLock.wait(5000);
-                if (!mConnectionReady) {
-                    Log.w(TAG, "HTSP Connection timed out, Aborting");
-                    return mConnectionReady;
-                }
-            } catch (InterruptedException e) {
-                Log.w(TAG, "HTSP Connection Interrupted, Aborting");
-                return mConnectionReady;
-            }
-        }
-
-        return mConnectionReady;
     }
 
     protected void installTasks() {
@@ -217,9 +195,25 @@ public class EpgSyncService extends Service {
         if (mConnection != null) {
             Log.d(TAG, "Closing HTSP connection");
             mConnection.close();
-            mConnection = null;
         }
 
+        if (mConnectionThread != null) {
+            Log.d(TAG, "Waiting for HTSP Connection Thread to finish");
+
+            try {
+                mConnectionThread.join();
+                Log.d(TAG, "HTSP Connection Thread has finished");
+            } catch (InterruptedException e) {
+                Log.w(TAG, "Interrupted while waiting for HTSP Connection Thread to finish");
+            }
+        }
+
+        cleanupConnection();
+    }
+
+    protected void cleanupConnection() {
+        mConnection = null;
+        mConnectionThread = null;
         mEpgSyncTask = null;
     }
 }
