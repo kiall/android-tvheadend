@@ -166,7 +166,7 @@ public class Connection implements Runnable {
             }
         }
 
-        if (getState() != STATE_CLOSED) {
+        if (!isClosed()) {
             close();
         }
     }
@@ -174,13 +174,13 @@ public class Connection implements Runnable {
     protected void open() throws ConnectionException {
         Log.i(TAG, "Opening HTSP Connection");
 
-        if (mSocketChannel != null) {
-            throw new RuntimeException("Attempted to open HTSP connection twice");
-        }
-
         mLock.lock();
 
         try {
+            if (mSocketChannel != null) {
+                throw new RuntimeException("Attempted to open HTSP connection twice");
+            }
+
             setState(STATE_CONNECTING);
 
             final Object openLock = new Object();
@@ -257,21 +257,31 @@ public class Connection implements Runnable {
     }
 
     public void close() {
-        close(STATE_CLOSING);
+        close(STATE_CLOSED);
     }
 
-    protected void close(int startState) {
-        if (getState() == STATE_CLOSED) {
-            Log.d(TAG, "Connection already closed, ignoring close request");
-            return;
-        }
-
-        Log.i(TAG, "Closing HTSP Connection, Start State: " + startState);
-
+    protected void close(int endState) {
         mLock.lock();
         try {
+            if (getState() == STATE_CLOSED) {
+                Log.i(TAG, "Connection already closed, ignoring close request");
+                return;
+            }
+
+            if (getState() == STATE_CLOSING) {
+                Log.i(TAG, "Connection already closing, ignoring close request");
+                return;
+            }
+
+            if (getState() == STATE_FAILED) {
+                Log.i(TAG, "Connection already failed, ignoring close request");
+                return;
+            }
+
+            Log.i(TAG, "Closing HTSP Connection, End State: " + endState);
+
             mRunning = false;
-            setState(startState);
+            setState(STATE_CLOSING);
 
             // Clear out any pending messages
             mMessageQueue.clear();
@@ -301,8 +311,9 @@ public class Connection implements Runnable {
 
             // Wipe the read buffer
             mReadBuffer.clear();
+            mReadBuffer = null;
 
-            setState(STATE_CLOSED);
+            setState(endState);
         } finally {
             mLock.unlock();
         }
@@ -327,6 +338,10 @@ public class Connection implements Runnable {
 
     public void sendMessage(BaseMessage message) {
         sendMessage(message.toHtspMessage());
+    }
+
+    public boolean isClosed() {
+        return getState() == STATE_CLOSED || getState() == STATE_FAILED;
     }
 
     public int getState() {

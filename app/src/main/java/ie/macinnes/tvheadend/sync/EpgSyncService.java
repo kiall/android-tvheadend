@@ -186,11 +186,11 @@ public class EpgSyncService extends Service {
             try {
                 connectionLock.wait(5000);
                 if (!mConnectionReady) {
-                    Log.d(TAG, "HTSP Connection timed out, Aborting");
+                    Log.w(TAG, "HTSP Connection timed out, Aborting");
                     return mConnectionReady;
                 }
             } catch (InterruptedException e) {
-                Log.d(TAG, "HTSP Connection Interrupted, Aborting");
+                Log.w(TAG, "HTSP Connection Interrupted, Aborting");
                 return mConnectionReady;
             }
         }
