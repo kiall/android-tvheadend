@@ -117,8 +117,6 @@ public class DevTestActivity extends Activity {
     }
 
     public void showPreferences(View view) {
-        Exception e = new Exception("Tester 2");
-        ACRA.getErrorReporter().handleException(e);
         startActivity(SettingsActivity.getPreferencesIntent(this));
     }
 
