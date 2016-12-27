@@ -41,7 +41,7 @@ public class Application extends android.app.Application {
                 final ACRAConfiguration config = new ConfigurationBuilder(this)
                         .setHttpMethod(HttpSender.Method.PUT)
                         .setReportType(HttpSender.Type.JSON)
-                        .setFormUri(BuildConfig.ACRA_REPORT_URI)
+                        .setFormUri(BuildConfig.ACRA_REPORT_URI + "/" + BuildConfig.VERSION_CODE)
                         .setLogcatArguments("-t", "500", "-v", "time", "*:I")
                         .setAdditionalSharedPreferences(Constants.PREFERENCE_TVHEADEND)
                         .setSharedPreferenceName(Constants.PREFERENCE_TVHEADEND)
