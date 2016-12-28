@@ -23,18 +23,15 @@ node ('android-slave') {
     }
 
     def common = load 'Jenkinsfile.groovy'
-    def appVersionCode = common.getAppVersionCode()
 
     common.withGithubNotifier {
-        withEnv(["APP_VERSION_CODE=${appVersionCode}"]) {
-            stage('Assemble') {
-                setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Assemble"
-                common.assemble()
-            }
-            stage('Lint') {
-                setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Lint"
-                common.lint()
-            }
+        stage('Assemble') {
+            setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Assemble"
+            common.assemble()
+        }
+        stage('Lint') {
+            setGitHubPullRequestStatus state: 'PENDING', context: "${env.JOB_NAME}", message: "Lint"
+            common.lint()
         }
     }
 }
