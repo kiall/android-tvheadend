@@ -27,6 +27,7 @@ abstract public class BaseSession extends android.media.tv.TvInputService.Sessio
 
     protected Surface mSurface;
     protected float mVolume;
+    protected boolean mCaptionEnabled;
 
     protected PlayChannelRunnable mPlayChannelRunnable;
 
@@ -58,6 +59,7 @@ abstract public class BaseSession extends android.media.tv.TvInputService.Sessio
     @Override
     public void onSetCaptionEnabled(boolean enabled) {
         Log.d(TAG, "Session onSetCaptionEnabled: " + enabled + " (" + mSessionNumber + ")");
+        mCaptionEnabled = enabled;
     }
 
     @Override

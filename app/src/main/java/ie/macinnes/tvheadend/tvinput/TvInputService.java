@@ -68,10 +68,11 @@ public class TvInputService extends android.media.tv.TvInputService {
         if (mSessionType != null && mSessionType.equals(Constants.SESSION_VLC)) {
             return new VlcSession(this, mHandler);
         } else if (mSessionType != null && mSessionType.equals(Constants.SESSION_EXO_PLAYER)) {
-            return new DemoPlayerSession(this, mHandler);
+            return new ExoPlayerSession(this, mHandler);
         } else {
             return new MediaPlayerSession(this, mHandler);
         }
+
     }
 
 }
