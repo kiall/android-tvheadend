@@ -237,7 +237,7 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
                     case C.TRACK_TYPE_VIDEO:
                         builder = new TvTrackInfo.Builder(TvTrackInfo.TYPE_VIDEO, trackId);
                         if (format.width != Format.NO_VALUE && format.height != Format.NO_VALUE) {
-                            builder.setVideoWidth(format.width);
+                            builder.setVideoWidth((int)(format.width * format.pixelWidthHeightRatio));
                             builder.setVideoHeight(format.height);
                         }
                         builder.setVideoFrameRate(format.frameRate);
@@ -327,9 +327,9 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
         Uri videoUri;
 
         if (httpPath == null) {
-            videoUri = Uri.parse("http://" + hostname + ":" + httpPort + "/stream/channelid/" + tvhChannelId + "?profile=pass");
+            videoUri = Uri.parse("http://" + hostname + ":" + httpPort + "/stream/channelid/" + tvhChannelId + "?profile=tif");
         } else {
-            videoUri = Uri.parse("http://" + hostname + ":" + httpPort + "/" + httpPath + "/stream/channelid/" + tvhChannelId + "?profile=pass");
+            videoUri = Uri.parse("http://" + hostname + ":" + httpPort + "/" + httpPath + "/stream/channelid/" + tvhChannelId + "?profile=tif");
         }
 
         // Hardcode a Test Video URI
