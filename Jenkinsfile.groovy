@@ -35,7 +35,7 @@ def publishApkToStore(String trackName) {
 
 def publishApkToGitHub() {
     def tagName = sh(returnStdout: true, script: "git describe --tags --abbrev=0 --exact-match").trim()
-    def changeLog = sh(returnStdout: true, script: "./tools/generate-changelog").trim()
+    def changeLog = sh(returnStdout: true, script: "./tools/generate-changelog").trim().replaceAll(~/'/, "\'")
 
     withCredentials([
         [$class: 'StringBinding', credentialsId: '  github-pat-kiall', variable: 'GITHUB_TOKEN'],
