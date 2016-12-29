@@ -21,7 +21,7 @@ def lint() {
 }
 
 def publishApkToStore(String trackName) {
-    def changeLog = sh(returnStdout: true, script: "./tools/generate-changelog").trim()
+    def changeLog = sh(returnStdout: true, script: "./tools/generate-changelog").trim().take(500)
 
     androidApkUpload(
         apkFilesPattern: 'app/build/outputs/apk/ie.macinnes.tvheadend_*-release.apk',
