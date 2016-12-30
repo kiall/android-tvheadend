@@ -19,6 +19,7 @@ package ie.macinnes.tvheadend.tvinput;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
+import android.media.tv.TvInputManager;
 import android.media.tv.TvTrackInfo;
 import android.net.Uri;
 import android.os.Build;
@@ -87,9 +88,6 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
 
         mExoPlayer.prepare(mMediaSource);
         mExoPlayer.setPlayWhenReady(true);
-
-        // TODO: Use ExoPlayer events to set video availability
-        notifyVideoAvailable();
 
         return true;
     }
@@ -284,7 +282,21 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
 
     @Override
     public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+        Log.d(TAG, "Session onPlayerStateChanged: " + playbackState + " (" + mSessionNumber + ")");
 
+        switch (playbackState) {
+            case ExoPlayer.STATE_READY:
+                notifyVideoAvailable();
+                break;
+            case ExoPlayer.STATE_BUFFERING:
+                notifyVideoUnavailable(TvInputManager.VIDEO_UNAVAILABLE_REASON_BUFFERING);
+                break;
+            case ExoPlayer.STATE_IDLE:
+                notifyVideoUnavailable(TvInputManager.VIDEO_UNAVAILABLE_REASON_UNKNOWN);
+            case ExoPlayer.STATE_ENDED:
+                notifyVideoUnavailable(TvInputManager.VIDEO_UNAVAILABLE_REASON_UNKNOWN);
+                break;
+        }
     }
 
     @Override
