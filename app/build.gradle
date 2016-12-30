@@ -74,12 +74,13 @@ repositories {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    // compile(name:'vlc-android-sdk-release', ext:'aar') // Used for testing local libvlc builds
+    // compile(name: 'vlc-android-sdk-release', ext: 'aar') // Used for testing local libvlc builds
     compile project(':htsp')
     compile 'com.android.support:support-v4:25.0.0'
     compile 'com.android.support:leanback-v17:25.0.0'
     compile 'com.android.support:preference-leanback-v17:25.0.0'
-    compile 'com.google.android.exoplayer:exoplayer:r2.1.1'
+    compile 'com.google.android.exoplayer:exoplayer:r2.1.1k2'
+    compile 'com.google.android.exoplayer:extension-ffmpeg:r2.1.1k2'
     compile 'de.mrmaffen:vlc-android-sdk:1.9.8'
     compile 'ch.acra:acra:4.9.1'
 }

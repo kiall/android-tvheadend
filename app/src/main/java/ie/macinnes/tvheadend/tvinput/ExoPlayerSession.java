@@ -318,9 +318,9 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
 
         LoadControl loadControl = new DefaultLoadControl();
 
-        mExoPlayer = ExoPlayerFactory.newSimpleInstance(mContext, mTrackSelector, loadControl);
+        int extensionRendererMode = SimpleExoPlayer.EXTENSION_RENDERER_MODE_PREFER;
+        mExoPlayer = ExoPlayerFactory.newSimpleInstance(mContext, mTrackSelector, loadControl, null, extensionRendererMode);
         mExoPlayer.addListener(this);
-//        mExoPlayer.setTextOutput();
     }
 
     private void buildMediaSource(int tvhChannelId) {
