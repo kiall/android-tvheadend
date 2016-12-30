@@ -22,6 +22,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -40,6 +41,7 @@ public class EpgSyncService extends Service {
     private static final String TAG = EpgSyncService.class.getName();
 
     protected Context mContext;
+    protected HandlerThread mHandlerThread;
     protected Handler mHandler;
 
     protected AccountManager mAccountManager;
@@ -94,7 +96,9 @@ public class EpgSyncService extends Service {
         Log.i(TAG, "Starting EPG Sync Service");
 
         mContext = getApplicationContext();
-        mHandler = new Handler();
+        mHandlerThread = new HandlerThread("EpgSyncService Handler Thread");
+        mHandlerThread.start();
+        mHandler = new Handler(mHandlerThread.getLooper());
 
         mAccountManager = AccountManager.get(mContext);
         mAccount = AccountUtils.getActiveAccount(mContext);
@@ -113,7 +117,12 @@ public class EpgSyncService extends Service {
     @Override
     public void onDestroy() {
         Log.i(TAG, "Stopping EPG Sync Service");
+
         closeConnection();
+
+        mHandlerThread.quit();
+        mHandlerThread.interrupt();
+        mHandlerThread = null;
     }
 
     protected void openConnection() {
