@@ -16,10 +16,16 @@
 
 package ie.macinnes.tvheadend.tvinput;
 
+import android.content.Context;
+import android.os.Build;
+
+import com.google.android.exoplayer2.ExoPlayerLibraryInfo;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.upstream.HttpDataSource.Factory;
 
 import java.util.Map;
+
+import ie.macinnes.tvheadend.BuildConfig;
 
 public final class ExoPlayerHttpDataSourceFactory implements Factory {
     private Map<String, String> mHeaders;
@@ -30,12 +36,17 @@ public final class ExoPlayerHttpDataSourceFactory implements Factory {
 
     @Override
     public DefaultHttpDataSource createDataSource() {
-        DefaultHttpDataSource dataSource = new DefaultHttpDataSource("Foo", null);
+        DefaultHttpDataSource dataSource = new DefaultHttpDataSource(getUserAgent(), null);
 
         for (Map.Entry<String, String> entry : mHeaders.entrySet()) {
             dataSource.setRequestProperty(entry.getKey(), entry.getValue());
         }
 
         return dataSource;
+    }
+
+    private String getUserAgent() {
+        return "android-tvheadend/" + BuildConfig.VERSION_NAME + " (Linux;Android " + Build.VERSION.RELEASE
+                + ") ExoPlayer/" + ExoPlayerLibraryInfo.VERSION;
     }
 }

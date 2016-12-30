@@ -19,8 +19,6 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.media.tv.TvTrackInfo;
 import android.net.Uri;
 import android.os.Build;
@@ -38,6 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import ie.macinnes.tvheadend.BuildConfig;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.MiscUtils;
 import ie.macinnes.tvheadend.account.AccountUtils;
@@ -75,22 +74,12 @@ public class VlcSession extends BaseSession {
 
         mLibVLC = new LibVLC(options);
 
-        String userAgent = getUserAgent(mContext);
+        String userAgent = getUserAgent();
         mLibVLC.setUserAgent(userAgent, userAgent);
     }
 
-    public String getUserAgent(Context context) {
-        String versionName;
-
-        try {
-            String packageName = context.getPackageName();
-            PackageInfo info = context.getPackageManager().getPackageInfo(packageName, 0);
-            versionName = info.versionName;
-        } catch (PackageManager.NameNotFoundException e) {
-            versionName = "?";
-        }
-
-        return "android-tvheadend/" + versionName + " (Linux;Android " + Build.VERSION.RELEASE
+    public String getUserAgent() {
+        return "android-tvheadend/" + BuildConfig.VERSION_NAME + " (Linux;Android " + Build.VERSION.RELEASE
                 + ") VLC/" + mLibVLC.version();
     }
 
