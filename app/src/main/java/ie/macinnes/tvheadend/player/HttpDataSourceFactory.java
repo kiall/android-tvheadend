@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package ie.macinnes.tvheadend.tvinput;
+package ie.macinnes.tvheadend.player;
 
-import android.content.Context;
 import android.os.Build;
 
 import com.google.android.exoplayer2.ExoPlayerLibraryInfo;
@@ -27,10 +26,10 @@ import java.util.Map;
 
 import ie.macinnes.tvheadend.BuildConfig;
 
-public final class ExoPlayerHttpDataSourceFactory implements Factory {
+public final class HttpDataSourceFactory implements Factory {
     private Map<String, String> mHeaders;
 
-    public ExoPlayerHttpDataSourceFactory(Map<String, String> headers) {
+    public HttpDataSourceFactory(Map<String, String> headers) {
         mHeaders = headers;
     }
 

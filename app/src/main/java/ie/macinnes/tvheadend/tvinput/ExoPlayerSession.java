@@ -62,6 +62,8 @@ import java.util.Map;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.MiscUtils;
 import ie.macinnes.tvheadend.account.AccountUtils;
+import ie.macinnes.tvheadend.player.HttpDataSourceFactory;
+import ie.macinnes.tvheadend.player.SimpleTvheadendPlayer;
 
 public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventListener {
     private static final String TAG = ExoPlayerSession.class.getName();
@@ -319,7 +321,11 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
         LoadControl loadControl = new DefaultLoadControl();
 
         int extensionRendererMode = SimpleExoPlayer.EXTENSION_RENDERER_MODE_PREFER;
-        mExoPlayer = ExoPlayerFactory.newSimpleInstance(mContext, mTrackSelector, loadControl, null, extensionRendererMode);
+
+        mExoPlayer = new SimpleTvheadendPlayer(
+                mContext, mTrackSelector, loadControl, null, extensionRendererMode,
+                ExoPlayerFactory.DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS);
+
         mExoPlayer.addListener(this);
     }
 
@@ -351,7 +357,7 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
 //        videoUri = Uri.parse("http://10.5.1.22/test5.mkv");
 
         // Produces DataSource instances through which media data is loaded.
-        DataSource.Factory dataSourceFactory = new ExoPlayerHttpDataSourceFactory(headers);
+        DataSource.Factory dataSourceFactory = new HttpDataSourceFactory(headers);
 
         // Produces Extractor instances for parsing the media data.
         ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
