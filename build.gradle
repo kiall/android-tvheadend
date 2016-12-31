@@ -21,6 +21,12 @@ allprojects {
         }
         jcenter()
     }
+    project.ext {
+        compileSdkVersion = 25
+        targetSdkVersion = 25
+        minSdkVersion = 22
+        buildToolsVersion = "25.0.2"
+    }
 }
 
 task clean(type: Delete) {

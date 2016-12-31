@@ -8,13 +8,13 @@ ext {
 }
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.2"
+    compileSdkVersion project.ext.compileSdkVersion
+    buildToolsVersion project.ext.buildToolsVersion
 
     defaultConfig {
         applicationId "ie.macinnes.tvheadend"
-        minSdkVersion 22
-        targetSdkVersion 25
+        minSdkVersion project.ext.minSdkVersion
+        targetSdkVersion project.ext.targetSdkVersion
         versionCode System.getenv("APP_VERSION_CODE") as Integer ?: 0
         versionName gitVersionName
         setProperty("archivesBaseName", "${applicationId}_${versionName}")
