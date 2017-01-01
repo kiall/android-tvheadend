@@ -217,7 +217,10 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
                         continue;
                 }
 
-                if (!TextUtils.isEmpty(format.language) && !format.language.equals("und")) {
+                if (!TextUtils.isEmpty(format.language)
+                        && !format.language.equals("und")
+                        && !format.language.equals("nar")
+                        && !format.language.equals("syn")) {
                     builder.setLanguage(format.language);
                 }
 
