@@ -199,7 +199,8 @@ class EpgSyncTask extends MessageListener {
 
             @Override
             public void onFailure() {
-                Log.w(TAG, "Failed to fetch logo for " + channelUri);
+                Log.w(TAG, "Failed to fetch logo for " + channelUri + ". This usually means " +
+                           "TVHeadend doesn't have a logo for this channel.");
             }
         });
     }
