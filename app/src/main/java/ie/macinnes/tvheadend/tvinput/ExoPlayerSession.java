@@ -77,8 +77,6 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
         super(context, serviceHandler);
         Log.d(TAG, "Session created (" + mSessionNumber + ")");
 
-        setOverlayViewEnabled(true);
-
         buildExoPlayer();
     }
 
@@ -122,6 +120,7 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
     public void onSetCaptionEnabled(boolean enabled) {
         Log.d(TAG, "Session onSetCaptionEnabled: " + enabled + " (" + mSessionNumber + ")");
         super.onSetCaptionEnabled(enabled);
+        setOverlayViewEnabled(enabled);
     }
 
     @Override
