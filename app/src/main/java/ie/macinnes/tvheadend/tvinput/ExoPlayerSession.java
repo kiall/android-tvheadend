@@ -64,12 +64,13 @@ import ie.macinnes.tvheadend.MiscUtils;
 import ie.macinnes.tvheadend.account.AccountUtils;
 import ie.macinnes.tvheadend.player.HttpDataSourceFactory;
 import ie.macinnes.tvheadend.player.SimpleTvheadendPlayer;
+import ie.macinnes.tvheadend.player.TvheadendTrackSelector;
 
 public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventListener {
     private static final String TAG = ExoPlayerSession.class.getName();
 
     private SimpleExoPlayer mExoPlayer;
-    private MappingTrackSelector mTrackSelector;
+    private TvheadendTrackSelector mTrackSelector;
     private MediaSource mMediaSource;
 
     public ExoPlayerSession(Context context, Handler serviceHandler) {
@@ -129,66 +130,14 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
 
         SubtitleView view = new SubtitleView(mContext);
         mExoPlayer.setTextOutput(view);
+
         return view;
     }
 
     @Override
     public boolean onSelectTrack(int type, String trackId) {
         Log.d(TAG, "Session onSelectTrack: " + type + " / " + trackId + " (" + mSessionNumber + ")");
-
-        MappingTrackSelector.MappedTrackInfo mappedTrackInfos = mTrackSelector.getCurrentMappedTrackInfo();
-
-        for (int mappedTrackInfoIndex = 0; mappedTrackInfoIndex < mappedTrackInfos.length; mappedTrackInfoIndex++) {
-            TrackGroupArray trackGroups = mappedTrackInfos.getTrackGroups(mappedTrackInfoIndex);
-
-            Log.d(TAG, "Processing mappedTrackInfo: " + mappedTrackInfoIndex);
-
-            for (int groupIndex = 0; groupIndex < trackGroups.length; groupIndex++) {
-                Log.d(TAG, "Processing trackGroup: " + groupIndex);
-                TrackGroup trackGroup = trackGroups.get(groupIndex);
-
-                for (int trackIndex = 0; trackIndex < trackGroup.length; trackIndex++) {
-                    Log.d(TAG, "Processing track: " + trackIndex);
-                    Format format = trackGroup.getFormat(trackIndex);
-
-                    String candidateTrackId = (format.id == null ? groupIndex + "/" + trackIndex : format.id);
-
-                    if (candidateTrackId.equals(trackId)) {
-                        Log.d(TAG, "Found Requested Track: " + ExoPlayerUtils.buildTrackName(format));
-
-                        for (int i = 0; i < mExoPlayer.getRendererCount(); i++) {
-                            int rendererType = mExoPlayer.getRendererType(i);
-                            Log.d(TAG, "Checking Renderer Type: " + rendererType);
-
-                            if (type == TvTrackInfo.TYPE_AUDIO && rendererType == C.TRACK_TYPE_AUDIO) {
-                                Log.d(TAG, "Setting Audio Track Selection Override");
-                                MappingTrackSelector.SelectionOverride override = new MappingTrackSelector.SelectionOverride(new FixedTrackSelection.Factory(), groupIndex, trackIndex);
-                                mTrackSelector.setSelectionOverride(i, trackGroups, override);
-
-                                notifyTrackSelected(type, trackId);
-                                return true;
-
-                            } else if (type == TvTrackInfo.TYPE_SUBTITLE && rendererType == C.TRACK_TYPE_TEXT) {
-                                if (mCaptionEnabled) {
-                                    Log.d(TAG, "Setting Text Track Selection Override");
-                                    MappingTrackSelector.SelectionOverride override = new MappingTrackSelector.SelectionOverride(new FixedTrackSelection.Factory(), groupIndex, trackIndex);
-                                    mTrackSelector.setRendererDisabled(i, false);
-                                    mTrackSelector.setSelectionOverride(i, trackGroups, override);
-
-                                    notifyTrackSelected(type, trackId);
-                                    return true;
-                                } else {
-                                    Log.d(TAG, "Skipping Text Track Selection Override, Captions disabled");
-                                    mTrackSelector.setRendererDisabled(i, true);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return false;
+        return mTrackSelector.onSelectTrack(type, trackId);
     }
 
     // ExoPlayer.EventListener Methods
@@ -212,6 +161,10 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
                     == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
                 showToast("Unsupported Audio Track Selected");
             }
+            if (mappedTrackInfo.getTrackTypeRendererSupport(C.TRACK_TYPE_TEXT)
+                    == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
+                showToast("Unsupported Text Track Selected");
+            }
         }
 
         // Process Available Tracks
@@ -226,16 +179,19 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
                 Log.d(TAG, "Processing track: " + trackIndex);
                 Format format = trackGroup.getFormat(trackIndex);
 
-                String trackId = (format.id == null ? groupIndex + "/" + trackIndex : format.id);
-
                 Log.d(TAG, "Processing track: " + ExoPlayerUtils.buildTrackName(format));
+
+                if (format.id == null) {
+                    Log.e(TAG, "Track ID invalid, skipping");
+                    continue;
+                }
 
                 TvTrackInfo.Builder builder;
                 int trackType = MimeTypes.getTrackType(format.sampleMimeType);
 
                 switch (trackType) {
                     case C.TRACK_TYPE_VIDEO:
-                        builder = new TvTrackInfo.Builder(TvTrackInfo.TYPE_VIDEO, trackId);
+                        builder = new TvTrackInfo.Builder(TvTrackInfo.TYPE_VIDEO, format.id);
                         if (format.width != Format.NO_VALUE && format.height != Format.NO_VALUE) {
                             builder.setVideoWidth((int)(format.width * format.pixelWidthHeightRatio));
                             builder.setVideoHeight(format.height);
@@ -247,13 +203,13 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
                         break;
 
                     case C.TRACK_TYPE_AUDIO:
-                        builder = new TvTrackInfo.Builder(TvTrackInfo.TYPE_AUDIO, trackId);
+                        builder = new TvTrackInfo.Builder(TvTrackInfo.TYPE_AUDIO, format.id);
                         builder.setAudioChannelCount(format.channelCount);
                         builder.setAudioSampleRate(format.sampleRate);
                         break;
 
                     case C.TRACK_TYPE_TEXT:
-                        builder = new TvTrackInfo.Builder(TvTrackInfo.TYPE_SUBTITLE, trackId);
+                        builder = new TvTrackInfo.Builder(TvTrackInfo.TYPE_SUBTITLE, format.id);
                         break;
 
                     default:
@@ -275,6 +231,31 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
         }
 
         notifyTracksChanged(tvTrackInfos);
+
+        // Process Selected Tracks
+        for (int i = 0; i < trackSelections.length; i++) {
+            TrackSelection selection = trackSelections.get(i);
+
+            if (selection == null) {
+                continue;
+            }
+
+            Format format = selection.getSelectedFormat();
+
+            int trackType = MimeTypes.getTrackType(format.sampleMimeType);
+
+            switch (trackType) {
+                case C.TRACK_TYPE_VIDEO:
+                    notifyTrackSelected(TvTrackInfo.TYPE_VIDEO, format.id);
+                    break;
+                case C.TRACK_TYPE_AUDIO:
+                    notifyTrackSelected(TvTrackInfo.TYPE_AUDIO, format.id);
+                    break;
+                case C.TRACK_TYPE_TEXT:
+                    notifyTrackSelected(TvTrackInfo.TYPE_SUBTITLE, format.id);
+                    break;
+            }
+        }
     }
 
     @Override
@@ -316,7 +297,7 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
         TrackSelection.Factory videoTrackSelectionFactory =
                 new AdaptiveVideoTrackSelection.Factory(null);
 
-        mTrackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
+        mTrackSelector = new TvheadendTrackSelector(videoTrackSelectionFactory);
 
         LoadControl loadControl = new DefaultLoadControl();
 
