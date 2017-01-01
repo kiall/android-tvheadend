@@ -191,13 +191,16 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
                 switch (trackType) {
                     case C.TRACK_TYPE_VIDEO:
                         builder = new TvTrackInfo.Builder(TvTrackInfo.TYPE_VIDEO, format.id);
-                        if (format.width != Format.NO_VALUE && format.height != Format.NO_VALUE) {
-                            builder.setVideoWidth((int)(format.width * format.pixelWidthHeightRatio));
-                            builder.setVideoHeight(format.height);
-                        }
                         builder.setVideoFrameRate(format.frameRate);
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                            builder.setVideoPixelAspectRatio(format.pixelWidthHeightRatio);
+                        if (format.width != Format.NO_VALUE && format.height != Format.NO_VALUE) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                builder.setVideoWidth(format.width);
+                                builder.setVideoHeight(format.height);
+                                builder.setVideoPixelAspectRatio(format.pixelWidthHeightRatio);
+                            } else {
+                                builder.setVideoWidth((int) (format.width * format.pixelWidthHeightRatio));
+                                builder.setVideoHeight(format.height);
+                            }
                         }
                         break;
 
