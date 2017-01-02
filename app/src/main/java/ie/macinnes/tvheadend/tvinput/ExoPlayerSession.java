@@ -346,9 +346,9 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
         }
 
         // Hardcode a Test Video URI
-//        videoUri = Uri.parse("http://10.5.1.22/test1.mp4"); // Multi Audio (eng 2.0 and eng 5.1), Multi Subtitle (eng, rus, etc)
+//        videoUri = Uri.parse("http://10.5.1.22/test1.mp4"); // Multi Audio (eng 2.0 (AC3) and eng 5.1 (DTS)), Multi Subtitle (eng, rus, etc)
 //        videoUri = Uri.parse("http://10.5.1.22/test2.mp4"); // Single Audio (und, 5.1), No Subtitle
-//        videoUri = Uri.parse("http://10.5.1.22/test2-new2.mp4"); // Multi Audio (und, 2.0 and und, 5.1 ), No Subtitle
+//        videoUri = Uri.parse("http://10.5.1.22/test2-new2.mp4"); // Multi Audio (und, 2.0 AC3 and und, 5.1 AC3), No Subtitle
 //        videoUri = Uri.parse("http://10.5.1.22/test5.mkv");
 
         // Produces DataSource instances through which media data is loaded.

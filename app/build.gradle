@@ -79,8 +79,10 @@ dependencies {
     compile 'com.android.support:support-v4:25.1.0'
     compile 'com.android.support:leanback-v17:25.1.0'
     compile 'com.android.support:preference-leanback-v17:25.1.0'
-    compile 'com.google.android.exoplayer:exoplayer:r2.1.1k2'
-    compile 'com.google.android.exoplayer:extension-ffmpeg:r2.1.1k2'
+    compile 'com.google.android.exoplayer:exoplayer:r2.1.1k3'
+    compile 'com.google.android.exoplayer:extension-ffmpeg:r2.1.1k3'
+    // compile(name: 'library-release', ext: 'aar') // Used for testing local exoplayer builds
+    // compile(name: 'extension-ffmpeg-release', ext: 'aar') // Used for testing local exoplayer-ffmpeg builds
     compile 'de.mrmaffen:vlc-android-sdk:1.9.8'
     compile 'ch.acra:acra:4.9.1'
 }

@@ -19,12 +19,18 @@ package ie.macinnes.tvheadend.player;
 import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
+import android.util.Log;
 
 import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.Renderer;
 import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.audio.AudioCapabilities;
+import com.google.android.exoplayer2.audio.AudioRendererEventListener;
+import com.google.android.exoplayer2.audio.MediaCodecAudioRenderer;
 import com.google.android.exoplayer2.drm.DrmSessionManager;
 import com.google.android.exoplayer2.drm.FrameworkMediaCrypto;
+import com.google.android.exoplayer2.ext.ffmpeg.FfmpegAudioRenderer;
+import com.google.android.exoplayer2.ext.ffmpeg.FfmpegLibrary;
 import com.google.android.exoplayer2.mediacodec.MediaCodecSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.video.MediaCodecVideoRenderer;
@@ -34,13 +40,35 @@ import java.util.ArrayList;
 
 
 public class SimpleTvheadendPlayer extends SimpleExoPlayer {
-    public SimpleTvheadendPlayer(Context context, TrackSelector trackSelector, LoadControl loadControl, DrmSessionManager<FrameworkMediaCrypto> drmSessionManager, int extensionRendererMode, long allowedVideoJoiningTimeMs) {
+    private static final String TAG = SimpleTvheadendPlayer.class.getName();
+
+    public SimpleTvheadendPlayer(Context context, TrackSelector trackSelector, LoadControl loadControl,
+                                 DrmSessionManager<FrameworkMediaCrypto> drmSessionManager, int extensionRendererMode,
+                                 long allowedVideoJoiningTimeMs) {
         super(context, trackSelector, loadControl, drmSessionManager, extensionRendererMode, allowedVideoJoiningTimeMs);
     }
 
     @Override
-    protected void buildVideoRenderers(Context context, Handler mainHandler, DrmSessionManager<FrameworkMediaCrypto> drmSessionManager, int extensionRendererMode, VideoRendererEventListener eventListener, long allowedVideoJoiningTimeMs, ArrayList<Renderer> out) {
+    protected void buildAudioRenderers(Context context, Handler mainHandler, DrmSessionManager<FrameworkMediaCrypto> drmSessionManager,
+                                       int extensionRendererMode, AudioRendererEventListener eventListener, ArrayList<Renderer> out) {
+        AudioCapabilities audioCapabilities = AudioCapabilities.getCapabilities(context);
+
+        // Native Audio Decoders
+        Log.d(TAG, "Adding MediaCodecAudioRenderer");
+        out.add(new MediaCodecAudioRenderer(MediaCodecSelector.DEFAULT, drmSessionManager,
+                true, mainHandler, eventListener, audioCapabilities));
+
+        // FFMpeg Audio Decoder
+        Log.d(TAG, "Adding FfmpegAudioRenderer");
+        out.add(new FfmpegAudioRenderer(mainHandler, eventListener, audioCapabilities));
+    }
+
+    @Override
+    protected void buildVideoRenderers(Context context, Handler mainHandler, DrmSessionManager<FrameworkMediaCrypto> drmSessionManager,
+                                       int extensionRendererMode, VideoRendererEventListener eventListener, long allowedVideoJoiningTimeMs,
+                                       ArrayList<Renderer> out) {
         if (Build.MODEL.equals("SHIELD Android TV")) {
+            Log.d(TAG, "Adding ShieldVideoRenderer");
             out.add(new ShieldVideoRenderer(
                     context,
                     MediaCodecSelector.DEFAULT,
@@ -51,6 +79,7 @@ public class SimpleTvheadendPlayer extends SimpleExoPlayer {
                     eventListener,
                     SimpleExoPlayer.MAX_DROPPED_VIDEO_FRAME_COUNT_TO_NOTIFY));
         } else {
+            Log.d(TAG, "Adding MediaCodecVideoRenderer");
             out.add(new MediaCodecVideoRenderer(
                     context,
                     MediaCodecSelector.DEFAULT,
