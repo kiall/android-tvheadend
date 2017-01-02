@@ -1,8 +1,8 @@
 #!/usr/bin/env groovy
 
-/* Only keep the 10 most recent builds. */
+/* Only keep the 50 most recent builds. */
 def projectProperties = [
-    [$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator', numToKeepStr: '5']],
+    [$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator', numToKeepStr: '50']],
     [$class: 'PipelineTriggersJobProperty', triggers: [
         [$class: 'GitHubPushTrigger']
     ]],
