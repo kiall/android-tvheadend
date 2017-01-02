@@ -62,6 +62,7 @@ import java.util.Map;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.MiscUtils;
 import ie.macinnes.tvheadend.account.AccountUtils;
+import ie.macinnes.tvheadend.player.EventLogger;
 import ie.macinnes.tvheadend.player.HttpDataSourceFactory;
 import ie.macinnes.tvheadend.player.SimpleTvheadendPlayer;
 import ie.macinnes.tvheadend.player.TvheadendTrackSelector;
@@ -70,6 +71,7 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
     private static final String TAG = ExoPlayerSession.class.getName();
 
     private SimpleExoPlayer mExoPlayer;
+    private EventLogger mEventLogger;
     private TvheadendTrackSelector mTrackSelector;
     private MediaSource mMediaSource;
 
@@ -313,6 +315,13 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
                 ExoPlayerFactory.DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS);
 
         mExoPlayer.addListener(this);
+
+        // Add the EventLogger
+        mEventLogger = new EventLogger(mTrackSelector);
+        mExoPlayer.addListener(mEventLogger);
+        mExoPlayer.setAudioDebugListener(mEventLogger);
+        mExoPlayer.setVideoDebugListener(mEventLogger);
+        mExoPlayer.setId3Output(mEventLogger);
     }
 
     private void buildMediaSource(int tvhChannelId) {
@@ -350,7 +359,7 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
 
         // This is the MediaSource representing the media to be played.
         mMediaSource = new ExtractorMediaSource(videoUri,
-                dataSourceFactory, extractorsFactory, null, null);
+                dataSourceFactory, extractorsFactory, null, mEventLogger);
     }
 
     private void showToast(String message) {
