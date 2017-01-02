@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
@@ -323,10 +324,9 @@ public class Connection implements Runnable {
     public void sendMessage(HtspMessage htspMessage) {
         Log.d(TAG, "Sending HtspMessage: " + htspMessage.toString());
 
-        mMessageQueue.add(htspMessage);
-
         mLock.lock();
         try {
+            mMessageQueue.add(htspMessage);
             mSocketChannel.register(mSelector, SelectionKey.OP_WRITE | SelectionKey.OP_READ | SelectionKey.OP_CONNECT);
             mSelector.wakeup();
         } catch (ClosedChannelException e) {
@@ -450,8 +450,20 @@ public class Connection implements Runnable {
 
     private void processWritableSelectionKey() throws IOException {
         Log.v(TAG, "processWritableSelectionKey()");
-        HtspMessage htspMessage = mMessageQueue.poll();
+        HtspMessage htspMessage;
 
+        try {
+            htspMessage = mMessageQueue.poll();
+        } catch (NoSuchElementException e) {
+            // According to the java.util.Queue javadoc, poll should never emit this exception.
+            // The docs for the remove() method say: Retrieves and removes the head of this queue.
+            // This method differs from poll() only in that it throws an exception if this queue is
+            // empty.
+            // Yet, Somehow I'm seeing this exception raised.
+            htspMessage = null;
+            Log.w(TAG, "processWritableSelectionKey received a unexpected NoSuchElementException" +
+                       " despite JavaDoc saying it's not possible");
+        }
         if (htspMessage != null) {
             mSocketChannel.write(htspMessage.toWire());
         }
