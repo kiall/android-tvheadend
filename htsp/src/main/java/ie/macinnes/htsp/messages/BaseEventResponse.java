@@ -270,7 +270,7 @@ public class BaseEventResponse extends ResponseMessage {
         ContentValues values = new ContentValues();
 
         values.put(TvContract.Programs.COLUMN_CHANNEL_ID, channelId);
-        values.put(TvContract.Programs.COLUMN_INTERNAL_PROVIDER_DATA, mEventId);
+        values.put(TvContract.Programs.COLUMN_INTERNAL_PROVIDER_DATA, String.valueOf(mEventId));
 
         // COLUMN_TITLE, COLUMN_EPISODE_TITLE, and COLUMN_SHORT_DESCRIPTION are used in the
         // Live Channels app EPG Grid. COLUMN_LONG_DESCRIPTION appears unused.

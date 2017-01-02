@@ -362,9 +362,11 @@ class EpgSyncTask extends MessageListener {
 
         String[] projection = {TvContract.Programs._ID, TvContract.Programs.COLUMN_INTERNAL_PROVIDER_DATA};
 
+        String strEventId = String.valueOf(eventId);
+
         try (Cursor cursor = mContentResolver.query(programsUri, projection, null, null, null)) {
             while (cursor != null && cursor.moveToNext()) {
-                if (cursor.getInt(1) == eventId) {
+                if (strEventId.equals(cursor.getString(1))) {
                     return TvContract.buildProgramUri(cursor.getLong(0));
                 }
             }
@@ -404,7 +406,7 @@ class EpgSyncTask extends MessageListener {
         try (Cursor cursor = mContentResolver.query(programsUri, projection, null, null, null)) {
             while (cursor != null && cursor.moveToNext()) {
                 long rowId = cursor.getLong(0);
-                int tvhEventId = cursor.getInt(1);
+                int tvhEventId = Integer.valueOf(cursor.getString(1));
                 programMap.put(tvhEventId, TvContract.buildChannelUri(rowId));
             }
         }
