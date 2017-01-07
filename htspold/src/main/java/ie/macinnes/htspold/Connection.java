@@ -95,21 +95,25 @@ public class Connection implements Runnable {
     }
 
     public void addMessageListener(IMessageListener listener) {
-        if (mMessageListeners.contains(listener)) {
-            Log.w(TAG, "Attempted to add duplicate message listener");
-            return;
+        synchronized (mMessageListeners) {
+            if (mMessageListeners.contains(listener)) {
+                Log.w(TAG, "Attempted to add duplicate message listener");
+                return;
+            }
+            listener.setConnection(this);
+            mMessageListeners.add(listener);
         }
-        listener.setConnection(this);
-        mMessageListeners.add(listener);
     }
 
     public void removeMessageListener(IMessageListener listener) {
-        if (!mMessageListeners.contains(listener)) {
-            Log.w(TAG, "Attempted to remove non-existant message listener");
-            return;
+        synchronized (mMessageListeners) {
+            if (!mMessageListeners.contains(listener)) {
+                Log.w(TAG, "Attempted to remove non-existant message listener");
+                return;
+            }
+            mMessageListeners.remove(listener);
+            listener.setConnection(null);
         }
-        mMessageListeners.remove(listener);
-        listener.setConnection(null);
     }
 
 
@@ -448,22 +452,24 @@ public class Connection implements Runnable {
         // loose any bytes already read for the next message.
         mReadBuffer.compact();
 
-        if (mMessageListeners != null) {
-            for (final IMessageListener listener : mMessageListeners) {
-                Handler handler = listener.getHandler();
-                if (handler != null) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onMessage(message);
-                        }
-                    });
-                } else {
-                    listener.onMessage(message);
+        synchronized (mMessageListeners) {
+            if (mMessageListeners != null) {
+                for (final IMessageListener listener : mMessageListeners) {
+                    Handler handler = listener.getHandler();
+                    if (handler != null) {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onMessage(message);
+                            }
+                        });
+                    } else {
+                        listener.onMessage(message);
+                    }
                 }
+            } else {
+                Log.w(TAG, "Message received, but no listeners.. Discarding.");
             }
-        } else {
-            Log.w(TAG, "Message received, but no listeners.. Discarding.");
         }
 
         return bytesConsumed;

@@ -25,11 +25,13 @@ import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DataSpec;
 
 import java.io.IOException;
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 
 import ie.macinnes.htsp.BaseMessage;
 import ie.macinnes.htsp.Connection;
@@ -74,16 +76,16 @@ public class HtspDataSource implements DataSource {
 
     protected DataSpec mDataSpec;
 
-    protected BlockingQueue<ResponseMessage> mMessageQueue;
     protected ByteBuffer mBuffer;
+    protected ReentrantLock mLock = new ReentrantLock();
 
     public HtspDataSource(Context context, Connection connection, int subscriptionId) {
         mContext = context;
         mConnection = connection;
         mSubscriptionId = subscriptionId;
 
-        mMessageQueue = new ArrayBlockingQueue<>(500);
-        mBuffer = ByteBuffer.allocate(1048576); // 1 MB
+        mBuffer = ByteBuffer.allocate(30000000); // 30 MB
+        mBuffer.limit(0);
 
         mSubscriptionTask = new SubscriptionTask();
         mConnection.addMessageListener(mSubscriptionTask);
@@ -104,26 +106,33 @@ public class HtspDataSource implements DataSource {
     }
 
     @Override
-    synchronized public int read(byte[] buffer, int offset, int readLength) throws IOException {
+    public int read(byte[] buffer, int offset, int readLength) throws IOException {
         if (readLength == 0) {
             return 0;
         }
 
-        // If the buffer doesn't have enough data for this read, add another message to it
-        if (mBuffer.position() < readLength) {
-            // Grab a message off the queue, serialize it to the buffer.
-            ResponseMessage message = mMessageQueue.poll();
-
-            if (message != null) {
-                serializeMessageToBuffer(message);
+        // If the buffer is empty, block until we have one.
+        while (mBuffer.remaining() == 0 && !Thread.interrupted()) {
+            try {
+                Log.d(TAG, "Blocking for more data");
+                Thread.sleep(250);
+            } catch (InterruptedException e) {
+                // Ignore.
             }
         }
 
-        int remaining = mBuffer.remaining();
-        int length = remaining >= readLength ? readLength : remaining;
+        int length;
 
-        mBuffer.get(buffer, offset, length);
-        mBuffer.compact();
+        mLock.lock();
+        try {
+            int remaining = mBuffer.remaining();
+            length = remaining >= readLength ? readLength : remaining;
+
+            mBuffer.get(buffer, offset, length);
+            mBuffer.compact();
+        } finally {
+            mLock.unlock();
+        }
 
         return length;
     }
@@ -131,35 +140,58 @@ public class HtspDataSource implements DataSource {
     private void serializeMessageToBuffer(ResponseMessage message) {
         // TODO.. Ensure we don't overflow the buffer.
 
-        if (message instanceof MuxpktResponse) {
-            serializeMessageToBuffer((MuxpktResponse) message);
-        } else if (message instanceof SubscriptionStartResponse) {
-            serializeMessageToBuffer((SubscriptionStartResponse) message);
-        } else if (message instanceof SubscriptionStatusResponse) {
-            serializeMessageToBuffer((SubscriptionStatusResponse) message);
+        // Block until we have at least 3MB free in the buffer.. Hack...
+        while (mBuffer.capacity() - mBuffer.remaining() < 3000000  && !Thread.interrupted()) {
+            try {
+                Log.d(TAG, "Blocking for more space");
+                Thread.sleep(250);
+            } catch (InterruptedException e) {
+                // Ignore.
+            }
+        }
+
+        mLock.lock();
+        try {
+            mBuffer.position(mBuffer.limit());
+            mBuffer.limit(mBuffer.capacity());
+
+            if (message instanceof MuxpktResponse) {
+//                serializeMessageToBuffer((MuxpktResponse) message);
+            } else if (message instanceof SubscriptionStartResponse) {
+                serializeMessageToBuffer((SubscriptionStartResponse) message);
+            } else if (message instanceof SubscriptionStatusResponse) {
+                serializeMessageToBuffer((SubscriptionStatusResponse) message);
+            }
+
+            mBuffer.flip();
+        } finally {
+            mLock.unlock();
         }
     }
 
     private void serializeMessageToBuffer(MuxpktResponse message) {
+        Log.w(TAG, "HtspDataSource - MSG_TYPE_MUXPKT");
         mBuffer.putShort(MSG_TYPE_MUXPKT);
 //        mBuffer.putInt(message.getSubscriptionId());
 //        mBuffer.putInt(message.getFrameType());
-        mBuffer.putInt(message.getStream());
+//        mBuffer.putInt(message.getStream());
 //        mBuffer.putLong(message.getDts());
 //        mBuffer.putLong(message.getPts());
 //        mBuffer.putInt(message.getDuration());
-        mBuffer.putInt(message.getPayloadLength());
-        mBuffer.put(message.getPayload());
+//        mBuffer.putInt(message.getPayloadLength());
+//        mBuffer.put(message.getPayload());
     }
 
     private void serializeMessageToBuffer(SubscriptionStartResponse message) {
+        Log.w(TAG, "HtspDataSource - MSG_TYPE_SUBSCRIPTION_START");
         mBuffer.putShort(MSG_TYPE_SUBSCRIPTION_START);
-        mBuffer.putInt(message.getSubscriptionId());
+//        mBuffer.putInt(message.getSubscriptionId());
     }
 
     private void serializeMessageToBuffer(SubscriptionStatusResponse message) {
+        Log.w(TAG, "HtspDataSource - MSG_TYPE_SUBSCRIPTION_STATUS");
         mBuffer.putShort(MSG_TYPE_SUBSCRIPTION_STATUS);
-        mBuffer.putInt(message.getSubscriptionId());
+//        mBuffer.putInt(message.getSubscriptionId());
     }
 
     @Override
@@ -184,14 +216,9 @@ public class HtspDataSource implements DataSource {
         @Override
         public void onMessage(ResponseMessage message) {
             try {
-                if (message instanceof MuxpktResponse) {
-                    mMessageQueue.offer(message, 5, TimeUnit.SECONDS);
-                } else if (message instanceof SubscriptionStartResponse ||
-                        message instanceof SubscriptionStatusResponse) {
-                    mMessageQueue.put(message);
-                }
-            } catch (InterruptedException e) {
-                Log.w(TAG, "Interrupted while awaiting a queue slot for a message");
+                serializeMessageToBuffer(message);
+            } catch (BufferOverflowException e) {
+                Log.v(TAG, "BufferOverflowException...", e);
             }
         }
     }

@@ -65,6 +65,7 @@ import ie.macinnes.tvheadend.account.AccountUtils;
 import ie.macinnes.tvheadend.player.EventLogger;
 import ie.macinnes.tvheadend.player.ExoPlayerUtils;
 import ie.macinnes.tvheadend.player.HtspDataSource;
+import ie.macinnes.tvheadend.player.HtspExtractor;
 import ie.macinnes.tvheadend.player.HttpDataSourceFactory;
 import ie.macinnes.tvheadend.player.SimpleTvheadendPlayer;
 import ie.macinnes.tvheadend.player.TvheadendTrackSelector;
@@ -316,7 +317,7 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
         mDataSourceFactory = new HtspDataSource.Factory(mContext, mConnection);
 
         // Produces Extractor instances for parsing the media data.
-        mExtractorsFactory = new DefaultExtractorsFactory();
+        mExtractorsFactory = new HtspExtractor.Factory();
     }
 
     private void buildHttpExoPlayer() {
