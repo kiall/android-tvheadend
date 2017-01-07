@@ -37,13 +37,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Executor;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import ie.macinnes.htsp.MessageListener;
 import ie.macinnes.htsp.ResponseMessage;
@@ -61,7 +54,6 @@ class EpgSyncTask extends MessageListener {
     private static final String TAG = EpgSyncTask.class.getName();
 
     protected Context mContext;
-    protected Handler mHandler;
 
     protected Account mAccount;
     protected GetFileTask mGetFileTask;

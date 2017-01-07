@@ -28,10 +28,10 @@ import java.nio.channels.SocketChannel;
 import java.nio.channels.UnresolvedAddressException;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -79,7 +79,7 @@ public class Connection implements Runnable {
 
         mLock = new ReentrantLock();
 
-        mMessageQueue = new LinkedList<>();
+        mMessageQueue = new ConcurrentLinkedQueue<>();
         mReadBuffer = ByteBuffer.allocate(bufferSize);
 
         mAuthenticateTask = new AuthenticateTask(username, password, clientName, clientVersion);
