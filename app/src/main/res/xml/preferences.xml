@@ -29,6 +29,13 @@
             android:entryValues="@array/video_player_values" />
     </PreferenceCategory>
 
+    <PreferenceCategory android:title="EPG">
+        <CheckBoxPreference
+            android:key="epg_sync_enabled"
+            android:title="Enabled EPG Sync"
+            android:defaultValue="true" />
+    </PreferenceCategory>
+
     <PreferenceCategory android:title="Video Player Settings">
         <PreferenceScreen android:title="VLC Settings" android:key="vlc_settings" android:persistent="false">
             <CheckBoxPreference
