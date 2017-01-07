@@ -438,12 +438,16 @@ import java.util.Locale;
       return "null";
     }
     StringBuilder builder = new StringBuilder();
-    builder.append("id=").append(format.id).append(", mimeType=").append(format.sampleMimeType);
+    builder.append("id=").append(format.id).append(", mimeType=").append(format.sampleMimeType)
+           .append(", containerMimeType=").append(format.containerMimeType);
     if (format.bitrate != Format.NO_VALUE) {
       builder.append(", bitrate=").append(format.bitrate);
     }
     if (format.width != Format.NO_VALUE && format.height != Format.NO_VALUE) {
       builder.append(", res=").append(format.width).append("x").append(format.height);
+    }
+    if (format.pixelWidthHeightRatio != Format.NO_VALUE) {
+      builder.append(", par=").append(format.pixelWidthHeightRatio);
     }
     if (format.frameRate != Format.NO_VALUE) {
       builder.append(", fps=").append(format.frameRate);
