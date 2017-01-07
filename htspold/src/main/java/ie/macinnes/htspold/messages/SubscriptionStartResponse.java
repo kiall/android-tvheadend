@@ -24,20 +24,20 @@ public class SubscriptionStartResponse extends ResponseMessage {
         HtspMessage.addMessageResponseType("subscriptionStart", SubscriptionStartResponse.class);
     }
 
-    protected Long mSubscriptionId;
+    protected int mSubscriptionId;
 
-    public Long getSubscriptionId() {
+    public int getSubscriptionId() {
         return mSubscriptionId;
     }
 
-    public void setSubscriptionId(Long subscriptionId) {
+    public void setSubscriptionId(int subscriptionId) {
         mSubscriptionId = subscriptionId;
     }
 
     public void fromHtspMessage(HtspMessage htspMessage) {
         super.fromHtspMessage(htspMessage);
 
-        setSubscriptionId(htspMessage.getLong("subscriptionId"));
+        setSubscriptionId(htspMessage.getInt("subscriptionId"));
     }
 
     public String toString() {

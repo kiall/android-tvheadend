@@ -103,6 +103,16 @@ public class Connection implements Runnable {
         mMessageListeners.add(listener);
     }
 
+    public void removeMessageListener(IMessageListener listener) {
+        if (!mMessageListeners.contains(listener)) {
+            Log.w(TAG, "Attempted to remove non-existant message listener");
+            return;
+        }
+        mMessageListeners.remove(listener);
+        listener.setConnection(null);
+    }
+
+
     @Override
     public void run() {
         try {

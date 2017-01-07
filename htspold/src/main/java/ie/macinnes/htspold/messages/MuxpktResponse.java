@@ -24,59 +24,59 @@ public class MuxpktResponse extends ResponseMessage {
         HtspMessage.addMessageResponseType("muxpkt", MuxpktResponse.class);
     }
 
-    protected Long mSubscriptionId;
-    protected Long mFrameType;
-    protected Long mStream;
-    protected Long mDts;
-    protected Long mPts;
-    protected Long mDuration;
+    protected int mSubscriptionId;
+    protected int mFrameType;
+    protected int mStream;
+    protected long mDts;
+    protected long mPts;
+    protected int mDuration;
     protected byte[] mPayload;
 
-    public Long getSubscriptionId() {
+    public int getSubscriptionId() {
         return mSubscriptionId;
     }
 
-    public void setSubscriptionId(Long subscriptionId) {
+    public void setSubscriptionId(int subscriptionId) {
         mSubscriptionId = subscriptionId;
     }
 
-    public Long getFrameType() {
+    public int getFrameType() {
         return mFrameType;
     }
 
-    public void setFrameType(Long frameType) {
+    public void setFrameType(int frameType) {
         mFrameType = frameType;
     }
 
-    public Long getStream() {
+    public int getStream() {
         return mStream;
     }
 
-    public void setStream(Long stream) {
+    public void setStream(int stream) {
         mStream = stream;
     }
 
-    public Long getDts() {
+    public long getDts() {
         return mDts;
     }
 
-    public void setDts(Long dts) {
+    public void setDts(long dts) {
         mDts = dts;
     }
 
-    public Long getPts() {
+    public long getPts() {
         return mPts;
     }
 
-    public void setPts(Long pts) {
+    public void setPts(long pts) {
         mPts = pts;
     }
 
-    public Long getDuration() {
+    public int getDuration() {
         return mDuration;
     }
 
-    public void setDuration(Long duration) {
+    public void setDuration(int duration) {
         mDuration = duration;
     }
 
@@ -88,15 +88,19 @@ public class MuxpktResponse extends ResponseMessage {
         mPayload = payload;
     }
 
+    public int getPayloadLength() {
+        return mPayload.length;
+    }
+
     public void fromHtspMessage(HtspMessage htspMessage) {
         super.fromHtspMessage(htspMessage);
 
-        setSubscriptionId(htspMessage.getLong("subscriptionId"));
-        setFrameType(htspMessage.getLong("frametype"));
-        setStream(htspMessage.getLong("stream"));
+        setSubscriptionId(htspMessage.getInt("subscriptionId"));
+        setFrameType(htspMessage.getInt("frametype"));
+        setStream(htspMessage.getInt("stream"));
         setDts(htspMessage.getLong("dts"));
         setPts(htspMessage.getLong("pts"));
-        setDuration(htspMessage.getLong("duration"));
+        setDuration(htspMessage.getInt("duration"));
         setPayload(htspMessage.getByteArray("payload"));
     }
 

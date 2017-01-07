@@ -19,6 +19,7 @@ package ie.macinnes.tvheadend.tvinput;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.media.tv.TvInputManager;
 import android.media.tv.TvTrackInfo;
 import android.net.Uri;
@@ -46,8 +47,6 @@ import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.TrackGroup;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.AdaptiveVideoTrackSelection;
-import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.google.android.exoplayer2.trackselection.FixedTrackSelection;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
@@ -59,10 +58,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import ie.macinnes.htsp.Connection;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.MiscUtils;
 import ie.macinnes.tvheadend.account.AccountUtils;
 import ie.macinnes.tvheadend.player.EventLogger;
+import ie.macinnes.tvheadend.player.ExoPlayerUtils;
+import ie.macinnes.tvheadend.player.HtspDataSource;
 import ie.macinnes.tvheadend.player.HttpDataSourceFactory;
 import ie.macinnes.tvheadend.player.SimpleTvheadendPlayer;
 import ie.macinnes.tvheadend.player.TvheadendTrackSelector;
@@ -70,14 +72,28 @@ import ie.macinnes.tvheadend.player.TvheadendTrackSelector;
 public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventListener {
     private static final String TAG = ExoPlayerSession.class.getName();
 
+    private AccountManager mAccountManager;
+    private Account mAccount;
+
+    private Connection mConnection;
+
     private SimpleExoPlayer mExoPlayer;
     private EventLogger mEventLogger;
     private TvheadendTrackSelector mTrackSelector;
+    private DataSource.Factory mDataSourceFactory;
     private MediaSource mMediaSource;
 
-    public ExoPlayerSession(Context context, Handler serviceHandler) {
+    private ExtractorsFactory mExtractorsFactory;
+
+    public ExoPlayerSession(Context context, Handler serviceHandler, Connection connection) {
         super(context, serviceHandler);
         Log.d(TAG, "Session created (" + mSessionNumber + ")");
+
+        mConnection = connection;
+
+        // Gather Details on the TVHeadend Instance
+        mAccountManager = AccountManager.get(mContext);
+        mAccount = AccountUtils.getActiveAccount(mContext);
 
         buildExoPlayer();
     }
@@ -87,7 +103,16 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
         // Stop any existing playback
         stopPlayback();
 
-        buildMediaSource(tvhChannelId);
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences(
+                Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
+
+        boolean htsp = sharedPreferences.getBoolean(Constants.KEY_HTSP_VIDEO_ENABLED, false);
+
+        if (htsp) {
+            buildHtspMediaSource(tvhChannelId);
+        } else {
+            buildHttpMediaSource(tvhChannelId);
+        }
 
         mExoPlayer.prepare(mMediaSource);
         mExoPlayer.setPlayWhenReady(true);
@@ -273,21 +298,54 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
         mExoPlayer.setAudioDebugListener(mEventLogger);
         mExoPlayer.setVideoDebugListener(mEventLogger);
         mExoPlayer.setId3Output(mEventLogger);
+
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences(
+                Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
+
+        boolean htsp = sharedPreferences.getBoolean(Constants.KEY_HTSP_VIDEO_ENABLED, false);
+
+        if (htsp) {
+            buildHtspExoPlayer();
+        } else {
+            buildHttpExoPlayer();
+        }
     }
 
-    private void buildMediaSource(int tvhChannelId) {
-        // Gather Details on the TVHeadend Instance
-        AccountManager accountManager = AccountManager.get(mContext);
-        Account account = AccountUtils.getActiveAccount(mContext);
+    private void buildHtspExoPlayer() {
+        // Produces DataSource instances through which media data is loaded.
+        mDataSourceFactory = new HtspDataSource.Factory(mContext, mConnection);
 
-        String username = account.name;
-        String password = accountManager.getPassword(account);
-        String hostname = accountManager.getUserData(account, Constants.KEY_HOSTNAME);
-        String httpPort = accountManager.getUserData(account, Constants.KEY_HTTP_PORT);
-        String httpPath = accountManager.getUserData(account, Constants.KEY_HTTP_PATH);
+        // Produces Extractor instances for parsing the media data.
+        mExtractorsFactory = new DefaultExtractorsFactory();
+    }
+
+    private void buildHttpExoPlayer() {
+        String username = mAccount.name;
+        String password = mAccountManager.getPassword(mAccount);
 
         // Create authentication headers and streamUri
         Map<String, String> headers = MiscUtils.createBasicAuthHeader(username, password);
+
+        // Produces DataSource instances through which media data is loaded.
+        mDataSourceFactory = new HttpDataSourceFactory(headers);
+
+        // Produces Extractor instances for parsing the media data.
+        mExtractorsFactory = new DefaultExtractorsFactory();
+    }
+
+    private void buildHtspMediaSource(int tvhChannelId) {
+        Uri videoUri = Uri.parse("htsp://" + tvhChannelId);
+
+        // This is the MediaSource representing the media to be played.
+        mMediaSource = new ExtractorMediaSource(videoUri,
+                mDataSourceFactory, mExtractorsFactory, null, mEventLogger);
+    }
+
+    private void buildHttpMediaSource(int tvhChannelId) {
+        String hostname = mAccountManager.getUserData(mAccount, Constants.KEY_HOSTNAME);
+        String httpPort = mAccountManager.getUserData(mAccount, Constants.KEY_HTTP_PORT);
+        String httpPath = mAccountManager.getUserData(mAccount, Constants.KEY_HTTP_PATH);
+
         Uri videoUri;
 
         if (httpPath == null) {
@@ -302,15 +360,9 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
 //        videoUri = Uri.parse("http://10.5.1.22/test2-new2.mp4"); // Multi Audio (und, 2.0 AC3 and und, 5.1 AC3), No Subtitle
 //        videoUri = Uri.parse("http://10.5.1.22/test5.mkv");
 
-        // Produces DataSource instances through which media data is loaded.
-        DataSource.Factory dataSourceFactory = new HttpDataSourceFactory(headers);
-
-        // Produces Extractor instances for parsing the media data.
-        ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
-
         // This is the MediaSource representing the media to be played.
         mMediaSource = new ExtractorMediaSource(videoUri,
-                dataSourceFactory, extractorsFactory, null, mEventLogger);
+                mDataSourceFactory, mExtractorsFactory, null, mEventLogger);
     }
 
     private void showToast(String message) {

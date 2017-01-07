@@ -107,7 +107,7 @@ public class QueueStatusResponse extends ResponseMessage {
         setBdrops(htspMessage.getLong("Bdrops"));
         setPdrops(htspMessage.getLong("Pdrops"));
         setIdrops(htspMessage.getLong("Idrops"));
-        setDelta(htspMessage.getLong("delta"));
+        setDelta(htspMessage.getLong("delta", INVALID_LONG_VALUE));
     }
 
     public String toString() {
