@@ -17,13 +17,9 @@
 package ie.macinnes.htsp.messages;
 
 import android.annotation.TargetApi;
-import android.content.ContentResolver;
 import android.content.ContentValues;
-import android.content.Context;
-import android.content.res.Resources;
 import android.media.tv.TvContentRating;
 import android.media.tv.TvContract;
-import android.net.Uri;
 import android.os.Build;
 import android.text.TextUtils;
 import android.util.SparseArray;
@@ -191,7 +187,6 @@ public class BaseEventResponse extends ResponseMessage {
         setEpisodeCount(htspMessage.getInt("episodeCount", INVALID_INT_VALUE));
         // Some fields skipped
         setImage(htspMessage.getString("image", "android.resource://ie.macinnes.tvheadend/" + R.drawable.default_event_icon));
-        ;
     }
 
 
