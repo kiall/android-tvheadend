@@ -51,5 +51,6 @@ public class Constants {
     public static final String KEY_DEINTERLACE_METHOD = "vlc_deinterlace_method";
 
     // Session Selection Preference Keys and Values
+    public static final String KEY_EPG_SYNC_ENABLED = "epg_sync_enabled";
     public static final String KEY_EPG_LAST_UPDATE = "EPG_LAST_UPDATE";
 }

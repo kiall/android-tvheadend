@@ -21,6 +21,7 @@ import android.accounts.AccountManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
@@ -40,14 +41,13 @@ import ie.macinnes.tvheadend.account.AccountUtils;
 public class EpgSyncService extends Service {
     private static final String TAG = EpgSyncService.class.getName();
 
-    protected Context mContext;
     protected HandlerThread mHandlerThread;
     protected Handler mHandler;
 
+    protected SharedPreferences mSharedPreferences;
+
     protected AccountManager mAccountManager;
     protected Account mAccount;
-
-    protected boolean mConnectionReady;
 
     protected Connection mConnection;
     protected Thread mConnectionThread;
@@ -95,13 +95,20 @@ public class EpgSyncService extends Service {
     public void onCreate() {
         Log.i(TAG, "Starting EPG Sync Service");
 
-        mContext = getApplicationContext();
+        mSharedPreferences = getSharedPreferences(Constants.PREFERENCE_TVHEADEND, MODE_PRIVATE);
+
+        if (!mSharedPreferences.getBoolean(Constants.KEY_EPG_SYNC_ENABLED, true)) {
+            Log.i(TAG, "EPG Sync disabled, shutting down EPG Sync Service");
+            stopSelf();
+            return;
+        }
+
         mHandlerThread = new HandlerThread("EpgSyncService Handler Thread");
         mHandlerThread.start();
         mHandler = new Handler(mHandlerThread.getLooper());
 
-        mAccountManager = AccountManager.get(mContext);
-        mAccount = AccountUtils.getActiveAccount(mContext);
+        mAccountManager = AccountManager.get(this);
+        mAccount = AccountUtils.getActiveAccount(this);
 
         openConnection();
     }
@@ -120,15 +127,15 @@ public class EpgSyncService extends Service {
 
         closeConnection();
 
-        mHandlerThread.quit();
-        mHandlerThread.interrupt();
-        mHandlerThread = null;
+        if (mHandlerThread != null) {
+            mHandlerThread.quit();
+            mHandlerThread.interrupt();
+            mHandlerThread = null;
+        }
     }
 
     protected void openConnection() {
-        mConnectionReady = false;
-
-        if (!MiscUtils.isNetworkAvailable(mContext)) {
+        if (!MiscUtils.isNetworkAvailable(this)) {
             Log.i(TAG, "No network available, shutting down EPG Sync Service");
             stopSelf();
             return;
@@ -187,11 +194,11 @@ public class EpgSyncService extends Service {
 
     protected void installTasks() {
         Log.d(TAG, "Adding GetFileTask");
-        mGetFileTask = new GetFileTask(mContext, mHandler);
+        mGetFileTask = new GetFileTask(this, mHandler);
         mConnection.addMessageListener(mGetFileTask);
 
         Log.d(TAG, "Adding EpgSyncTask");
-        mEpgSyncTask = new EpgSyncTask(mContext, mHandler, mAccount, mGetFileTask);
+        mEpgSyncTask = new EpgSyncTask(this, mHandler, mAccount, mGetFileTask);
         mConnection.addMessageListener(mEpgSyncTask);
     }
 
