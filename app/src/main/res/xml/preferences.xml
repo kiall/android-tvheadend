@@ -32,7 +32,12 @@
     <PreferenceCategory android:title="EPG">
         <CheckBoxPreference
             android:key="epg_sync_enabled"
-            android:title="Enabled EPG Sync"
+            android:title="Enable EPG Sync"
+            android:defaultValue="true" />
+        <CheckBoxPreference
+            android:key="epg_last_update_enabled"
+            android:title="Enable Last Update Time Optimization"
+            android:summary="Disable if you see gaps in EPG data"
             android:defaultValue="true" />
     </PreferenceCategory>
 

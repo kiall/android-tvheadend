@@ -101,7 +101,12 @@ class EpgSyncTask extends MessageListener {
         EnableAsyncMetadataRequest enableAsyncMetadataRequest = new EnableAsyncMetadataRequest();
         enableAsyncMetadataRequest.setEpgMaxTime(epgMaxTime);
         enableAsyncMetadataRequest.setEpg(true);
-        enableAsyncMetadataRequest.setLastUpdate(lastUpdate);
+
+        if (mSharedPreferences.getBoolean(Constants.KEY_EPG_LAST_UPDATE_ENABLED, true)) {
+            enableAsyncMetadataRequest.setLastUpdate(lastUpdate);
+        } else {
+            Log.d(TAG, "Skipping lastUpdate field, disabled by preference");
+        }
 
         mConnection.sendMessage(enableAsyncMetadataRequest);
     }
