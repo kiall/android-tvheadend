@@ -47,6 +47,7 @@ import ie.macinnes.htsp.messages.InitialSyncCompletedResponse;
 import ie.macinnes.htsp.tasks.GetFileTask;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.TvContractUtils;
+import ie.macinnes.tvheadend.R;
 
 class EpgSyncTask extends MessageListener {
     // channelId and eventId in this are, ehh, confusing. We have the TVH channel/event IDs, and the
@@ -219,7 +220,9 @@ class EpgSyncTask extends MessageListener {
         Uri programUri = getProgramUri(message.getChannelId(), message.getEventId());
 
         ContentValues values = message.toContentValues(channelId);
-
+        if(values.getAsString(TvContract.Programs.COLUMN_POSTER_ART_URI) == null && mSharedPreferences.getBoolean(Constants.KEY_EPG_DEFAULT_POSTER_ART_ENABLED, false)) {
+            values.put(TvContract.Programs.COLUMN_POSTER_ART_URI, "android.resource://ie.macinnes.tvheadend/" + R.drawable.default_event_icon);
+        }
         if (programUri == null) {
             // Insert the program.
             // Since we need its Uri, we can't use the batch method.
