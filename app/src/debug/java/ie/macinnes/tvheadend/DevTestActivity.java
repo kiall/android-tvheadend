@@ -30,6 +30,7 @@ import ie.macinnes.tvheadend.account.AccountUtils;
 import ie.macinnes.tvheadend.migrate.MigrateUtils;
 import ie.macinnes.tvheadend.settings.SettingsActivity;
 import ie.macinnes.tvheadend.sync.EpgSyncService;
+import ie.macinnes.tvheadend.tvinput.TvInputService;
 
 public class DevTestActivity extends Activity {
     private static final String TAG = DevTestActivity.class.getName();
@@ -123,6 +124,13 @@ public class DevTestActivity extends Activity {
     public void restartEpgSyncService(View view) {
         Context context = getBaseContext();
         Intent i = new Intent(context, EpgSyncService.class);
+        context.stopService(i);
+        context.startService(i);
+    }
+
+    public void restartTvInputService(View view) {
+        Context context = getBaseContext();
+        Intent i = new Intent(context, TvInputService.class);
         context.stopService(i);
         context.startService(i);
     }

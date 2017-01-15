@@ -74,6 +74,14 @@ under the License.
         <Button
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
+            android:text="Restart TV Input Service"
+            android:nestedScrollingEnabled="true"
+            android:onClick="restartTvInputService"
+            android:layout_gravity="center_horizontal"/>
+
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
             android:text="Send Fake Crash Report"
             android:nestedScrollingEnabled="true"
             android:onClick="sendCrashReport"
