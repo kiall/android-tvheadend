@@ -15,9 +15,11 @@ android {
         applicationId "ie.macinnes.tvheadend"
         minSdkVersion project.ext.minSdkVersion
         targetSdkVersion project.ext.targetSdkVersion
+
         versionCode System.getenv("APP_VERSION_CODE") as Integer ?: 0
         versionName gitVersionName
-        setProperty("archivesBaseName", "${applicationId}_${versionName}")
+
+        setProperty("archivesBaseName", applicationId)
 
         buildConfigField "boolean", "ACRA_ENABLED", "false"
         buildConfigField "String", "ACRA_REPORT_URI", "\"\""
