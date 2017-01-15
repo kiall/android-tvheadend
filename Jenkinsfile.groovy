@@ -24,7 +24,7 @@ def publishApkToStore(String trackName) {
     def changeLog = sh(returnStdout: true, script: "./tools/generate-changelog").trim().take(500)
 
     androidApkUpload(
-        apkFilesPattern: 'app/build/outputs/apk/ie.macinnes.tvheadend_*-release.apk',
+        apkFilesPattern: 'app/build/outputs/apk/ie.macinnes.tvheadend-release.apk',
         googleCredentialsId: 'android-tvheadend',
         trackName: trackName,
         recentChangeList: [
@@ -41,7 +41,7 @@ def publishApkToGitHub() {
         [$class: 'StringBinding', credentialsId: '  github-pat-kiall', variable: 'GITHUB_TOKEN'],
     ]) {
         sh(script: "github-release release --user kiall --repo android-tvheadend --tag ${tagName} --name ${tagName} --description '${changeLog}'")
-        sh(script: "github-release upload --user kiall --repo android-tvheadend --tag ${tagName} --name ie.macinnes.tvheadend_${tagName}-release.apk --file app/build/outputs/apk/ie.macinnes.tvheadend_${tagName}-release.apk")
+        sh(script: "github-release upload --user kiall --repo android-tvheadend --tag ${tagName} --name ie.macinnes.tvheadend_${tagName}-release.apk --file app/build/outputs/apk/ie.macinnes.tvheadend-release.apk")
     }
 }
 
