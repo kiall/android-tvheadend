@@ -39,6 +39,11 @@
             android:title="Enable Last Update Time Optimization"
             android:summary="Disable if you see gaps in EPG data"
             android:defaultValue="true" />
+        <CheckBoxPreference
+            android:key="epg_default_poster_art_enabled"
+            android:title="Enable EPG Default Poster Art"
+            android:summary="Enable if EPG data provider does not include poster art"
+            android:defaultValue="false" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Video Player Settings">
