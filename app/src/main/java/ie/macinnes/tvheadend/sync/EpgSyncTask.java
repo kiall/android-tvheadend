@@ -92,12 +92,19 @@ class EpgSyncTask extends MessageListener {
                 Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
     }
 
+
     public void enableAsyncMetadata(Runnable initialSyncCompleteCallback) {
+        long epgMaxTime = Long.parseLong(mSharedPreferences.getString(Constants.KEY_EPG_MAX_TIME, "3600"));
+
+        enableAsyncMetadata(initialSyncCompleteCallback, epgMaxTime);
+    }
+
+    public void enableAsyncMetadata(Runnable initialSyncCompleteCallback, long epgMaxTime) {
         long lastUpdate = mSharedPreferences.getLong(Constants.KEY_EPG_LAST_UPDATE, 0);
-        long epgMaxTime = mSharedPreferences.getLong(Constants.KEY_EPG_MAX_TIME, 3600);
-        epgMaxTime = epgMaxTime + (System.currentTimeMillis() / 1000L);
 
         Log.i(TAG, "Enabling Async Metadata. Last Update: " + lastUpdate + ", EPG max time: " + epgMaxTime);
+
+        epgMaxTime = epgMaxTime + (System.currentTimeMillis() / 1000L);
 
         mInitialSyncCompleteCallback = initialSyncCompleteCallback;
 

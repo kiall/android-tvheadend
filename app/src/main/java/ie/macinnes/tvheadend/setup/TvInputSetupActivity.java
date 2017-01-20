@@ -339,6 +339,13 @@ public class TvInputSetupActivity extends Activity {
                 GuidedStepFragment fragment = new CompletedFragment();
                 fragment.setArguments(getArguments());
                 add(getFragmentManager(), fragment);
+
+                // Re-Start EPG sync service (removing quick-sync)
+                Context context = getActivity().getBaseContext();
+
+                Intent intent = new Intent(context, EpgSyncService.class);
+                context.stopService(intent);
+                context.startService(intent);
             }
         };
 
@@ -360,10 +367,14 @@ public class TvInputSetupActivity extends Activity {
         public void onStart() {
             super.onStart();
 
-            // Start EPG sync service
+            // Re-Start EPG sync service
             Context context = getActivity().getBaseContext();
-            context.stopService(new Intent(context, EpgSyncService.class));
-            context.startService(new Intent(context, EpgSyncService.class));
+
+            Intent intent = new Intent(context, EpgSyncService.class);
+            intent.putExtra(EpgSyncService.SYNC_QUICK, true);
+
+            context.stopService(intent);
+            context.startService(intent);
         }
 
         @Override
@@ -414,7 +425,7 @@ public class TvInputSetupActivity extends Activity {
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
             GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
                     "Setup Complete",
-                    "Enjoy!",
+                    "More EPG data, channel logs, etc are downloading in the background",
                     "TVHeadend",
                     null);
 

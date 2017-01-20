@@ -41,6 +41,8 @@ import ie.macinnes.tvheadend.account.AccountUtils;
 public class EpgSyncService extends Service {
     private static final String TAG = EpgSyncService.class.getName();
 
+    public static final String SYNC_QUICK = "sync-quick";
+
     protected HandlerThread mHandlerThread;
     protected Handler mHandler;
 
@@ -55,6 +57,7 @@ public class EpgSyncService extends Service {
     protected GetFileTask mGetFileTask;
 
     protected static List<Runnable> sInitialSyncCompleteCallbacks = new ArrayList<>();
+    protected boolean mQuickSyncRequested = false;
 
     protected final Runnable mInitialSyncCompleteCallback = new Runnable() {
         @Override
@@ -115,6 +118,9 @@ public class EpgSyncService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (intent != null) {
+            mQuickSyncRequested = intent.getBooleanExtra(SYNC_QUICK, false);
+        }
         if (mAccount == null) {
             return START_NOT_STICKY;
         }
@@ -173,7 +179,13 @@ public class EpgSyncService extends Service {
                 } else if (state == Connection.STATE_READY) {
                     Log.d(TAG, "HTSP Connection Ready");
                     installTasks();
-                    enableAsyncMetadata();
+                    if (mQuickSyncRequested) {
+                        // Sync 1 hour of EPG
+                        enableAsyncMetadata(3600);
+                        mQuickSyncRequested = false;
+                    } else {
+                        enableAsyncMetadata();
+                    }
                 } else if (state == Connection.STATE_FAILED) {
                     Log.e(TAG, "HTSP Connection Failed, Reconnecting");
                     closeConnection();
@@ -205,6 +217,11 @@ public class EpgSyncService extends Service {
     protected void enableAsyncMetadata() {
         Log.d(TAG, "Enabling Async Metadata");
         mEpgSyncTask.enableAsyncMetadata(mInitialSyncCompleteCallback);
+    }
+
+    protected void enableAsyncMetadata(long epgMaxTime) {
+        Log.d(TAG, "Enabling Async Metadata");
+        mEpgSyncTask.enableAsyncMetadata(mInitialSyncCompleteCallback, epgMaxTime);
     }
 
     protected void closeConnection() {

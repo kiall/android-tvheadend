@@ -113,6 +113,14 @@ public class DevTestActivity extends Activity {
 
     public void deleteChannels(View view) {
         setRunning();
+
+        Context context = getBaseContext();
+        Intent i = new Intent(context, EpgSyncService.class);
+        context.stopService(i);
+
+        i = new Intent(context, TvInputService.class);
+        context.stopService(i);
+
         TvContractUtils.removeChannels(getBaseContext());
         setOk();
     }
