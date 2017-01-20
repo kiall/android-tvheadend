@@ -271,7 +271,8 @@ import java.util.Locale;
   @Override
   public void onVideoSizeChanged(int width, int height, int unappliedRotationDegrees,
       float pixelWidthHeightRatio) {
-    // Do nothing.
+    Log.d(TAG, "videoSizeChanged [" + getSessionTimeString() + ", " + width + ", " + height + ", "
+               + unappliedRotationDegrees + ", " + pixelWidthHeightRatio + "]");
   }
 
   @Override
