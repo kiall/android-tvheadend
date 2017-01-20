@@ -25,6 +25,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.Callable;
 
 import ie.macinnes.htsp.Connection;
+import ie.macinnes.htsp.ConnectionException;
 import ie.macinnes.htsp.IMessageListener;
 import ie.macinnes.htsp.MessageListener;
 import ie.macinnes.htsp.ResponseMessage;
@@ -77,7 +78,13 @@ public class AuthenticateTask extends MessageListener {
         helloRequest.setUsername(mUsername);
 
         Log.d(TAG, "Sending helloRequest");
-        mConnection.sendMessage(helloRequest);
+        try {
+            mConnection.sendMessage(helloRequest);
+        } catch (ConnectionException e) {
+            Log.w(TAG, "Failed to send helloRequest", e);
+            mCallback.onFailure();
+            return;
+        }
     }
 
     private void sendAuthenticate(HelloResponse response) {
@@ -103,7 +110,13 @@ public class AuthenticateTask extends MessageListener {
         authenticateRequest.setDigest(md.digest());
 
         Log.d(TAG, "Sending authenticateRequest");
-        mConnection.sendMessage(authenticateRequest);
+        try {
+            mConnection.sendMessage(authenticateRequest);
+        } catch (ConnectionException e) {
+            Log.w(TAG, "Failed to send authenticateRequest", e);
+            mCallback.onFailure();
+            return;
+        }
     }
 
     private void completeAuthentication(AuthenticateResponse response) {

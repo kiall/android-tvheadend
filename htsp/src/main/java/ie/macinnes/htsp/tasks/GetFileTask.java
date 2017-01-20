@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import ie.macinnes.htsp.ConnectionException;
 import ie.macinnes.htsp.MessageListener;
 import ie.macinnes.htsp.ResponseMessage;
 import ie.macinnes.htsp.messages.FileCloseRequest;
@@ -122,7 +123,13 @@ public class GetFileTask extends MessageListener {
 
         Log.d(TAG, "Sending fileOpenRequest");
         mSequences.put(fileOpenRequest.getSeq(), openCount);
-        mConnection.sendMessage(fileOpenRequest);
+        try {
+            mConnection.sendMessage(fileOpenRequest);
+        } catch (ConnectionException e) {
+            Log.w(TAG, "Failed to send fileOpenRequest", e);
+            cleanup(openCount);
+            return;
+        }
     }
 
     private void createByteBuffer(int openCount, FileOpenResponse response) {
@@ -149,7 +156,13 @@ public class GetFileTask extends MessageListener {
 
         Log.d(TAG, "Sending fileReadRequest");
         mSequences.put(fileReadRequest.getSeq(), openCount);
-        mConnection.sendMessage(fileReadRequest);
+        try {
+            mConnection.sendMessage(fileReadRequest);
+        } catch (ConnectionException e) {
+            Log.w(TAG, "Failed to send fileReadRequest", e);
+            cleanup(openCount);
+            return;
+        }
     }
 
     private void sendFileClose(int openCount) {
@@ -161,7 +174,13 @@ public class GetFileTask extends MessageListener {
 
             Log.d(TAG, "Sending fileCloseRequest");
             mSequences.put(fileCloseRequest.getSeq(), openCount);
-            mConnection.sendMessage(fileCloseRequest);
+            try {
+                mConnection.sendMessage(fileCloseRequest);
+            } catch (ConnectionException e) {
+                Log.w(TAG, "Failed to send fileCloseRequest", e);
+                cleanup(openCount);
+                return;
+            }
         }
     }
 

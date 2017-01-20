@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
+import ie.macinnes.htsp.ConnectionException;
 import ie.macinnes.htsp.MessageListener;
 import ie.macinnes.htsp.ResponseMessage;
 import ie.macinnes.htsp.messages.BaseChannelResponse;
@@ -109,7 +110,12 @@ class EpgSyncTask extends MessageListener {
             Log.d(TAG, "Skipping lastUpdate field, disabled by preference");
         }
 
-        mConnection.sendMessage(enableAsyncMetadataRequest);
+        try {
+            mConnection.sendMessage(enableAsyncMetadataRequest);
+        } catch (ConnectionException e) {
+            Log.w(TAG, "Failed to send enableAsyncMetadataRequest", e);
+            return;
+        }
     }
 
     @Override

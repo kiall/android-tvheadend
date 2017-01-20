@@ -154,12 +154,17 @@ public class Connection implements Runnable {
                     }
                 }
 
-                if (mSocketChannel != null) {
-                    if (mSocketChannel.isConnected() && mMessageQueue.isEmpty()) {
-                        mSocketChannel.register(mSelector, SelectionKey.OP_READ);
-                    } else if (mSocketChannel.isConnected()) {
-                        mSocketChannel.register(mSelector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+                mLock.lock();
+                try {
+                    if (mSocketChannel != null) {
+                        if (mSocketChannel.isConnected() && mMessageQueue.isEmpty()) {
+                            mSocketChannel.register(mSelector, SelectionKey.OP_READ);
+                        } else if (mSocketChannel.isConnected()) {
+                            mSocketChannel.register(mSelector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+                        }
                     }
+                } finally {
+                    mLock.unlock();
                 }
             } catch (Exception e) {
                 Log.e(TAG, "Something failed - shutting down", e);
@@ -320,8 +325,13 @@ public class Connection implements Runnable {
         }
     }
 
-    public void sendMessage(HtspMessage htspMessage) {
+    public void sendMessage(HtspMessage htspMessage) throws ConnectionException {
         Log.d(TAG, "Sending HtspMessage: " + htspMessage.toString());
+
+        if (isClosed()) {
+            Log.w(TAG, "Failed to send message, connection closed");
+            throw new ConnectionException("Failed to send message, connection closed");
+        }
 
         mMessageQueue.add(htspMessage);
 
@@ -337,12 +347,12 @@ public class Connection implements Runnable {
         }
     }
 
-    public void sendMessage(BaseMessage message) {
+    public void sendMessage(BaseMessage message) throws ConnectionException {
         sendMessage(message.toHtspMessage());
     }
 
     public boolean isClosed() {
-        return getState() == STATE_CLOSED || getState() == STATE_FAILED;
+        return getState() == STATE_CLOSED || getState() == STATE_CLOSING || getState() == STATE_FAILED;
     }
 
     public int getState() {
@@ -452,7 +462,7 @@ public class Connection implements Runnable {
         Log.v(TAG, "processWritableSelectionKey()");
         HtspMessage htspMessage = mMessageQueue.poll();
 
-        if (htspMessage != null) {
+        if (!isClosed() && htspMessage != null) {
             mSocketChannel.write(htspMessage.toWire());
         }
     }
