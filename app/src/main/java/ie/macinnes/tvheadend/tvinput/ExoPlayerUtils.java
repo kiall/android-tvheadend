@@ -17,17 +17,81 @@
 package ie.macinnes.tvheadend.tvinput;
 
 
+import android.media.tv.TvTrackInfo;
+import android.os.Build;
 import android.text.TextUtils;
+import android.util.Log;
 
+import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.util.MimeTypes;
 
 import java.util.Locale;
 
 public class ExoPlayerUtils {
-    // Track name construction.
+    private static final String TAG = ExoPlayerUtils.class.getName();
 
-    public static String buildTrackName(Format format) {
+    public static TvTrackInfo buildTvTrackInfo(Format format) {
+        String trackName = ExoPlayerUtils.buildTrackName(format);
+        Log.d(TAG, "Processing track: " + trackName);
+
+        if (format.id == null) {
+            Log.e(TAG, "Track ID invalid, skipping track " + trackName);
+            return null;
+        }
+
+        TvTrackInfo.Builder builder;
+        int trackType = MimeTypes.getTrackType(format.sampleMimeType);
+
+        switch (trackType) {
+            case C.TRACK_TYPE_VIDEO:
+                builder = new TvTrackInfo.Builder(TvTrackInfo.TYPE_VIDEO, format.id);
+                builder.setVideoFrameRate(format.frameRate);
+                if (format.width != Format.NO_VALUE && format.height != Format.NO_VALUE) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        builder.setVideoWidth(format.width);
+                        builder.setVideoHeight(format.height);
+                        builder.setVideoPixelAspectRatio(format.pixelWidthHeightRatio);
+                    } else {
+                        builder.setVideoWidth((int) (format.width * format.pixelWidthHeightRatio));
+                        builder.setVideoHeight(format.height);
+                    }
+                }
+                break;
+
+            case C.TRACK_TYPE_AUDIO:
+                builder = new TvTrackInfo.Builder(TvTrackInfo.TYPE_AUDIO, format.id);
+                builder.setAudioChannelCount(format.channelCount);
+                builder.setAudioSampleRate(format.sampleRate);
+                break;
+
+            case C.TRACK_TYPE_TEXT:
+                builder = new TvTrackInfo.Builder(TvTrackInfo.TYPE_SUBTITLE, format.id);
+                break;
+
+            default:
+                Log.w(TAG, "Unsupported track type: " + format.sampleMimeType + " / "  + trackName);
+                return null;
+        }
+
+        if (!TextUtils.isEmpty(format.language)
+                && !format.language.equals("und")
+                && !format.language.equals("nar")
+                && !format.language.equals("syn")
+                && !format.language.equals("mis")) {
+            builder.setLanguage(format.language);
+        }
+
+        // TODO: Determine where the Description is used..
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//            builder.setDescription(ExoPlayerUtils.buildTrackName(format));
+//        }
+
+        return builder.build();
+    }
+
+    // Track name construction.
+    private static String buildTrackName(Format format) {
         String trackName;
         if (MimeTypes.isVideo(format.sampleMimeType)) {
             trackName = joinWithSeparator(joinWithSeparator(buildResolutionString(format),
