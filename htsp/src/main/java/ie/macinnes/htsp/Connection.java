@@ -328,15 +328,16 @@ public class Connection implements Runnable {
     public void sendMessage(HtspMessage htspMessage) throws ConnectionException {
         Log.d(TAG, "Sending HtspMessage: " + htspMessage.toString());
 
-        if (isClosed()) {
-            Log.w(TAG, "Failed to send message, connection closed");
-            throw new ConnectionException("Failed to send message, connection closed");
-        }
-
-        mMessageQueue.add(htspMessage);
 
         mLock.lock();
         try {
+            if (isClosed()) {
+                Log.w(TAG, "Failed to send message, connection closed");
+                throw new ConnectionException("Failed to send message, connection closed");
+            }
+
+            mMessageQueue.add(htspMessage);
+
             mSocketChannel.register(mSelector, SelectionKey.OP_WRITE | SelectionKey.OP_READ | SelectionKey.OP_CONNECT);
             mSelector.wakeup();
         } catch (ClosedChannelException e) {
