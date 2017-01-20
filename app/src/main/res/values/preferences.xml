@@ -28,4 +28,24 @@
         <item>SESSION-MEDIA-PLAYER</item>
         <item>SESSION-EXO-PLAYER</item>
     </string-array>
+
+    <string-array name="epg_max_time_names">
+        <item>1 hour</item>
+        <item>6 hours</item>
+        <item>12 hours</item>
+        <item>1 day</item>
+        <item>3 days</item>
+        <item>7 days</item>
+        <item>8 days</item>
+    </string-array>
+
+    <string-array name="epg_max_time_values">
+        <item>3600</item>
+        <item>21600</item>
+        <item>43200</item>
+        <item>86400</item>
+        <item>259200</item>
+        <item>604800</item>
+        <item>691200</item>
+    </string-array>
 </resources>

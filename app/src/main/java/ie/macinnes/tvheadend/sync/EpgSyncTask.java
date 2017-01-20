@@ -94,7 +94,8 @@ class EpgSyncTask extends MessageListener {
 
     public void enableAsyncMetadata(Runnable initialSyncCompleteCallback) {
         long lastUpdate = mSharedPreferences.getLong(Constants.KEY_EPG_LAST_UPDATE, 0);
-        long epgMaxTime = (System.currentTimeMillis() / 1000L) + 24 * 60 * 60;
+        long epgMaxTime = mSharedPreferences.getLong(Constants.KEY_EPG_MAX_TIME, 3600);
+        epgMaxTime = epgMaxTime + (System.currentTimeMillis() / 1000L);
 
         Log.i(TAG, "Enabling Async Metadata. Last Update: " + lastUpdate + ", EPG max time: " + epgMaxTime);
 
