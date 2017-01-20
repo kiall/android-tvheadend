@@ -46,6 +46,6 @@ public final class HttpDataSourceFactory implements Factory {
 
     private String getUserAgent() {
         return "android-tvheadend/" + BuildConfig.VERSION_NAME + " (Linux;Android " + Build.VERSION.RELEASE
-                + ") ExoPlayer/" + ExoPlayerLibraryInfo.VERSION;
+                + ";ExoPlayer " + ExoPlayerLibraryInfo.VERSION + ")";
     }
 }
