@@ -35,7 +35,8 @@ public class MigrateUtils {
         Log.d(TAG, "doMigrate()");
 
         // Set all default values
-        PreferenceManager.setDefaultValues(context, R.xml.preferences, false);
+        PreferenceManager.setDefaultValues(context, Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE,
+                                           R.xml.preferences, true);
 
         // Store the current version
         int currentApplicationVersion = Constants.MIGRATE_VERSION;
