@@ -188,6 +188,7 @@ public class BaseEventResponse extends ResponseMessage {
         setImage(htspMessage.getString("image", null));
     }
 
+
     private static final SparseArray<String> mProgramGenre = new SparseArray<String>() {
         {
             append(16, TvContract.Programs.Genres.encode(TvContract.Programs.Genres.MOVIES));
