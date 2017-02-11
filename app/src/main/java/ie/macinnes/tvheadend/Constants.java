@@ -29,6 +29,7 @@ public class Constants {
 
     // Misc Preference Keys and Values
     public static final String KEY_SETUP_COMPLETE = "SETUP-COMPLETE";
+    public static final String KEY_HTSP_VIDEO_ENABLED = "htsp_video_enabled";
 
     // Session Selection Preference Keys and Values
     public static final String KEY_SESSION = "SESSION";

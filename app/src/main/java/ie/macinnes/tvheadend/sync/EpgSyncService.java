@@ -19,20 +19,20 @@ package ie.macinnes.tvheadend.sync;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import ie.macinnes.htsp.Connection;
-import ie.macinnes.htsp.ConnectionListener;
-import ie.macinnes.htsp.tasks.GetFileTask;
+import ie.macinnes.htsp.HtspConnection;
+import ie.macinnes.htsp.SimpleHtspConnection;
+import ie.macinnes.htsp.tasks.Authenticator;
 import ie.macinnes.tvheadend.BuildConfig;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.MiscUtils;
@@ -51,10 +51,8 @@ public class EpgSyncService extends Service {
     protected AccountManager mAccountManager;
     protected Account mAccount;
 
-    protected Connection mConnection;
-    protected Thread mConnectionThread;
+    protected SimpleHtspConnection mConnection;
     protected EpgSyncTask mEpgSyncTask;
-    protected GetFileTask mGetFileTask;
 
     protected static List<Runnable> sInitialSyncCompleteCallbacks = new ArrayList<>();
     protected boolean mQuickSyncRequested = false;
@@ -99,6 +97,12 @@ public class EpgSyncService extends Service {
         Log.i(TAG, "Starting EPG Sync Service");
 
         mSharedPreferences = getSharedPreferences(Constants.PREFERENCE_TVHEADEND, MODE_PRIVATE);
+
+//        if (!mSharedPreferences.getBoolean(Constants.KEY_SETUP_COMPLETE, false)) {
+//            Log.i(TAG, "Setup not completed, shutting down EPG Sync Service");
+//            stopSelf();
+//            return;
+//        }
 
         if (!mSharedPreferences.getBoolean(Constants.KEY_EPG_SYNC_ENABLED, true)) {
             Log.i(TAG, "EPG Sync disabled, shutting down EPG Sync Service");
@@ -162,83 +166,24 @@ public class EpgSyncService extends Service {
         final String username = mAccount.name;
         final String password = mAccountManager.getPassword(mAccount);
 
-        // 20971520 = 20MB
-        // 10485760 = 10MB
-        // 1048576  = 1MB
-        mConnection = new Connection(hostname, port, username, password, "android-tvheadend (epg)", BuildConfig.VERSION_NAME, 1048576);
+        HtspConnection.ConnectionDetails connectionDetails = new HtspConnection.ConnectionDetails(
+                hostname, port, username, password, "android-tvheadend (EPG)",
+                BuildConfig.VERSION_NAME);
 
-        ConnectionListener connectionListener = new ConnectionListener(mHandler) {
-            @Override
-            public void onStateChange(int state, int previous) {
-                if (state == Connection.STATE_CONNECTING) {
-                    Log.d(TAG, "HTSP Connection Connecting");
-                } else if (state == Connection.STATE_CONNECTED) {
-                    Log.d(TAG, "HTSP Connection Connected");
-                } else if (state == Connection.STATE_AUTHENTICATING) {
-                    Log.d(TAG, "HTSP Connection Authenticating");
-                } else if (state == Connection.STATE_READY) {
-                    Log.d(TAG, "HTSP Connection Ready");
-                    installTasks();
-                    if (mQuickSyncRequested) {
-                        // Sync 1 hour of EPG
-                        enableAsyncMetadata(3600);
-                        mQuickSyncRequested = false;
-                    } else {
-                        enableAsyncMetadata();
-                    }
-                } else if (state == Connection.STATE_FAILED) {
-                    Log.e(TAG, "HTSP Connection Failed, Reconnecting");
-                    closeConnection();
-                    openConnection();
-                } else if (state == Connection.STATE_CLOSED) {
-                    Log.i(TAG, "HTSP Connection Closed, shutting down EpgSync Service");
-                    cleanupConnection();
-                    stopSelf();
-                }
-            }
-        };
+        mConnection = new SimpleHtspConnection(connectionDetails);
 
-        mConnection.addConnectionListener(connectionListener);
+        mEpgSyncTask = new EpgSyncTask(mConnection, this);
 
-        mConnectionThread = new Thread(mConnection);
-        mConnectionThread.start();
-    }
-
-    protected void installTasks() {
-        Log.d(TAG, "Adding GetFileTask");
-        mGetFileTask = new GetFileTask(this, mHandler);
-        mConnection.addMessageListener(mGetFileTask);
-
-        Log.d(TAG, "Adding EpgSyncTask");
-        mEpgSyncTask = new EpgSyncTask(this, mHandler, mAccount, mGetFileTask);
         mConnection.addMessageListener(mEpgSyncTask);
-    }
+        mConnection.addAuthenticationListener(mEpgSyncTask);
 
-    protected void enableAsyncMetadata() {
-        Log.d(TAG, "Enabling Async Metadata");
-        mEpgSyncTask.enableAsyncMetadata(mInitialSyncCompleteCallback);
-    }
-
-    protected void enableAsyncMetadata(long epgMaxTime) {
-        Log.d(TAG, "Enabling Async Metadata");
-        mEpgSyncTask.enableAsyncMetadata(mInitialSyncCompleteCallback, epgMaxTime);
+        mConnection.start();
     }
 
     protected void closeConnection() {
         if (mConnection != null) {
             Log.d(TAG, "Closing HTSP connection");
-            mConnection.close();
-        }
-
-        if (mConnectionThread != null) {
-            Log.d(TAG, "Waiting for HTSP Connection Thread to finish");
-
-            try {
-                mConnectionThread.join();
-                Log.d(TAG, "HTSP Connection Thread has finished");
-            } catch (InterruptedException e) {
-                Log.w(TAG, "Interrupted while waiting for HTSP Connection Thread to finish");
-            }
+            mConnection.closeConnection();
         }
 
         cleanupConnection();
@@ -246,7 +191,5 @@ public class EpgSyncService extends Service {
 
     protected void cleanupConnection() {
         mConnection = null;
-        mConnectionThread = null;
-        mEpgSyncTask = null;
     }
 }

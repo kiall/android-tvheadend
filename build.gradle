@@ -19,6 +19,9 @@ allprojects {
         maven {
             url "http://dl.bintray.com/kiall/exoplayer"
         }
+        maven {
+            url "http://dl.bintray.com/kiall/htsp"
+        }
         jcenter()
     }
     project.ext {

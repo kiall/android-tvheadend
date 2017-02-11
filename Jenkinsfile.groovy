@@ -38,7 +38,7 @@ def publishApkToGitHub() {
     def changeLog = sh(returnStdout: true, script: "./tools/generate-changelog").trim().replaceAll(~/'/, "\'")
 
     withCredentials([
-        [$class: 'StringBinding', credentialsId: '  github-pat-kiall', variable: 'GITHUB_TOKEN'],
+        [$class: 'StringBinding', credentialsId: 'github-pat-kiall', variable: 'GITHUB_TOKEN'],
     ]) {
         sh(script: "github-release release --user kiall --repo android-tvheadend --tag ${tagName} --name ${tagName} --description '${changeLog}'")
         sh(script: "github-release upload --user kiall --repo android-tvheadend --tag ${tagName} --name ie.macinnes.tvheadend_${tagName}-release.apk --file app/build/outputs/apk/ie.macinnes.tvheadend-release.apk")

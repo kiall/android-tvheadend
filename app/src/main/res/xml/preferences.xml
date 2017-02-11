@@ -73,6 +73,11 @@
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Advanced Settings">
+        <CheckBoxPreference
+            android:key="htsp_video_enabled"
+            android:title="Enable HTSP Video (don't do this)"
+            android:defaultValue="false" />
+
         <PreferenceScreen android:title="Crash Reporting Settings" android:key="crash_reporting_settings" android:persistent="false">
             <CheckBoxPreference android:key="acra.enable"
                                 android:title="@string/pref_disable_acra"
