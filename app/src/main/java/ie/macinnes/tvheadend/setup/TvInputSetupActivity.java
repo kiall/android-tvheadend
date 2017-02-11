@@ -291,9 +291,18 @@ public class TvInputSetupActivity extends Activity {
         @Override
         public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
             GuidedAction action = new GuidedAction.Builder(getActivity())
+                    .id(ACTION_ID_EXO_PLAYER)
+                    .title("ExoPlayer")
+                    .description("Google ExoPlayer (Recommended)")
+                    .editable(false)
+                    .build();
+
+            actions.add(action);
+
+            action = new GuidedAction.Builder(getActivity())
                     .id(ACTION_ID_VLC)
                     .title("LibVLC")
-                    .description("VideoLAN LibVLC (Recommended)")
+                    .description("VideoLAN LibVLC (Deprecated)")
                     .editable(false)
                     .build();
 
@@ -302,16 +311,7 @@ public class TvInputSetupActivity extends Activity {
             action = new GuidedAction.Builder(getActivity())
                     .id(ACTION_ID_MEDIA_PLAYER)
                     .title("Media Player")
-                    .description("Android Media Player")
-                    .editable(false)
-                    .build();
-
-            actions.add(action);
-
-            action = new GuidedAction.Builder(getActivity())
-                    .id(ACTION_ID_EXO_PLAYER)
-                    .title("ExoPlayer")
-                    .description("Google ExoPlayer (Experimental)")
+                    .description("Android Media Player (Deprecated)")
                     .editable(false)
                     .build();
 
