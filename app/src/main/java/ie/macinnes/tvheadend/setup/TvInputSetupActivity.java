@@ -24,6 +24,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.tv.TvInputInfo;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v17.leanback.app.GuidedStepFragment;
 import android.support.v17.leanback.widget.GuidanceStylist;
@@ -34,6 +35,9 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
+import ie.macinnes.htsp.HtspConnection;
+import ie.macinnes.htsp.SimpleHtspConnection;
+import ie.macinnes.tvheadend.BuildConfig;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.MiscUtils;
 import ie.macinnes.tvheadend.R;
@@ -41,6 +45,7 @@ import ie.macinnes.tvheadend.TvContractUtils;
 import ie.macinnes.tvheadend.account.AccountUtils;
 import ie.macinnes.tvheadend.settings.SettingsActivity;
 import ie.macinnes.tvheadend.sync.EpgSyncService;
+import ie.macinnes.tvheadend.sync.EpgSyncTask;
 
 public class TvInputSetupActivity extends Activity {
     private static final String TAG = TvInputSetupActivity.class.getName();
@@ -101,6 +106,20 @@ public class TvInputSetupActivity extends Activity {
     }
 
     public static class IntroFragment extends BaseGuidedStepFragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+
+            Context context = getActivity();
+
+            // Flag setup as incomplete
+            MiscUtils.setSetupComplete(context, false);
+
+            // Stop the EPG service
+            Intent intent = new Intent(context, EpgSyncService.class);
+            context.stopService(intent);
+        }
+
         @NonNull
         @Override
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
@@ -329,52 +348,59 @@ public class TvInputSetupActivity extends Activity {
     }
 
     public static class SyncingFragment extends BaseGuidedStepFragment {
+        protected SimpleHtspConnection mConnection;
+        protected EpgSyncTask mEpgSyncTask;
 
-        protected Runnable mInitialSyncCompleteCallback = new Runnable() {
+        protected EpgSyncTask.Listener mInitialSyncCompleteCallback = new EpgSyncTask.Listener() {
+
+            /**
+             * Returns the Handler on which to execute the callback.
+             *
+             * @return Handler, or null.
+             */
             @Override
-            public void run() {
+            public Handler getHandler() {
+                return null;
+            }
+
+            /**
+             * Called when the initial sync has completed
+             */
+            @Override
+            public void onInitialSyncCompleted() {
                 Log.d(TAG, "Initial Sync Completed");
 
                 // Move to the CompletedFragment
                 GuidedStepFragment fragment = new CompletedFragment();
                 fragment.setArguments(getArguments());
                 add(getFragmentManager(), fragment);
-
-                // Re-Start EPG sync service (removing quick-sync)
-                Context context = getActivity().getBaseContext();
-
-                Intent intent = new Intent(context, EpgSyncService.class);
-                context.stopService(intent);
-                context.startService(intent);
             }
         };
-
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-
-            EpgSyncService.addInitialSyncCompleteCallback(mInitialSyncCompleteCallback);
-        }
-
-        @Override
-        public void onDestroy() {
-            super.onDestroy();
-
-            EpgSyncService.removeInitialSyncCompleteCallback(mInitialSyncCompleteCallback);
-        }
 
         @Override
         public void onStart() {
             super.onStart();
 
-            // Re-Start EPG sync service
-            Context context = getActivity().getBaseContext();
+            Account account = AccountUtils.getActiveAccount(getActivity().getBaseContext());
 
-            Intent intent = new Intent(context, EpgSyncService.class);
-            intent.putExtra(EpgSyncService.SYNC_QUICK, true);
+            final String hostname = mAccountManager.getUserData(account, Constants.KEY_HOSTNAME);
+            final int port = Integer.parseInt(mAccountManager.getUserData(account, Constants.KEY_HTSP_PORT));
+            final String username = account.name;
+            final String password = mAccountManager.getPassword(account);
 
-            context.stopService(intent);
-            context.startService(intent);
+            HtspConnection.ConnectionDetails connectionDetails = new HtspConnection.ConnectionDetails(
+                    hostname, port, username, password, "android-tvheadend (EPG)",
+                    BuildConfig.VERSION_NAME);
+
+            mConnection = new SimpleHtspConnection(connectionDetails);
+
+            mEpgSyncTask = new EpgSyncTask(getActivity().getBaseContext(), mConnection, true);
+            mEpgSyncTask.addEpgSyncListener(mInitialSyncCompleteCallback);
+
+            mConnection.addMessageListener(mEpgSyncTask);
+            mConnection.addAuthenticationListener(mEpgSyncTask);
+
+            mConnection.start();
         }
 
         @Override
@@ -458,7 +484,14 @@ public class TvInputSetupActivity extends Activity {
             if (action.getId() == ACTION_ID_SETTINGS) {
                 startActivity(SettingsActivity.getPreferencesIntent(getActivity()));
             } else if (action.getId() == ACTION_ID_COMPLETE) {
+                // Store the Setup Complete preference
                 MiscUtils.setSetupComplete(getActivity(), true);
+
+                // Start the EPG sync service
+                Intent intent = new Intent(getActivity(), EpgSyncService.class);
+                getActivity().startService(intent);
+
+                // Wrap up setup
                 getActivity().setResult(Activity.RESULT_OK);
                 getActivity().finish();
             }

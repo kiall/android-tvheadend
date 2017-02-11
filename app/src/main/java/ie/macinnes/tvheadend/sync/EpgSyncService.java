@@ -24,15 +24,10 @@ import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
-import android.support.annotation.NonNull;
 import android.util.Log;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import ie.macinnes.htsp.HtspConnection;
 import ie.macinnes.htsp.SimpleHtspConnection;
-import ie.macinnes.htsp.tasks.Authenticator;
 import ie.macinnes.tvheadend.BuildConfig;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.MiscUtils;
@@ -40,8 +35,6 @@ import ie.macinnes.tvheadend.account.AccountUtils;
 
 public class EpgSyncService extends Service {
     private static final String TAG = EpgSyncService.class.getName();
-
-    public static final String SYNC_QUICK = "sync-quick";
 
     protected HandlerThread mHandlerThread;
     protected Handler mHandler;
@@ -53,36 +46,6 @@ public class EpgSyncService extends Service {
 
     protected SimpleHtspConnection mConnection;
     protected EpgSyncTask mEpgSyncTask;
-
-    protected static List<Runnable> sInitialSyncCompleteCallbacks = new ArrayList<>();
-    protected boolean mQuickSyncRequested = false;
-
-    protected final Runnable mInitialSyncCompleteCallback = new Runnable() {
-        @Override
-        public void run() {
-            Log.d(TAG, "Initial Sync Complete");
-
-            for (Runnable r : sInitialSyncCompleteCallbacks) {
-                r.run();
-            }
-        }
-    };
-
-    public static void addInitialSyncCompleteCallback(Runnable runnable) {
-        if (sInitialSyncCompleteCallbacks.contains(runnable)) {
-            Log.w(TAG, "Attempted to add duplicate initial sync complete runnable");
-            return;
-        }
-        sInitialSyncCompleteCallbacks.add(runnable);
-    }
-
-    public static void removeInitialSyncCompleteCallback(Runnable runnable) {
-        if (!sInitialSyncCompleteCallbacks.contains(runnable)) {
-            Log.w(TAG, "Attempted to remove unknown initial sync complete runnable");
-            return;
-        }
-        sInitialSyncCompleteCallbacks.remove(runnable);
-    }
 
     public EpgSyncService() {
     }
@@ -98,11 +61,11 @@ public class EpgSyncService extends Service {
 
         mSharedPreferences = getSharedPreferences(Constants.PREFERENCE_TVHEADEND, MODE_PRIVATE);
 
-//        if (!mSharedPreferences.getBoolean(Constants.KEY_SETUP_COMPLETE, false)) {
-//            Log.i(TAG, "Setup not completed, shutting down EPG Sync Service");
-//            stopSelf();
-//            return;
-//        }
+        if (!mSharedPreferences.getBoolean(Constants.KEY_SETUP_COMPLETE, false)) {
+            Log.i(TAG, "Setup not completed, shutting down EPG Sync Service");
+            stopSelf();
+            return;
+        }
 
         if (!mSharedPreferences.getBoolean(Constants.KEY_EPG_SYNC_ENABLED, true)) {
             Log.i(TAG, "EPG Sync disabled, shutting down EPG Sync Service");
@@ -122,9 +85,6 @@ public class EpgSyncService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent != null) {
-            mQuickSyncRequested = intent.getBooleanExtra(SYNC_QUICK, false);
-        }
         if (mAccount == null) {
             return START_NOT_STICKY;
         }
@@ -172,7 +132,7 @@ public class EpgSyncService extends Service {
 
         mConnection = new SimpleHtspConnection(connectionDetails);
 
-        mEpgSyncTask = new EpgSyncTask(mConnection, this);
+        mEpgSyncTask = new EpgSyncTask(this, mConnection);
 
         mConnection.addMessageListener(mEpgSyncTask);
         mConnection.addAuthenticationListener(mEpgSyncTask);

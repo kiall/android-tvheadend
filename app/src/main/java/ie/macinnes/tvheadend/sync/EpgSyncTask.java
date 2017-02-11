@@ -37,6 +37,7 @@ import android.util.SparseArray;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import ie.macinnes.htsp.HtspMessage;
@@ -53,13 +54,34 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
             "initialSyncCompleted",
     }));
 
-    private final HtspMessage.Dispatcher mDispatcher;
+    /**
+     * A listener for EpgSync events
+     */
+    public interface Listener {
+        /**
+         * Returns the Handler on which to execute the callback.
+         *
+         * @return Handler, or null.
+         */
+        Handler getHandler();
+
+        /**
+         * Called when the initial sync has completed
+         */
+        void onInitialSyncCompleted();
+    }
+
     private final Context mContext;
+    private final HtspMessage.Dispatcher mDispatcher;
+    private boolean mQuickSync = false;
+
     private final SharedPreferences mSharedPreferences;
     private final ContentResolver mContentResolver;
 
     private final HandlerThread mHandlerThread;
     private final Handler mHandler;
+
+    private final List<Listener> mListeners = new ArrayList<>();
 
     private boolean mInitialSyncCompleted = false;
 
@@ -72,9 +94,15 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
 //    private Set<Integer> mSeenChannels = new HashSet<>();
 //    private Set<Integer> mSeenPrograms = new HashSet<>();
 
-    public EpgSyncTask(@NonNull HtspMessage.Dispatcher dispatcher, Context context) {
-        mDispatcher = dispatcher;
+    public EpgSyncTask(Context context, @NonNull HtspMessage.Dispatcher dispatcher, boolean quickSync) {
+        this(context, dispatcher);
+
+        mQuickSync = quickSync;
+    }
+
+    public EpgSyncTask(Context context, @NonNull HtspMessage.Dispatcher dispatcher) {
         mContext = context;
+        mDispatcher = dispatcher;
 
         mSharedPreferences = context.getSharedPreferences(
                 Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
@@ -89,6 +117,22 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
         mProgramUriMap = TvContractUtils.buildProgramUriMap(context);
     }
 
+    public void addEpgSyncListener(Listener listener) {
+        if (mListeners.contains(listener)) {
+            Log.w(TAG, "Attempted to add duplicate epg sync listener");
+            return;
+        }
+        mListeners.add(listener);
+    }
+
+    public void removeEpgSyncListener(Listener listener) {
+        if (!mListeners.contains(listener)) {
+            Log.w(TAG, "Attempted to remove non existing epg sync listener");
+            return;
+        }
+        mListeners.remove(listener);
+    }
+
     // Authenticator.Listener Methods
     @Override
     public void onAuthenticationStateChange(@NonNull Authenticator.State state) {
@@ -96,13 +140,20 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
             long epgMaxTime = Long.parseLong(mSharedPreferences.getString(Constants.KEY_EPG_MAX_TIME, "3600"));
             long lastUpdate = mSharedPreferences.getLong(Constants.KEY_EPG_LAST_UPDATE, 0);
 
-            Log.i(TAG, "Enabling Async Metadata. Last Update: " + lastUpdate + ", EPG max time: " + epgMaxTime);
+            Log.i(TAG, "Enabling Async Metadata - lastUpdate: " + lastUpdate + ", maxTime: " + epgMaxTime + ", quickSync: " + mQuickSync);
 
             HtspMessage enableAsyncMetadataRequest = new HtspMessage();
 
             enableAsyncMetadataRequest.put("method", "enableAsyncMetadata");
             enableAsyncMetadataRequest.put("epg", 1);
-            enableAsyncMetadataRequest.put("epgMaxTime", epgMaxTime + (System.currentTimeMillis() / 1000L));
+
+            if (mQuickSync) {
+                // Quick sync ignores the epg time preference, and syncs 2 hours of data
+                epgMaxTime = 7200;
+            }
+
+            epgMaxTime = epgMaxTime + (System.currentTimeMillis() / 1000L);
+            enableAsyncMetadataRequest.put("epgMaxTime", epgMaxTime);
 
 //            if (mSharedPreferences.getBoolean(Constants.KEY_EPG_LAST_UPDATE_ENABLED, true)) {
 //                enableAsyncMetadataRequest.put("lastUpdate", lastUpdate);
@@ -436,5 +487,20 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
 
         Log.i(TAG, "Initial sync completed");
         mInitialSyncCompleted = true;
+
+        // Let our listeners know
+        for (final Listener listener : mListeners) {
+            Handler handler = listener.getHandler();
+            if (handler == null) {
+                listener.onInitialSyncCompleted();
+            } else {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        listener.onInitialSyncCompleted();
+                    }
+                });
+            }
+        }
     }
 }
