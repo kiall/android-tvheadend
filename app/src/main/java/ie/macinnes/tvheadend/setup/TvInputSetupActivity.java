@@ -389,7 +389,7 @@ public class TvInputSetupActivity extends Activity {
             final String password = mAccountManager.getPassword(account);
 
             HtspConnection.ConnectionDetails connectionDetails = new HtspConnection.ConnectionDetails(
-                    hostname, port, username, password, "android-tvheadend (EPG)",
+                    hostname, port, username, password, "android-tvheadend (Setup EPG)",
                     BuildConfig.VERSION_NAME);
 
             mConnection = new SimpleHtspConnection(connectionDetails);
@@ -401,6 +401,12 @@ public class TvInputSetupActivity extends Activity {
             mConnection.addAuthenticationListener(mEpgSyncTask);
 
             mConnection.start();
+        }
+
+        @Override
+        public void onStop() {
+            mConnection.closeConnection();
+            super.onStop();
         }
 
         @Override
