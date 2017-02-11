@@ -155,11 +155,11 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
             epgMaxTime = epgMaxTime + (System.currentTimeMillis() / 1000L);
             enableAsyncMetadataRequest.put("epgMaxTime", epgMaxTime);
 
-//            if (mSharedPreferences.getBoolean(Constants.KEY_EPG_LAST_UPDATE_ENABLED, true)) {
-//                enableAsyncMetadataRequest.put("lastUpdate", lastUpdate);
-//            } else {
-//                Log.d(TAG, "Skipping lastUpdate field, disabled by preference");
-//            }
+            if (mSharedPreferences.getBoolean(Constants.KEY_EPG_LAST_UPDATE_ENABLED, true)) {
+                enableAsyncMetadataRequest.put("lastUpdate", lastUpdate);
+            } else {
+                Log.d(TAG, "Skipping lastUpdate field, disabled by preference");
+            }
 
             mDispatcher.sendMessage(enableAsyncMetadataRequest);
         }
@@ -180,6 +180,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
                 case "channelAdd":
                 case "channelUpdate":
                     handleChannelAddUpdate(message);
+                    storeLastUpdate();
                     break;
                 case "channelDelete":
                     // Do Something
@@ -187,6 +188,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
                 case "eventAdd":
                 case "eventUpdate":
                     handleEventAddUpdate(message);
+                    storeLastUpdate();
                     break;
                 case "eventDelete":
                     // Do Something
