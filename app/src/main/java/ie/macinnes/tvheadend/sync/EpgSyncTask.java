@@ -89,10 +89,10 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
     private final SparseArray<Uri> mProgramUriMap;
 
     private final SparseArray<ContentProviderOperation> mPendingChannelOps = new SparseArray<>();
-    private final SparseArray<ContentProviderOperation> mPendingEventOps = new SparseArray<>();
+    private final SparseArray<ContentProviderOperation> mPendingProgramOps = new SparseArray<>();
 
-//    private Set<Integer> mSeenChannels = new HashSet<>();
-//    private Set<Integer> mSeenPrograms = new HashSet<>();
+    private Set<Integer> mSeenChannels = new HashSet<>();
+    private Set<Integer> mSeenPrograms = new HashSet<>();
 
     public EpgSyncTask(Context context, @NonNull HtspMessage.Dispatcher dispatcher, boolean quickSync) {
         this(context, dispatcher);
@@ -271,7 +271,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
 //            fetchChannelLogo(channelUri, message);
 //        }
 
-//        mSeenChannels.add(channelId);
+        mSeenChannels.add(channelId);
     }
 
     private void flushPendingChannelOps() {
@@ -316,6 +316,25 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
 
         // Finally, reset the pending operations list
         mPendingChannelOps.clear();
+    }
+
+    protected void deleteChannels() {
+        // Dirty
+        int[] existingChannelIds = new int[mChannelUriMap.size()];
+
+        for (int i = 0; i < mChannelUriMap.size(); i++) {
+            int key = mChannelUriMap.keyAt(i);
+            existingChannelIds[i] = key;
+        }
+
+        for (int i = 0; i < existingChannelIds.length; i++) {
+            if (!mSeenChannels.contains(existingChannelIds[i])) {
+                Log.d(TAG, "Deleting channel " + existingChannelIds[i]);
+                Uri channelUri = mChannelUriMap.get(existingChannelIds[i]);
+                mChannelUriMap.remove(existingChannelIds[i]);
+                mContentResolver.delete(channelUri, null, null);
+            }
+        }
     }
 
     private ContentValues eventToContentValues(@NonNull HtspMessage message) {
@@ -411,7 +430,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
         if (eventUri == null) {
             // Insert the event
             Log.v(TAG, "Insert event " + eventId + " on channel " + channelId);
-            mPendingEventOps.put(
+            mPendingProgramOps.put(
                     eventId,
                     ContentProviderOperation.newInsert(TvContract.Programs.CONTENT_URI)
                             .withValues(values)
@@ -420,7 +439,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
         } else {
             // Update the event
             Log.v(TAG, "Update event " + eventId + " on channel " + channelId);
-            mPendingEventOps.put(
+            mPendingProgramOps.put(
                     eventId,
                     ContentProviderOperation.newUpdate(eventUri)
                             .withValues(values)
@@ -430,24 +449,24 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
 
         // Throttle the batch operation not to cause TransactionTooLargeException. If the initial
         // sync has already completed, flush for every message.
-        if (mInitialSyncCompleted || mPendingEventOps.size() >= 500) {
+        if (mInitialSyncCompleted || mPendingProgramOps.size() >= 500) {
             flushPendingEventOps();
         }
 
-//        mSeenPrograms.add(message.getEventId());
+        mSeenPrograms.add(eventId);
     }
 
     private void flushPendingEventOps() {
-        if (mPendingEventOps.size() == 0) {
+        if (mPendingProgramOps.size() == 0) {
             return;
         }
 
-        Log.d(TAG, "Flushing " + mPendingEventOps.size() + " event operations");
+        Log.d(TAG, "Flushing " + mPendingProgramOps.size() + " event operations");
 
         // Build out an ArrayList of Operations needed for applyBatch()
-        ArrayList<ContentProviderOperation> operations = new ArrayList<>(mPendingEventOps.size());
-        for (int i = 0; i < mPendingEventOps.size(); i++) {
-            operations.add(mPendingEventOps.valueAt(i));
+        ArrayList<ContentProviderOperation> operations = new ArrayList<>(mPendingProgramOps.size());
+        for (int i = 0; i < mPendingProgramOps.size(); i++) {
+            operations.add(mPendingProgramOps.valueAt(i));
         }
 
         // Apply the batch of Operations
@@ -466,26 +485,49 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
                        "does not match resultset size");
 
             // Reset the pending operations list
-            mPendingEventOps.clear();
+            mPendingProgramOps.clear();
             return;
         }
 
         // Update the Event Uri Map based on the results
-        for (int i = 0; i < mPendingEventOps.size(); i++) {
-            final int eventId = mPendingEventOps.keyAt(i);
+        for (int i = 0; i < mPendingProgramOps.size(); i++) {
+            final int eventId = mPendingProgramOps.keyAt(i);
             final ContentProviderResult result = results[i];
 
             mProgramUriMap.put(eventId, result.uri);
         }
 
         // Finally, reset the pending operations list
-        mPendingEventOps.clear();
+        mPendingProgramOps.clear();
+    }
+
+    protected void deletePrograms() {
+        // Dirty
+        int[] existingProgramIds = new int[mProgramUriMap.size()];
+
+        for (int i = 0; i < mProgramUriMap.size(); i++) {
+            int key = mProgramUriMap.keyAt(i);
+            existingProgramIds[i] = key;
+        }
+
+        for (int i = 0; i < existingProgramIds.length; i++) {
+            if (!mSeenPrograms.contains(existingProgramIds[i])) {
+                Log.d(TAG, "Deleting program " + existingProgramIds[i]);
+                Uri programUri = mProgramUriMap.get(existingProgramIds[i]);
+                mProgramUriMap.remove(existingProgramIds[i]);
+                mContentResolver.delete(programUri, null, null);
+            }
+        }
     }
 
     private void handleInitialSyncCompleted(@NonNull HtspMessage message) {
         // Ensure we wrap up any pending event operations. This is no-op once there are no pending
         // operations
         flushPendingEventOps();
+
+        // Clear out any stale date
+        deleteChannels();
+        deletePrograms();
 
         Log.i(TAG, "Initial sync completed");
         mInitialSyncCompleted = true;
