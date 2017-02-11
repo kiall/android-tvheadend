@@ -1,430 +1,440 @@
 /*
- * Copyright (c) 2016 Kiall Mac Innes <kiall@macinnes.ie>
+ * Copyright (c) 2017 Kiall Mac Innes <kiall@macinnes.ie>
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may
- * not use this file except in compliance with the License. You may obtain
- * a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package ie.macinnes.tvheadend.sync;
 
-import android.accounts.Account;
 import android.content.ContentProviderOperation;
+import android.content.ContentProviderResult;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.OperationApplicationException;
 import android.content.SharedPreferences;
-import android.database.Cursor;
+import android.media.tv.TvContentRating;
 import android.media.tv.TvContract;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.RemoteException;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.SparseArray;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import ie.macinnes.htspold.ConnectionException;
-import ie.macinnes.htspold.MessageListener;
-import ie.macinnes.htspold.ResponseMessage;
-import ie.macinnes.htspold.messages.BaseChannelResponse;
-import ie.macinnes.htspold.messages.BaseEventResponse;
-import ie.macinnes.htspold.messages.EnableAsyncMetadataRequest;
-import ie.macinnes.htspold.messages.InitialSyncCompletedResponse;
-import ie.macinnes.htspold.tasks.GetFileTask;
+import ie.macinnes.htsp.HtspMessage;
+import ie.macinnes.htsp.tasks.Authenticator;
 import ie.macinnes.tvheadend.Constants;
+import ie.macinnes.tvheadend.DvbMappings;
 import ie.macinnes.tvheadend.TvContractUtils;
-import ie.macinnes.tvheadend.R;
 
-class EpgSyncTask extends MessageListener {
-    // channelId and eventId in this are, ehh, confusing. We have the TVH channel/event IDs, and the
-    // Android TV channel/program IDs.
-    private static final String TAG = EpgSyncTask.class.getName();
+public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener {
+    private static final String TAG = EpgSyncTask.class.getSimpleName();
+    private static final Set<String> HANDLED_METHODS = new HashSet<>(Arrays.asList(new String[]{
+            "channelAdd", "channelUpdate", "channelDelete",
+            "eventAdd", "eventUpdate", "eventDelete",
+            "initialSyncCompleted",
+    }));
 
-    protected Context mContext;
+    private final HtspMessage.Dispatcher mDispatcher;
+    private final Context mContext;
+    private final SharedPreferences mSharedPreferences;
+    private final ContentResolver mContentResolver;
 
-    protected Account mAccount;
-    protected GetFileTask mGetFileTask;
+    private final HandlerThread mHandlerThread;
+    private final Handler mHandler;
 
-    protected Runnable mInitialSyncCompleteCallback;
+    private boolean mInitialSyncCompleted = false;
 
-    protected ContentResolver mContentResolver;
+    private final SparseArray<Uri> mChannelUriMap;
+    private final SparseArray<Uri> mProgramUriMap;
 
-    protected SparseArray<Uri> mChannelUriMap;
-    protected SparseArray<Uri> mProgramUriMap;
+    private final SparseArray<ContentProviderOperation> mPendingChannelOps = new SparseArray<>();
+    private final SparseArray<ContentProviderOperation> mPendingEventOps = new SparseArray<>();
 
-    protected Set<Integer> mSeenChannels;
-    protected Set<Integer> mSeenPrograms;
+//    private Set<Integer> mSeenChannels = new HashSet<>();
+//    private Set<Integer> mSeenPrograms = new HashSet<>();
 
-    protected ArrayList<ContentProviderOperation> mPendingProgramOps = new ArrayList<>();
-
-    protected SharedPreferences mSharedPreferences;
-
-    public EpgSyncTask(Context context, Handler handler, Account account, GetFileTask getFileTask) {
-        super(handler);
-
+    public EpgSyncTask(@NonNull HtspMessage.Dispatcher dispatcher, Context context) {
+        mDispatcher = dispatcher;
         mContext = context;
-        mAccount = account;
-        mGetFileTask = getFileTask;
-
-        mContentResolver = mContext.getContentResolver();
-        mChannelUriMap = buildChannelUriMap();
-        mProgramUriMap = buildProgramUriMap();
-
-        mSeenChannels = new HashSet<>();
-        mSeenPrograms = new HashSet<>();
 
         mSharedPreferences = context.getSharedPreferences(
                 Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
+
+        mContentResolver = context.getContentResolver();
+
+        mHandlerThread = new HandlerThread("EpgSyncService Handler Thread");
+        mHandlerThread.start();
+        mHandler = new Handler(mHandlerThread.getLooper());
+
+        mChannelUriMap = TvContractUtils.buildChannelUriMap(context);
+        mProgramUriMap = TvContractUtils.buildProgramUriMap(context);
     }
 
+    // Authenticator.Listener Methods
+    @Override
+    public void onAuthenticationStateChange(@NonNull Authenticator.State state) {
+        if (state == Authenticator.State.AUTHENTICATED) {
+            long epgMaxTime = Long.parseLong(mSharedPreferences.getString(Constants.KEY_EPG_MAX_TIME, "3600"));
+            long lastUpdate = mSharedPreferences.getLong(Constants.KEY_EPG_LAST_UPDATE, 0);
 
-    public void enableAsyncMetadata(Runnable initialSyncCompleteCallback) {
-        long epgMaxTime = Long.parseLong(mSharedPreferences.getString(Constants.KEY_EPG_MAX_TIME, "3600"));
+            Log.i(TAG, "Enabling Async Metadata. Last Update: " + lastUpdate + ", EPG max time: " + epgMaxTime);
 
-        enableAsyncMetadata(initialSyncCompleteCallback, epgMaxTime);
+            HtspMessage enableAsyncMetadataRequest = new HtspMessage();
+
+            enableAsyncMetadataRequest.put("method", "enableAsyncMetadata");
+            enableAsyncMetadataRequest.put("epg", 1);
+            enableAsyncMetadataRequest.put("epgMaxTime", epgMaxTime + (System.currentTimeMillis() / 1000L));
+
+//            if (mSharedPreferences.getBoolean(Constants.KEY_EPG_LAST_UPDATE_ENABLED, true)) {
+//                enableAsyncMetadataRequest.put("lastUpdate", lastUpdate);
+//            } else {
+//                Log.d(TAG, "Skipping lastUpdate field, disabled by preference");
+//            }
+
+            mDispatcher.sendMessage(enableAsyncMetadataRequest);
+        }
     }
 
-    public void enableAsyncMetadata(Runnable initialSyncCompleteCallback, long epgMaxTime) {
-        long lastUpdate = mSharedPreferences.getLong(Constants.KEY_EPG_LAST_UPDATE, 0);
-
-        Log.i(TAG, "Enabling Async Metadata. Last Update: " + lastUpdate + ", EPG max time: " + epgMaxTime);
-
-        epgMaxTime = epgMaxTime + (System.currentTimeMillis() / 1000L);
-
-        mInitialSyncCompleteCallback = initialSyncCompleteCallback;
-
-        EnableAsyncMetadataRequest enableAsyncMetadataRequest = new EnableAsyncMetadataRequest();
-        enableAsyncMetadataRequest.setEpgMaxTime(epgMaxTime);
-        enableAsyncMetadataRequest.setEpg(true);
-
-        if (mSharedPreferences.getBoolean(Constants.KEY_EPG_LAST_UPDATE_ENABLED, true)) {
-            enableAsyncMetadataRequest.setLastUpdate(lastUpdate);
-        } else {
-            Log.d(TAG, "Skipping lastUpdate field, disabled by preference");
-        }
-
-        try {
-            mConnection.sendMessage(enableAsyncMetadataRequest);
-        } catch (ConnectionException e) {
-            Log.w(TAG, "Failed to send enableAsyncMetadataRequest", e);
-            return;
-        }
+    // HtspMessage.Listener Methods
+    @Override
+    public Handler getHandler() {
+        return mHandler;
     }
 
     @Override
-    public void onMessage(ResponseMessage message) {
-        Log.v(TAG, "Received Message: " + message.getClass() + " / " + message.toString());
+    public void onMessage(@NonNull HtspMessage message) {
+        final String method = message.getString("method");
 
-        if (message instanceof InitialSyncCompletedResponse) {
-            // Store the lastUpdate time, used for the next sync.
-            flushPendingProgramOps();
-            deleteChannels();
-            deletePrograms();
-
-            Log.i(TAG, "Initial sync completed");
-
-            if (mInitialSyncCompleteCallback != null) {
-                mInitialSyncCompleteCallback.run();
+        if (HANDLED_METHODS.contains(method)) {
+            switch (method) {
+                case "channelAdd":
+                case "channelUpdate":
+                    handleChannelAddUpdate(message);
+                    break;
+                case "channelDelete":
+                    // Do Something
+                    break;
+                case "eventAdd":
+                case "eventUpdate":
+                    handleEventAddUpdate(message);
+                    break;
+                case "eventDelete":
+                    // Do Something
+                    break;
+                case "initialSyncCompleted":
+                    handleInitialSyncCompleted(message);
+                    break;
+                default:
+                    throw new RuntimeException("Unknown message method: " + method);
             }
-        } else if (message instanceof BaseChannelResponse) {
-            storeLastUpdate();
-            handleChannel((BaseChannelResponse) message);
-        } else if (message instanceof BaseEventResponse) {
-            storeLastUpdate();
-            handleEvent((BaseEventResponse) message);
         }
     }
 
-    protected void storeLastUpdate() {
+    // Internal Methods
+    private void storeLastUpdate() {
         long unixTime = System.currentTimeMillis() / 1000L;
 
         mSharedPreferences.edit().putLong(Constants.KEY_EPG_LAST_UPDATE, unixTime).apply();
     }
 
-    private void handleChannel(BaseChannelResponse message) {
-        Log.d(TAG, "Handling channel message for ID: " + message.getChannelId());
+    private ContentValues channelToContentValues(@NonNull HtspMessage message) {
+        ContentValues values = new ContentValues();
 
-        Uri channelUri = getChannelUri(message.getChannelId());
-        ContentValues values = message.toContentValues(TvContractUtils.getInputId(), mAccount.name);
+        values.put(TvContract.Channels.COLUMN_INPUT_ID, TvContractUtils.getInputId());
+        values.put(TvContract.Channels.COLUMN_TYPE, TvContract.Channels.TYPE_OTHER);
+        values.put(TvContract.Channels.COLUMN_ORIGINAL_NETWORK_ID, message.getInteger("channelId"));
+
+        if (message.containsKey("channelNumber") && message.containsKey("channelNumberMinor")) {
+            final int channelNumber = message.getInteger("channelNumber");
+            final int channelNumberMinor = message.getInteger("channelNumberMinor");
+            values.put(TvContract.Channels.COLUMN_DISPLAY_NUMBER, channelNumber + "." + channelNumberMinor);
+        } else if (message.containsKey("channelNumber")) {
+            final int channelNumber = message.getInteger("channelNumber");
+            values.put(TvContract.Channels.COLUMN_DISPLAY_NUMBER, String.valueOf(channelNumber));
+        }
+
+        if (message.containsKey("channelName")) {
+            values.put(TvContract.Channels.COLUMN_DISPLAY_NAME, message.getString("channelName"));
+        }
+
+        // TODO
+//        values.put(TvContract.Channels.COLUMN_INTERNAL_PROVIDER_DATA, accountName);
+
+        return values;
+    }
+
+    private void handleChannelAddUpdate(@NonNull HtspMessage message) {
+        final int channelId = message.getInteger("channelId");
+        final ContentValues values = channelToContentValues(message);
+        final Uri channelUri = TvContractUtils.getChannelUri(mContext, channelId);
 
         if (channelUri == null) {
             // Insert the channel
-            Log.d(TAG, "Insert channel " + message.getChannelName());
-            channelUri = mContentResolver.insert(TvContract.Channels.CONTENT_URI, values);
-            mChannelUriMap.append(message.getChannelId(), channelUri);
-        } else {
-            // Update the channel
-            Log.d(TAG, "Update channel " + message.getChannelId());
-            mContentResolver.update(channelUri, values, null, null);
-        }
-
-        if (message.getChannelIcon() != null) {
-            fetchChannelLogo(channelUri, message);
-        }
-
-        mSeenChannels.add(message.getChannelId());
-    }
-
-    private void fetchChannelLogo(final Uri channelUri, BaseChannelResponse message) {
-        mGetFileTask.getFile(message.getChannelIcon(), new GetFileTask.IFileGetCallback() {
-            @Override
-            public void onSuccess(ByteBuffer buffer) {
-                Log.d(TAG, "Storing logo for " + channelUri);
-
-                Uri channelLogoUri = TvContract.buildChannelLogoUri(channelUri);
-
-                OutputStream os = null;
-                byte[] bytes = new byte[buffer.remaining()];
-                buffer.get(bytes);
-
-                try {
-                    os = mContentResolver.openOutputStream(channelLogoUri);
-                    os.write(bytes);
-                    Log.d(TAG, "Successfully stored logo to " + channelLogoUri);
-                } catch (IOException ioe) {
-                    Log.e(TAG, "Failed to store logo to " + channelLogoUri, ioe);
-                } finally {
-                    if (os != null) {
-                        try {
-                            os.close();
-                        } catch (IOException e) {
-                            // Ignore...
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void onFailure() {
-                Log.w(TAG, "Failed to fetch logo for " + channelUri + ". This usually means " +
-                           "TVHeadend doesn't have a logo for this channel.");
-            }
-        });
-    }
-
-    private void handleEvent(BaseEventResponse message) {
-        Log.d(TAG, "Handling event message for ID: " + message.getEventId());
-
-        if (message.getChannelId() == BaseEventResponse.INVALID_INT_VALUE) {
-            Log.e(TAG, "Discarding event message for unknown channel, event ID " + message.getEventId());
-            return;
-        }
-
-        Long channelId = getChannelId(message.getChannelId());
-
-        if (channelId == null) {
-            Log.w(TAG, "Failed to handle event message for ID: " + message.getEventId() + ", unknown channel.");
-        }
-
-        Uri programUri = getProgramUri(message.getChannelId(), message.getEventId());
-
-        ContentValues values = message.toContentValues(channelId);
-        if(values.getAsString(TvContract.Programs.COLUMN_POSTER_ART_URI) == null && mSharedPreferences.getBoolean(Constants.KEY_EPG_DEFAULT_POSTER_ART_ENABLED, false)) {
-            values.put(TvContract.Programs.COLUMN_POSTER_ART_URI, "android.resource://ie.macinnes.tvheadend/" + R.drawable.default_event_icon);
-        }
-        if (programUri == null) {
-            // Insert the program.
-            // Since we need its Uri, we can't use the batch method.
-            Log.d(TAG, "Insert program " + message.getTitle());
-            programUri = mContentResolver.insert(TvContract.Programs.CONTENT_URI, values);
-            mProgramUriMap.append(message.getEventId(), programUri);
-        } else {
-            // Update the program
-            Log.d(TAG, "Update program " + message.getEventId());
-
-            mPendingProgramOps.add(
-                    ContentProviderOperation.newUpdate(programUri)
+            Log.v(TAG, "Insert channel " + channelId);
+            mPendingChannelOps.put(
+                    channelId,
+                    ContentProviderOperation.newInsert(TvContract.Channels.CONTENT_URI)
                             .withValues(values)
                             .build()
             );
-
+        } else {
+            // Update the channel
+            Log.v(TAG, "Update channel " + channelId);
+            mPendingChannelOps.put(
+                    channelId,
+                    ContentProviderOperation.newUpdate(channelUri)
+                            .withValues(values)
+                            .build()
+            );
         }
 
-        mSeenPrograms.add(message.getEventId());
-
-        // Throttle the batch operation not to cause TransactionTooLargeException.
-        if (mPendingProgramOps.size() > 200) {
-            flushPendingProgramOps();
+        // Throttle the batch operation not to cause TransactionTooLargeException. If the initial
+        // sync has already completed, flush for every message.
+        if (mInitialSyncCompleted || mPendingChannelOps.size() >= 500) {
+            flushPendingChannelOps();
         }
+
+        // TODO
+//        if (message.getChannelIcon() != null) {
+//            fetchChannelLogo(channelUri, message);
+//        }
+
+//        mSeenChannels.add(channelId);
     }
 
-    protected void deleteChannels() {
-        // Dirty
-        int[] existingChannelIds = new int[mChannelUriMap.size()];
-
-        for (int i = 0; i < mChannelUriMap.size(); i++) {
-            int key = mChannelUriMap.keyAt(i);
-            existingChannelIds[i] = key;
-        }
-
-        for (int i = 0; i < existingChannelIds.length; i++) {
-            if (!mSeenChannels.contains(existingChannelIds[i])) {
-                Log.d(TAG, "Deleting channel " + existingChannelIds[i]);
-                Uri channelUri = mChannelUriMap.get(existingChannelIds[i]);
-                mChannelUriMap.remove(existingChannelIds[i]);
-                mContentResolver.delete(channelUri, null, null);
-            }
-        }
-    }
-
-    protected void deletePrograms() {
-        // Dirty
-        int[] existingProgramIds = new int[mProgramUriMap.size()];
-
-        for (int i = 0; i < mProgramUriMap.size(); i++) {
-            int key = mProgramUriMap.keyAt(i);
-            existingProgramIds[i] = key;
-        }
-
-        for (int i = 0; i < existingProgramIds.length; i++) {
-            if (!mSeenPrograms.contains(existingProgramIds[i])) {
-                Log.d(TAG, "Deleting program " + existingProgramIds[i]);
-                Uri programUri = mProgramUriMap.get(existingProgramIds[i]);
-                mProgramUriMap.remove(existingProgramIds[i]);
-                mContentResolver.delete(programUri, null, null);
-            }
-        }
-    }
-
-    protected void flushPendingProgramOps() {
-        if (mPendingProgramOps.size() == 0) {
+    private void flushPendingChannelOps() {
+        if (mPendingChannelOps.size() == 0) {
             return;
         }
+
+        Log.d(TAG, "Flushing " + mPendingChannelOps.size() + " channel operations");
+
+        // Build out an ArrayList of Operations needed for applyBatch()
+        ArrayList<ContentProviderOperation> operations = new ArrayList<>(mPendingChannelOps.size());
+        for (int i = 0; i < mPendingChannelOps.size(); i++) {
+            operations.add(mPendingChannelOps.valueAt(i));
+        }
+
+        // Apply the batch of Operations
+        ContentProviderResult[] results;
+        try {
+            results = mContext.getContentResolver().applyBatch(
+                    Constants.CONTENT_AUTHORITY, operations);
+        } catch (RemoteException | OperationApplicationException e) {
+            Log.e(TAG, "Failed to flush pending channel operations", e);
+            return;
+        }
+
+        if (operations.size() != results.length) {
+            Log.e(TAG, "Failed to flush pending channels, discarding and moving on, batch size " +
+                       "does not match resultset size");
+
+            // Reset the pending operations list
+            mPendingChannelOps.clear();
+            return;
+        }
+
+        // Update the Channel Uri Map based on the results
+        for (int i = 0; i < mPendingChannelOps.size(); i++) {
+            final int channelId = mPendingChannelOps.keyAt(i);
+            final ContentProviderResult result = results[i];
+
+            mChannelUriMap.put(channelId, result.uri);
+        }
+
+        // Finally, reset the pending operations list
+        mPendingChannelOps.clear();
+    }
+
+    private ContentValues eventToContentValues(@NonNull HtspMessage message) {
+        ContentValues values = new ContentValues();
+
+        values.put(TvContract.Programs.COLUMN_CHANNEL_ID, TvContractUtils.getChannelId(mContext, message.getInteger("channelId")));
+        values.put(TvContract.Programs.COLUMN_INTERNAL_PROVIDER_DATA, String.valueOf(message.getInteger("eventId")));
+
+        // COLUMN_TITLE, COLUMN_EPISODE_TITLE, and COLUMN_SHORT_DESCRIPTION are used in the
+        // Live Channels app EPG Grid. COLUMN_LONG_DESCRIPTION appears unused.
+        // On Sony TVs, COLUMN_LONG_DESCRIPTION is used for the "more info" display.
+
+        if (message.containsKey("title")) {
+            // The title of this TV program.
+            values.put(TvContract.Programs.COLUMN_TITLE, message.getString("title"));
+        }
+
+        if (message.containsKey("subtitle")) {
+            // The episode title of this TV program for episodic TV shows.
+            values.put(TvContract.Programs.COLUMN_EPISODE_TITLE, message.getString("subtitle"));
+        }
+
+        if (message.containsKey("summary") && message.containsKey("description")) {
+            // If we have both summary and description... use them both
+            values.put(TvContract.Programs.COLUMN_SHORT_DESCRIPTION, message.getString("summary"));
+            values.put(TvContract.Programs.COLUMN_LONG_DESCRIPTION, message.getString("description"));
+
+        } else if (message.containsKey("summary") && !message.containsKey("description")) {
+            // If we have only summary, use it.
+            values.put(TvContract.Programs.COLUMN_SHORT_DESCRIPTION, message.getString("summary"));
+
+        } else if (!message.containsKey("summary") && message.containsKey("description")) {
+            // If we have only description, use it.
+            values.put(TvContract.Programs.COLUMN_SHORT_DESCRIPTION, message.getString("description"));
+        }
+
+        if (message.containsKey("contentType")) {
+            values.put(TvContract.Programs.COLUMN_CANONICAL_GENRE,
+                    DvbMappings.ProgramGenre.get(message.getInteger("contentType")));
+        }
+
+        if (message.containsKey("ageRating")) {
+            final int ageRating = message.getInteger("ageRating");
+            if (ageRating >= 4 && ageRating <= 18) {
+                TvContentRating rating = TvContentRating.createRating("com.android.tv", "DVB", "DVB_" + ageRating);
+                values.put(TvContract.Programs.COLUMN_CONTENT_RATING, rating.flattenToString());
+            }
+        }
+
+        if (message.containsKey("start")) {
+            values.put(TvContract.Programs.COLUMN_START_TIME_UTC_MILLIS, message.getLong("start") * 1000);
+        }
+
+        if (message.containsKey("stop")) {
+            values.put(TvContract.Programs.COLUMN_END_TIME_UTC_MILLIS, message.getLong("stop") * 1000);
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            if (message.containsKey("seasonNumber")) {
+                values.put(TvContract.Programs.COLUMN_SEASON_DISPLAY_NUMBER, message.getInteger("seasonNumber"));
+            }
+
+            if (message.containsKey("episodeNumber")) {
+                values.put(TvContract.Programs.COLUMN_EPISODE_DISPLAY_NUMBER, message.getInteger("episodeNumber"));
+            }
+        } else {
+            if (message.containsKey("seasonNumber")) {
+                values.put(TvContract.Programs.COLUMN_SEASON_NUMBER, message.getInteger("seasonNumber"));
+            }
+
+            if (message.containsKey("episodeNumber")) {
+                values.put(TvContract.Programs.COLUMN_EPISODE_NUMBER, message.getInteger("episodeNumber"));
+            }
+        }
+
+        if (message.containsKey("image")) {
+            values.put(TvContract.Programs.COLUMN_POSTER_ART_URI, message.getString("image"));
+        }
+
+        return values;
+    }
+
+    private void handleEventAddUpdate(@NonNull HtspMessage message) {
+        // Ensure we wrap up any pending channel operations before moving onto events. This is no-op
+        // once there are no pending operations
+        flushPendingChannelOps();
+
+        final int channelId = message.getInteger("channelId");
+        final int eventId = message.getInteger("eventId");
+        final ContentValues values = eventToContentValues(message);
+        final Uri eventUri = TvContractUtils.getProgramUri(mContext, channelId, eventId);
+
+        if (eventUri == null) {
+            // Insert the event
+            Log.v(TAG, "Insert event " + eventId + " on channel " + channelId);
+            mPendingEventOps.put(
+                    eventId,
+                    ContentProviderOperation.newInsert(TvContract.Programs.CONTENT_URI)
+                            .withValues(values)
+                            .build()
+            );
+        } else {
+            // Update the event
+            Log.v(TAG, "Update event " + eventId + " on channel " + channelId);
+            mPendingEventOps.put(
+                    eventId,
+                    ContentProviderOperation.newUpdate(eventUri)
+                            .withValues(values)
+                            .build()
+            );
+        }
+
+        // Throttle the batch operation not to cause TransactionTooLargeException. If the initial
+        // sync has already completed, flush for every message.
+        if (mInitialSyncCompleted || mPendingEventOps.size() >= 500) {
+            flushPendingEventOps();
+        }
+
+//        mSeenPrograms.add(message.getEventId());
+    }
+
+    private void flushPendingEventOps() {
+        if (mPendingEventOps.size() == 0) {
+            return;
+        }
+
+        Log.d(TAG, "Flushing " + mPendingEventOps.size() + " event operations");
+
+        // Build out an ArrayList of Operations needed for applyBatch()
+        ArrayList<ContentProviderOperation> operations = new ArrayList<>(mPendingEventOps.size());
+        for (int i = 0; i < mPendingEventOps.size(); i++) {
+            operations.add(mPendingEventOps.valueAt(i));
+        }
+
+        // Apply the batch of Operations
+        ContentProviderResult[] results;
 
         try {
-            mContext.getContentResolver().applyBatch(Constants.CONTENT_AUTHORITY, mPendingProgramOps);
+            results = mContext.getContentResolver().applyBatch(
+                    Constants.CONTENT_AUTHORITY, operations);
         } catch (RemoteException | OperationApplicationException e) {
-            Log.e(TAG, "Failed to flush pending program operations", e);
+            Log.e(TAG, "Failed to flush pending event operations", e);
             return;
         }
-        mPendingProgramOps.clear();
+
+        if (operations.size() != results.length) {
+            Log.e(TAG, "Failed to flush pending events, discarding and moving on, batch size " +
+                       "does not match resultset size");
+
+            // Reset the pending operations list
+            mPendingEventOps.clear();
+            return;
+        }
+
+        // Update the Event Uri Map based on the results
+        for (int i = 0; i < mPendingEventOps.size(); i++) {
+            final int eventId = mPendingEventOps.keyAt(i);
+            final ContentProviderResult result = results[i];
+
+            mProgramUriMap.put(eventId, result.uri);
+        }
+
+        // Finally, reset the pending operations list
+        mPendingEventOps.clear();
     }
 
-    protected Long getChannelId(int channelId) {
-        // TODO: Cache results...
-        // TODO: Move to TvContractUtils
-        Uri channelsUri = TvContract.buildChannelsUriForInput(TvContractUtils.getInputId());
+    private void handleInitialSyncCompleted(@NonNull HtspMessage message) {
+        // Ensure we wrap up any pending event operations. This is no-op once there are no pending
+        // operations
+        flushPendingEventOps();
 
-        String[] projection = {TvContract.Channels._ID, TvContract.Channels.COLUMN_ORIGINAL_NETWORK_ID};
-
-        try (Cursor cursor = mContentResolver.query(channelsUri, projection, null, null, null)) {
-            while (cursor != null && cursor.moveToNext()) {
-                if (cursor.getInt(1) == channelId) {
-                    return cursor.getLong(0);
-                }
-            }
-        }
-
-        return null;
-    }
-
-    protected Uri getChannelUri(int channelId) {
-        // TODO: Cache results...
-        // TODO: Move to TvContractUtils
-        Long androidChannelId = getChannelId(channelId);
-
-        if (androidChannelId != null) {
-            return TvContract.buildChannelUri(androidChannelId);
-        }
-
-        return null;
-    }
-
-    public SparseArray<Uri> buildChannelUriMap() {
-        // Create a map from original network ID to channel row ID for existing channels.
-        SparseArray<Uri> channelMap = new SparseArray<>();
-        Uri channelsUri = TvContract.buildChannelsUriForInput(TvContractUtils.getInputId());
-        String[] projection = {TvContract.Channels._ID, TvContract.Channels.COLUMN_ORIGINAL_NETWORK_ID};
-
-        try (Cursor cursor = mContentResolver.query(channelsUri, projection, null, null, null)) {
-            while (cursor != null && cursor.moveToNext()) {
-                long rowId = cursor.getLong(0);
-                int originalNetworkId = cursor.getInt(1);
-                channelMap.put(originalNetworkId, TvContract.buildChannelUri(rowId));
-            }
-        }
-
-        return channelMap;
-    }
-
-    protected Uri getProgramUri(int channelId, int eventId) {
-        // TODO: Cache results...
-        // TODO: Move to TvContractUtils
-        Long androidChannelId = getChannelId(channelId);
-
-        if (androidChannelId == null) {
-            Log.w(TAG, "Failed to fetch programUri, unknown channel");
-            return null;
-        }
-
-        Uri programsUri = TvContract.buildProgramsUriForChannel(androidChannelId);
-
-        String[] projection = {TvContract.Programs._ID, TvContract.Programs.COLUMN_INTERNAL_PROVIDER_DATA};
-
-        String strEventId = String.valueOf(eventId);
-
-        try (Cursor cursor = mContentResolver.query(programsUri, projection, null, null, null)) {
-            while (cursor != null && cursor.moveToNext()) {
-                if (strEventId.equals(cursor.getString(1))) {
-                    return TvContract.buildProgramUri(cursor.getLong(0));
-                }
-            }
-        }
-
-        return null;
-    }
-
-    public SparseArray<Uri> buildProgramUriMap() {
-        // Create a map from event id to program row ID for existing programs.
-        SparseArray<Uri> programMap = new SparseArray<>();
-
-        Uri channelsUri = TvContract.buildChannelsUriForInput(TvContractUtils.getInputId());
-
-        String[] channelsProjection = {TvContract.Channels._ID};
-        try (Cursor cursor = mContentResolver.query(channelsUri, channelsProjection, null, null, null)) {
-            while (cursor != null && cursor.moveToNext()) {
-                SparseArray<Uri> channelPrgramMap = buildProgramUriMap(TvContract.buildChannelUri(cursor.getLong(0)));
-                for (int i = 0; i < channelPrgramMap.size(); i++) {
-                    int key = channelPrgramMap.keyAt(i);
-                    Uri value = channelPrgramMap.valueAt(i);
-                    programMap.put(key, value);
-                }
-            }
-        }
-
-        return programMap;
-    }
-
-    public SparseArray<Uri> buildProgramUriMap(Uri channelUri) {
-        // Create a map from event id to program row ID for existing programs.
-        SparseArray<Uri> programMap = new SparseArray<>();
-
-        Uri programsUri = TvContract.buildProgramsUriForChannel(channelUri);
-        String[] projection = {TvContract.Programs._ID, TvContract.Programs.COLUMN_INTERNAL_PROVIDER_DATA};
-
-        try (Cursor cursor = mContentResolver.query(programsUri, projection, null, null, null)) {
-            while (cursor != null && cursor.moveToNext()) {
-                long rowId = cursor.getLong(0);
-                int tvhEventId = Integer.valueOf(cursor.getString(1));
-                programMap.put(tvhEventId, TvContract.buildChannelUri(rowId));
-            }
-        }
-
-        return programMap;
+        Log.i(TAG, "Initial sync completed");
+        mInitialSyncCompleted = true;
     }
 }

@@ -18,50 +18,40 @@ package ie.macinnes.tvheadend.player;
 
 import android.content.Context;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DataSpec;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.BufferOverflowException;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
-import ie.macinnes.htsp.BaseMessage;
-import ie.macinnes.htsp.Connection;
-import ie.macinnes.htsp.MessageListener;
-import ie.macinnes.htsp.ResponseMessage;
-import ie.macinnes.htsp.messages.MuxpktResponse;
-import ie.macinnes.htsp.messages.SubscribeRequest;
-import ie.macinnes.htsp.messages.SubscriptionStartResponse;
-import ie.macinnes.htsp.messages.SubscriptionStatusResponse;
-import ie.macinnes.htsp.messages.UnsubscribeRequest;
+import ie.macinnes.htsp.HtspMessage;
+import ie.macinnes.htsp.SimpleHtspConnection;
 
-
-public class HtspDataSource implements DataSource {
+public class HtspDataSource implements DataSource, Subscriber.Listener {
     private static final String TAG = HtspDataSource.class.getName();
 
     public static class Factory implements DataSource.Factory {
         private static final String TAG = Factory.class.getName();
 
         protected Context mContext;
-        protected Connection mConnection;
-        protected AtomicInteger mDataSourceCount = new AtomicInteger();
+        protected SimpleHtspConnection mConnection;
 
-        public Factory(Context context, Connection connection) {
+        public Factory(Context context, SimpleHtspConnection connection) {
             mContext = context;
             mConnection = connection;
         }
 
         @Override
         public HtspDataSource createDataSource() {
-            return new HtspDataSource(mContext, mConnection, mDataSourceCount.getAndIncrement());
+            return new HtspDataSource(mContext, mConnection);
         }
     }
 
@@ -70,37 +60,34 @@ public class HtspDataSource implements DataSource {
     public static final short MSG_TYPE_SUBSCRIPTION_STATUS = 3;
 
     protected Context mContext;
-    protected Connection mConnection;
-    protected int mSubscriptionId;
-    protected SubscriptionTask mSubscriptionTask;
+    protected SimpleHtspConnection mConnection;
+    protected Subscriber mSubscriber;
 
     protected DataSpec mDataSpec;
 
     protected ByteBuffer mBuffer;
     protected ReentrantLock mLock = new ReentrantLock();
 
-    public HtspDataSource(Context context, Connection connection, int subscriptionId) {
+    private boolean mIsOpen = false;
+
+    public HtspDataSource(Context context, SimpleHtspConnection connection) {
         mContext = context;
         mConnection = connection;
-        mSubscriptionId = subscriptionId;
 
-        mBuffer = ByteBuffer.allocate(30000000); // 30 MB
+        mBuffer = ByteBuffer.allocate(60000000); // 60 MB
         mBuffer.limit(0);
 
-        mSubscriptionTask = new SubscriptionTask();
-        mConnection.addMessageListener(mSubscriptionTask);
+        mSubscriber = new Subscriber(mConnection, this);
     }
 
+    // DataSource Methods
     @Override
     public long open(DataSpec dataSpec) throws IOException {
         mDataSpec = dataSpec;
 
-        SubscribeRequest subscribeRequest = new SubscribeRequest();
+        mSubscriber.subscribe(Long.parseLong(dataSpec.uri.getHost()));
 
-        subscribeRequest.setSubscriptionId((long) mSubscriptionId);
-        subscribeRequest.setChannelId(Long.parseLong(dataSpec.uri.getHost()));
-
-        mConnection.sendMessage(subscribeRequest);
+        mIsOpen = true;
 
         return C.LENGTH_UNSET;
     }
@@ -111,14 +98,18 @@ public class HtspDataSource implements DataSource {
             return 0;
         }
 
-        // If the buffer is empty, block until we have one.
-        while (mBuffer.remaining() == 0 && !Thread.interrupted()) {
+        // If the buffer is empty, block until we have at least 1 byte
+        while (mIsOpen && mBuffer.remaining() == 0) {
             try {
-                Log.d(TAG, "Blocking for more data");
+                Log.v(TAG, "Blocking for more data");
                 Thread.sleep(250);
             } catch (InterruptedException e) {
                 // Ignore.
             }
+        }
+
+        if (!mIsOpen) {
+            return C.RESULT_END_OF_INPUT;
         }
 
         int length;
@@ -130,68 +121,12 @@ public class HtspDataSource implements DataSource {
 
             mBuffer.get(buffer, offset, length);
             mBuffer.compact();
+            mBuffer.flip();
         } finally {
             mLock.unlock();
         }
 
         return length;
-    }
-
-    private void serializeMessageToBuffer(ResponseMessage message) {
-        // TODO.. Ensure we don't overflow the buffer.
-
-        // Block until we have at least 3MB free in the buffer.. Hack...
-        while (mBuffer.capacity() - mBuffer.remaining() < 3000000  && !Thread.interrupted()) {
-            try {
-                Log.d(TAG, "Blocking for more space");
-                Thread.sleep(250);
-            } catch (InterruptedException e) {
-                // Ignore.
-            }
-        }
-
-        mLock.lock();
-        try {
-            mBuffer.position(mBuffer.limit());
-            mBuffer.limit(mBuffer.capacity());
-
-            if (message instanceof MuxpktResponse) {
-//                serializeMessageToBuffer((MuxpktResponse) message);
-            } else if (message instanceof SubscriptionStartResponse) {
-                serializeMessageToBuffer((SubscriptionStartResponse) message);
-            } else if (message instanceof SubscriptionStatusResponse) {
-                serializeMessageToBuffer((SubscriptionStatusResponse) message);
-            }
-
-            mBuffer.flip();
-        } finally {
-            mLock.unlock();
-        }
-    }
-
-    private void serializeMessageToBuffer(MuxpktResponse message) {
-        Log.w(TAG, "HtspDataSource - MSG_TYPE_MUXPKT");
-        mBuffer.putShort(MSG_TYPE_MUXPKT);
-//        mBuffer.putInt(message.getSubscriptionId());
-//        mBuffer.putInt(message.getFrameType());
-//        mBuffer.putInt(message.getStream());
-//        mBuffer.putLong(message.getDts());
-//        mBuffer.putLong(message.getPts());
-//        mBuffer.putInt(message.getDuration());
-//        mBuffer.putInt(message.getPayloadLength());
-//        mBuffer.put(message.getPayload());
-    }
-
-    private void serializeMessageToBuffer(SubscriptionStartResponse message) {
-        Log.w(TAG, "HtspDataSource - MSG_TYPE_SUBSCRIPTION_START");
-        mBuffer.putShort(MSG_TYPE_SUBSCRIPTION_START);
-//        mBuffer.putInt(message.getSubscriptionId());
-    }
-
-    private void serializeMessageToBuffer(SubscriptionStatusResponse message) {
-        Log.w(TAG, "HtspDataSource - MSG_TYPE_SUBSCRIPTION_STATUS");
-        mBuffer.putShort(MSG_TYPE_SUBSCRIPTION_STATUS);
-//        mBuffer.putInt(message.getSubscriptionId());
     }
 
     @Override
@@ -205,20 +140,56 @@ public class HtspDataSource implements DataSource {
 
     @Override
     public void close() throws IOException {
-        UnsubscribeRequest unsubscribeRequest = new UnsubscribeRequest();
-        unsubscribeRequest.setSubscriptionId((long) mSubscriptionId);
-
-        mConnection.sendMessage(unsubscribeRequest);
-        mConnection.removeMessageListener(mSubscriptionTask);
+        mSubscriber.unsubscribe();
     }
 
-    private class SubscriptionTask extends MessageListener {
-        @Override
-        public void onMessage(ResponseMessage message) {
+    // Subscription.Listener Methods
+    @Override
+    public void onSubscriptionStart(@NonNull HtspMessage message) {
+        serializeMessageToBuffer(message);
+    }
+
+    @Override
+    public void onSubscriptionStatus(@NonNull HtspMessage message) {
+        serializeMessageToBuffer(message);
+    }
+
+    @Override
+    public void onSubscriptionStop(@NonNull HtspMessage message) {
+        serializeMessageToBuffer(message);
+    }
+
+    @Override
+    public void onMuxpkt(@NonNull HtspMessage message) {
+        serializeMessageToBuffer(message);
+    }
+
+    // Misc Internal Methods
+    private void serializeMessageToBuffer(@NonNull HtspMessage message) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ObjectOutput objectOutput = null;
+
+        mLock.lock();
+        try {
+            objectOutput = new ObjectOutputStream(outputStream);
+            objectOutput.writeObject(message);
+            objectOutput.flush();
+
+            mBuffer.position(mBuffer.limit());
+            mBuffer.limit(mBuffer.capacity());
+
+            mBuffer.put(outputStream.toByteArray());
+
+            mBuffer.flip();
+        } catch (IOException e) {
+            // Ignore?
+            Log.w(TAG, "IOException", e);
+        } finally {
+            mLock.unlock();
             try {
-                serializeMessageToBuffer(message);
-            } catch (BufferOverflowException e) {
-                Log.v(TAG, "BufferOverflowException...", e);
+                outputStream.close();
+            } catch (IOException ex) {
+                // Ignore
             }
         }
     }

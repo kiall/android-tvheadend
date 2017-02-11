@@ -75,13 +75,14 @@ repositories {
 }
 
 dependencies {
-    compile project(':htspold')
-    compile 'ie.macinnes.htsp:android-htsp:0.0.0'
+    compile 'ie.macinnes.htsp:android-htsp:v0.0.1a4'
+    //compile(name: 'library-release', ext: 'aar')
+    // Used for testing local HTSP lib builds
     compile fileTree(include: ['*.jar'], dir: 'libs')
     // compile(name: 'vlc-android-sdk-release', ext: 'aar') // Used for testing local libvlc builds
-    compile 'com.android.support:support-v4:25.1.0'
-    compile 'com.android.support:leanback-v17:25.1.0'
-    compile 'com.android.support:preference-leanback-v17:25.1.0'
+    compile 'com.android.support:support-v4:25.1.1'
+    compile 'com.android.support:leanback-v17:25.1.1'
+    compile 'com.android.support:preference-leanback-v17:25.1.1'
     compile 'com.google.android.exoplayer:exoplayer:r2.1.1k3'
     compile 'com.google.android.exoplayer:extension-ffmpeg:r2.1.1k3'
     // compile(name: 'library-release', ext: 'aar') // Used for testing local exoplayer builds

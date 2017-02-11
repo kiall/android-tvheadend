@@ -16,17 +16,29 @@
 
 package ie.macinnes.tvheadend.player;
 
+import android.support.annotation.NonNull;
 import android.util.Log;
+import android.util.SparseArray;
 
+import com.google.android.exoplayer2.C;
+import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.extractor.Extractor;
 import com.google.android.exoplayer2.extractor.ExtractorInput;
 import com.google.android.exoplayer2.extractor.ExtractorOutput;
 import com.google.android.exoplayer2.extractor.ExtractorsFactory;
 import com.google.android.exoplayer2.extractor.PositionHolder;
+import com.google.android.exoplayer2.extractor.SeekMap;
 import com.google.android.exoplayer2.extractor.TrackOutput;
+import com.google.android.exoplayer2.util.MimeTypes;
+import com.google.android.exoplayer2.util.ParsableByteArray;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
 import java.nio.ByteBuffer;
+
+import ie.macinnes.htsp.HtspMessage;
 
 
 public class HtspExtractor implements Extractor {
@@ -44,13 +56,33 @@ public class HtspExtractor implements Extractor {
         }
     }
 
-    private ExtractorOutput mOutput;
-    private ByteBuffer mBuffer;
+    private class HtspSeekMap implements SeekMap {
+        @Override
+        public boolean isSeekable() {
+            return false;
+        }
 
-    public HtspExtractor() {
-        mBuffer = ByteBuffer.allocate(10240);
+        @Override
+        public long getDurationUs() {
+            return C.TIME_UNSET;
+        }
+
+        @Override
+        public long getPosition(long timeUs) {
+            return 0;
+        }
     }
 
+    private ByteBuffer mBuffer;
+
+    private ExtractorOutput mOutput;
+    private SparseArray<TrackOutput> mTrackOutputs = new SparseArray<>();
+
+    public HtspExtractor() {
+        mBuffer = ByteBuffer.allocate(1024 * 1024);
+    }
+
+    // Extractor Methods
     @Override
     public boolean sniff(ExtractorInput input) throws IOException, InterruptedException {
         return true;
@@ -59,45 +91,41 @@ public class HtspExtractor implements Extractor {
     @Override
     public void init(ExtractorOutput output) {
         mOutput = output;
+        mOutput.seekMap(new HtspSeekMap());
     }
 
     @Override
     public int read(ExtractorInput input, PositionHolder seekPosition) throws IOException, InterruptedException {
-        ByteBuffer messageTypeBuffer = ByteBuffer.allocate(2);
-        input.readFully(messageTypeBuffer.array(), 0, 2);
-        messageTypeBuffer.position(0);
+        byte[] rawBytes = new byte[1024 * 1024];
 
-//        Log.d(TAG, "Read " + bytesRead);
+        int bytesRead = input.read(rawBytes, 0, rawBytes.length);
 
-//        if (bytesRead == 0) {
-//            Log.d(TAG, "Nothing Read");
-//            return RESULT_CONTINUE;
-//        }
-//
-//        if (bytesRead != 2) {
-//            Log.d(TAG, "Didn't read enough bytes. DERP");
-//
-//            return RESULT_CONTINUE;
-//        }
+        Log.v(TAG, "Read " + bytesRead + " bytes");
 
-        short messageType = messageTypeBuffer.getShort();
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(rawBytes, 0, bytesRead);
+        ObjectInput objectInput = null;
 
-        if (messageType == HtspDataSource.MSG_TYPE_MUXPKT) {
-            Log.w(TAG, "HtspExtractor - MSG_TYPE_MUXPKT");
-//            ByteBuffer messageBuffer = ByteBuffer.allocate(8);
-//            bytesRead = input.read(messageBuffer.array(), 0, 8);
-////            input.skip(bytesRead);
-//
-//            int stream = messageBuffer.getInt();
-//            int payloadLength = messageBuffer.getInt();
-//
-//            mOutput.track(stream).sampleData(input, payloadLength, false);
-        } else if (messageType == HtspDataSource.MSG_TYPE_SUBSCRIPTION_START) {
-            Log.w(TAG, "HtspExtractor - MSG_TYPE_SUBSCRIPTION_START");
-        } else if (messageType == HtspDataSource.MSG_TYPE_SUBSCRIPTION_STATUS) {
-            Log.w(TAG, "HtspExtractor - MSG_TYPE_SUBSCRIPTION_STATUS");
-        } else {
-            Log.w(TAG, "HtspExtractor - Unknown Message Type: " + messageType);
+        try {
+            while (inputStream.available() > 0) {
+                objectInput = new ObjectInputStream(inputStream);
+                handleMessage((HtspMessage) objectInput.readObject());
+
+//                Log.w(TAG, "Read an message: " + );
+            }
+        } catch (IOException e) {
+            // Ignore?
+            Log.w(TAG, "IOException", e);
+        } catch (ClassNotFoundException e) {
+            Log.w(TAG, "Class Not Found");
+        } finally {
+            try {
+
+                if (objectInput != null) {
+                    objectInput.close();
+                }
+            } catch (IOException ex) {
+                // Ignore
+            }
         }
 
         return RESULT_CONTINUE;
@@ -111,5 +139,99 @@ public class HtspExtractor implements Extractor {
     @Override
     public void release() {
 
+    }
+
+    // Internal Methods
+    private void handleMessage(@NonNull final HtspMessage message) {
+        final String method = message.getString("method");
+
+        if (method.equals("subscriptionStart")) {
+            handleSubscriptionStart(message);
+        } else if (method.equals("muxpkt")) {
+            handleMuxpkt(message);
+        }
+    }
+
+    private void handleSubscriptionStart(@NonNull final HtspMessage message) {
+        Log.i(TAG, "Handling Subscription Start");
+        for (ie.macinnes.htsp.HtspMessage stream : message.getHtspMessageArray("streams")) {
+            final int streamIndex = stream.getInteger("index");
+            final String streamType = stream.getString("type");
+
+            Format format;
+
+            Log.d(TAG, "Handing track index / type: " + streamIndex + " / " + streamType);
+
+            switch (streamType) {
+                case "MPEG2VIDEO":
+                    format = Format.createVideoSampleFormat(
+                            Integer.toString(streamIndex),
+                            MimeTypes.VIDEO_MPEG2,
+                            null,
+                            Format.NO_VALUE,
+                            Format.NO_VALUE,
+                            stream.getInteger("width"),
+                            stream.getInteger("height"),
+                            Format.NO_VALUE,
+                            null,
+                            null);
+                    break;
+                case "MPEG2AUDIO":
+                    format = Format.createAudioSampleFormat(
+                            Integer.toString(streamIndex),
+                            MimeTypes.AUDIO_MPEG,
+                            null,
+                            Format.NO_VALUE,
+                            Format.NO_VALUE,
+                            stream.getInteger("channels", Format.NO_VALUE),
+                            stream.getInteger("rate", Format.NO_VALUE),
+                            C.ENCODING_PCM_16BIT,
+                            null,
+                            null,
+                            0,
+                            stream.getString("language", "und")
+                    );
+                    break;
+                default:
+                    continue;
+            }
+
+            TrackOutput trackOutput = mOutput.track(streamIndex);
+
+            Log.d(TAG, "Setting Track Format: " + format.toString());
+            trackOutput.format(format);
+            mTrackOutputs.put(streamIndex, trackOutput);
+        }
+
+        Log.d(TAG, "End Tracks");
+        mOutput.endTracks();
+    }
+
+    private void handleMuxpkt(@NonNull final HtspMessage message) {
+//        subscriptionId     u32   required   Subscription ID.
+//        frametype          u32   required   Type of frame as ASCII value: 'I', 'P', 'B'
+//        stream             u32   required   Stream index. Corresponds to the streams reported in the subscriptionStart message.
+//        dts                s64   optional   Decode Time Stamp in µs.
+//        pts                s64   optional   Presentation Time Stamp in µs.
+//        duration           u32   required   Duration of frame in µs.
+//        payload            bin   required   Actual frame data.
+
+        final int streamIndex = message.getInteger("stream");
+        final byte[] payload = message.getByteArray("payload");
+
+        final ParsableByteArray pba = new ParsableByteArray(payload);
+        final TrackOutput trackOutput = mTrackOutputs.get(streamIndex);
+
+        if (trackOutput == null) {
+            // Not a track we care about, move on.
+            return;
+        }
+
+//        Log.v(TAG, message.keySet().toString());
+
+        final long pts = message.getInteger("pts");
+
+        trackOutput.sampleData(pba, payload.length);
+        trackOutput.sampleMetadata(pts, C.BUFFER_FLAG_KEY_FRAME, payload.length, 0, null);
     }
 }

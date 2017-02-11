@@ -22,6 +22,7 @@ import android.media.tv.TvContract;
 import android.media.tv.TvContract.Channels;
 import android.net.Uri;
 import android.util.Log;
+import android.util.SparseArray;
 
 public class TvContractUtils {
     private static final String TAG = TvContractUtils.class.getName();
@@ -32,6 +33,34 @@ public class TvContractUtils {
                 ".tvinput.TvInputService");
 
         return TvContract.buildInputId(componentName);
+    }
+
+    public static Long getChannelId(Context context, int channelId) {
+        ContentResolver resolver = context.getContentResolver();
+
+        Uri channelsUri = TvContract.buildChannelsUriForInput(TvContractUtils.getInputId());
+
+        String[] projection = {TvContract.Channels._ID, TvContract.Channels.COLUMN_ORIGINAL_NETWORK_ID};
+
+        try (Cursor cursor = resolver.query(channelsUri, projection, null, null, null)) {
+            while (cursor != null && cursor.moveToNext()) {
+                if (cursor.getInt(1) == channelId) {
+                    return cursor.getLong(0);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public static Uri getChannelUri(Context context, int channelId) {
+        Long androidChannelId = getChannelId(context, channelId);
+
+        if (androidChannelId != null) {
+            return TvContract.buildChannelUri(androidChannelId);
+        }
+
+        return null;
     }
 
     public static Integer getTvhChannelIdFromChannelUri(Context context, Uri channelUri) {
@@ -65,4 +94,93 @@ public class TvContractUtils {
         }
     }
 
+    public static SparseArray<Uri> buildChannelUriMap(Context context) {
+        ContentResolver resolver = context.getContentResolver();
+
+        // Create a map from original network ID to channel row ID for existing channels.
+        SparseArray<Uri> channelMap = new SparseArray<>();
+        Uri channelsUri = TvContract.buildChannelsUriForInput(TvContractUtils.getInputId());
+        String[] projection = {TvContract.Channels._ID, TvContract.Channels.COLUMN_ORIGINAL_NETWORK_ID};
+
+        try (Cursor cursor = resolver.query(channelsUri, projection, null, null, null)) {
+            while (cursor != null && cursor.moveToNext()) {
+                long rowId = cursor.getLong(0);
+                int originalNetworkId = cursor.getInt(1);
+                channelMap.put(originalNetworkId, TvContract.buildChannelUri(rowId));
+            }
+        }
+
+        return channelMap;
+    }
+
+    public static Uri getProgramUri(Context context, int channelId, int eventId) {
+        // TODO: Cache results...
+        ContentResolver resolver = context.getContentResolver();
+
+        Long androidChannelId = getChannelId(context, channelId);
+
+        if (androidChannelId == null) {
+            Log.w(TAG, "Failed to fetch programUri, unknown channel");
+            return null;
+        }
+
+        Uri programsUri = TvContract.buildProgramsUriForChannel(androidChannelId);
+
+        String[] projection = {TvContract.Programs._ID, TvContract.Programs.COLUMN_INTERNAL_PROVIDER_DATA};
+
+        String strEventId = String.valueOf(eventId);
+
+        try (Cursor cursor = resolver.query(programsUri, projection, null, null, null)) {
+            while (cursor != null && cursor.moveToNext()) {
+                if (strEventId.equals(cursor.getString(1))) {
+                    return TvContract.buildProgramUri(cursor.getLong(0));
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public static SparseArray<Uri> buildProgramUriMap(Context context) {
+        ContentResolver resolver = context.getContentResolver();
+
+        // Create a map from event id to program row ID for existing programs.
+        SparseArray<Uri> programMap = new SparseArray<>();
+
+        Uri channelsUri = TvContract.buildChannelsUriForInput(TvContractUtils.getInputId());
+
+        String[] channelsProjection = {TvContract.Channels._ID};
+        try (Cursor cursor = resolver.query(channelsUri, channelsProjection, null, null, null)) {
+            while (cursor != null && cursor.moveToNext()) {
+                SparseArray<Uri> channelPrgramMap = buildProgramUriMap(context, TvContract.buildChannelUri(cursor.getLong(0)));
+                for (int i = 0; i < channelPrgramMap.size(); i++) {
+                    int key = channelPrgramMap.keyAt(i);
+                    Uri value = channelPrgramMap.valueAt(i);
+                    programMap.put(key, value);
+                }
+            }
+        }
+
+        return programMap;
+    }
+
+    public static SparseArray<Uri> buildProgramUriMap(Context context, Uri channelUri) {
+        ContentResolver resolver = context.getContentResolver();
+
+        // Create a map from event id to program row ID for existing programs.
+        SparseArray<Uri> programMap = new SparseArray<>();
+
+        Uri programsUri = TvContract.buildProgramsUriForChannel(channelUri);
+        String[] projection = {TvContract.Programs._ID, TvContract.Programs.COLUMN_INTERNAL_PROVIDER_DATA};
+
+        try (Cursor cursor = resolver.query(programsUri, projection, null, null, null)) {
+            while (cursor != null && cursor.moveToNext()) {
+                long rowId = cursor.getLong(0);
+                int tvhEventId = Integer.valueOf(cursor.getString(1));
+                programMap.put(tvhEventId, TvContract.buildChannelUri(rowId));
+            }
+        }
+
+        return programMap;
+    }
 }

@@ -3,6 +3,7 @@ google-services.json
 acra.properties
 keystore.properties
 /projectFilesBackup/
+*/libs/*.aar
 
 ## From: https://github.com/github/gitignore/blob/master/Android.gitignore
 # Built application files

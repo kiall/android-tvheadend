@@ -23,13 +23,12 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
 
-import ie.macinnes.htsp.Connection;
-import ie.macinnes.htsp.ConnectionListener;
+import ie.macinnes.htsp.HtspConnection;
+import ie.macinnes.htsp.SimpleHtspConnection;
 import ie.macinnes.tvheadend.BuildConfig;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.MiscUtils;
 import ie.macinnes.tvheadend.account.AccountUtils;
-import ie.macinnes.tvheadend.migrate.MigrateUtils;
 import ie.macinnes.tvheadend.sync.EpgSyncService;
 
 
@@ -41,8 +40,7 @@ public class TvInputService extends android.media.tv.TvInputService {
 
     private String mSessionType;
 
-    private Connection mConnection;
-    private Thread mConnectionThread;
+    private SimpleHtspConnection mConnection;
 
     private AccountManager mAccountManager;
     private Account mAccount;
@@ -74,6 +72,8 @@ public class TvInputService extends android.media.tv.TvInputService {
     public void onDestroy() {
         super.onDestroy();
 
+        closeConnection();
+
         mHandlerThread.quit();
         mHandlerThread = null;
         mHandler = null;
@@ -94,12 +94,12 @@ public class TvInputService extends android.media.tv.TvInputService {
 
     protected void openConnection() {
         if (!MiscUtils.isNetworkAvailable(this)) {
-            Log.i(TAG, "No network available, shutting down EPG Sync Service");
+            Log.i(TAG, "No network available, shutting down TV Input Service");
             return;
         }
 
         if (mAccount == null) {
-            Log.i(TAG, "No account configured, aborting startup of EPG Sync Service");
+            Log.i(TAG, "No account configured, aborting startup of TV Input Service");
             return;
         }
 
@@ -112,54 +112,18 @@ public class TvInputService extends android.media.tv.TvInputService {
         final String username = mAccount.name;
         final String password = mAccountManager.getPassword(mAccount);
 
-        // 20971520 = 20MB
-        // 10485760 = 10MB
-        // 1048576  = 1MB
-        mConnection = new Connection(hostname, port, username, password, "android-tvheadend (TV)", BuildConfig.VERSION_NAME, 10485760);
+        HtspConnection.ConnectionDetails connectionDetails = new HtspConnection.ConnectionDetails(
+                hostname, port, username, password, "android-tvheadend (TV)",
+                BuildConfig.VERSION_NAME);
 
-        ConnectionListener connectionListener = new ConnectionListener(mHandler) {
-            @Override
-            public void onStateChange(int state, int previous) {
-                if (state == Connection.STATE_CONNECTING) {
-                    Log.d(TAG, "HTSP Connection Connecting");
-                } else if (state == Connection.STATE_CONNECTED) {
-                    Log.d(TAG, "HTSP Connection Connected");
-                } else if (state == Connection.STATE_AUTHENTICATING) {
-                    Log.d(TAG, "HTSP Connection Authenticating");
-                } else if (state == Connection.STATE_READY) {
-                    Log.d(TAG, "HTSP Connection Ready");
-                } else if (state == Connection.STATE_FAILED) {
-                    Log.e(TAG, "HTSP Connection Failed, Reconnecting");
-                    closeConnection();
-                    openConnection();
-                } else if (state == Connection.STATE_CLOSED) {
-                    Log.i(TAG, "HTSP Connection Closed");
-                    cleanupConnection();
-                }
-            }
-        };
-
-        mConnection.addConnectionListener(connectionListener);
-
-        mConnectionThread = new Thread(mConnection);
-        mConnectionThread.start();
+        mConnection = new SimpleHtspConnection(connectionDetails);
+        mConnection.start();
     }
 
     protected void closeConnection() {
         if (mConnection != null) {
             Log.d(TAG, "Closing HTSP connection");
-            mConnection.close();
-        }
-
-        if (mConnectionThread != null) {
-            Log.d(TAG, "Waiting for HTSP Connection Thread to finish");
-
-            try {
-                mConnectionThread.join();
-                Log.d(TAG, "HTSP Connection Thread has finished");
-            } catch (InterruptedException e) {
-                Log.w(TAG, "Interrupted while waiting for HTSP Connection Thread to finish");
-            }
+            mConnection.closeConnection();
         }
 
         cleanupConnection();
@@ -167,7 +131,5 @@ public class TvInputService extends android.media.tv.TvInputService {
 
     protected void cleanupConnection() {
         mConnection = null;
-        mConnectionThread = null;
     }
-
 }

@@ -58,7 +58,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import ie.macinnes.htsp.Connection;
+import ie.macinnes.htsp.SimpleHtspConnection;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.MiscUtils;
 import ie.macinnes.tvheadend.account.AccountUtils;
@@ -76,7 +76,7 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
     private AccountManager mAccountManager;
     private Account mAccount;
 
-    private Connection mConnection;
+    private SimpleHtspConnection mConnection;
 
     private SimpleExoPlayer mExoPlayer;
     private EventLogger mEventLogger;
@@ -86,7 +86,7 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
 
     private ExtractorsFactory mExtractorsFactory;
 
-    public ExoPlayerSession(Context context, Handler serviceHandler, Connection connection) {
+    public ExoPlayerSession(Context context, Handler serviceHandler, SimpleHtspConnection connection) {
         super(context, serviceHandler);
         Log.d(TAG, "Session created (" + mSessionNumber + ")");
 
