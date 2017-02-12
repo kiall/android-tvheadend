@@ -74,7 +74,7 @@ public class HtspDataSource implements DataSource, Subscriber.Listener {
         mContext = context;
         mConnection = connection;
 
-        mBuffer = ByteBuffer.allocate(60000000); // 60 MB
+        mBuffer = ByteBuffer.allocate(10485760); // 10 MB
         mBuffer.limit(0);
 
         mSubscriber = new Subscriber(mConnection, this);

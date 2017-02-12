@@ -39,6 +39,7 @@ import java.io.ObjectInputStream;
 import java.nio.ByteBuffer;
 
 import ie.macinnes.htsp.HtspMessage;
+import ie.macinnes.tvheadend.TvhMappings;
 
 
 public class HtspExtractor implements Extractor {
@@ -159,6 +160,7 @@ public class HtspExtractor implements Extractor {
             final String streamType = stream.getString("type");
 
             Format format;
+            int rate;
 
             Log.d(TAG, "Handing track index / type: " + streamIndex + " / " + streamType);
 
@@ -176,7 +178,58 @@ public class HtspExtractor implements Extractor {
                             null,
                             null);
                     break;
+                case "H264":
+                    format = Format.createVideoSampleFormat(
+                            Integer.toString(streamIndex),
+                            MimeTypes.VIDEO_H264,
+                            null,
+                            Format.NO_VALUE,
+                            Format.NO_VALUE,
+                            stream.getInteger("width"),
+                            stream.getInteger("height"),
+                            Format.NO_VALUE,
+                            null,
+                            null);
+                    break;
+                case "HEVC":
+                    format = Format.createVideoSampleFormat(
+                            Integer.toString(streamIndex),
+                            MimeTypes.VIDEO_H265,
+                            null,
+                            Format.NO_VALUE,
+                            Format.NO_VALUE,
+                            stream.getInteger("width"),
+                            stream.getInteger("height"),
+                            Format.NO_VALUE,
+                            null,
+                            null);
+                    break;
+                case "AC3":
+                    rate = Format.NO_VALUE;
+                    if (stream.containsKey("rate")) {
+                        rate = TvhMappings.sriToRate(stream.getInteger("rate"));
+                    }
+
+                    format = Format.createAudioSampleFormat(
+                            Integer.toString(streamIndex),
+                            MimeTypes.AUDIO_AC3,
+                            null,
+                            Format.NO_VALUE,
+                            Format.NO_VALUE,
+                            stream.getInteger("channels", Format.NO_VALUE),
+                            rate,
+                            C.ENCODING_PCM_16BIT,
+                            null,
+                            null,
+                            0,
+                            stream.getString("language", "und")
+                    );
+                    break;
                 case "MPEG2AUDIO":
+                  rate = Format.NO_VALUE;
+                  if (stream.containsKey("rate")) {
+                        rate = TvhMappings.sriToRate(stream.getInteger("rate"));
+                  }
                     format = Format.createAudioSampleFormat(
                             Integer.toString(streamIndex),
                             MimeTypes.AUDIO_MPEG,
@@ -184,7 +237,7 @@ public class HtspExtractor implements Extractor {
                             Format.NO_VALUE,
                             Format.NO_VALUE,
                             stream.getInteger("channels", Format.NO_VALUE),
-                            stream.getInteger("rate", Format.NO_VALUE),
+                            rate,
                             C.ENCODING_PCM_16BIT,
                             null,
                             null,
