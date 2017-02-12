@@ -1,13 +1,7 @@
 Android TV + TVHeadend Live Channel
 ===================================
 
-+---------+------------------+
-| Branch  | Status           |
-+=========+==================+
-| master  | |travis-master|  |
-+---------+------------------+
-| develop | |travis-develop| |
-+---------+------------------+
+[![Build Status](https://jenkins.macinnes.ie/buildStatus/icon?job=android-tvheadend/master)](https://jenkins.macinnes.ie/job/android-tvheadend/job/master/)
 
 Available on Google Play:
 
