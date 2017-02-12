@@ -34,6 +34,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import ie.macinnes.htsp.HtspMessage;
 import ie.macinnes.htsp.SimpleHtspConnection;
+import ie.macinnes.htsp.tasks.Subscriber;
 
 public class HtspDataSource implements DataSource, Subscriber.Listener {
     private static final String TAG = HtspDataSource.class.getName();
