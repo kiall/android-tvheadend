@@ -1,11 +1,4 @@
-import org.ajoberstar.grgit.Grgit
-
 apply plugin: 'com.android.application'
-
-ext {
-    git = Grgit.open()
-    gitVersionName = "${git.describe()}"
-}
 
 android {
     compileSdkVersion project.ext.compileSdkVersion
@@ -17,7 +10,7 @@ android {
         targetSdkVersion project.ext.targetSdkVersion
 
         versionCode System.getenv("APP_VERSION_CODE") as Integer ?: 0
-        versionName gitVersionName
+        versionName project.ext.gitVersionName
 
         setProperty("archivesBaseName", applicationId)
 
