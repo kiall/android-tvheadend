@@ -347,35 +347,24 @@ public class TvInputSetupActivity extends Activity {
         }
     }
 
-    public static class SyncingFragment extends BaseGuidedStepFragment {
+    public static class SyncingFragment extends BaseGuidedStepFragment implements EpgSyncTask.Listener {
         protected SimpleHtspConnection mConnection;
         protected EpgSyncTask mEpgSyncTask;
 
-        protected EpgSyncTask.Listener mInitialSyncCompleteCallback = new EpgSyncTask.Listener() {
+        @Override
+        public Handler getHandler() {
+            return new Handler(getActivity().getMainLooper());
+        }
 
-            /**
-             * Returns the Handler on which to execute the callback.
-             *
-             * @return Handler, or null.
-             */
-            @Override
-            public Handler getHandler() {
-                return null;
-            }
+        @Override
+        public void onInitialSyncCompleted() {
+            Log.d(TAG, "Initial Sync Completed");
 
-            /**
-             * Called when the initial sync has completed
-             */
-            @Override
-            public void onInitialSyncCompleted() {
-                Log.d(TAG, "Initial Sync Completed");
-
-                // Move to the CompletedFragment
-                GuidedStepFragment fragment = new CompletedFragment();
-                fragment.setArguments(getArguments());
-                add(getFragmentManager(), fragment);
-            }
-        };
+            // Move to the CompletedFragment
+            GuidedStepFragment fragment = new CompletedFragment();
+            fragment.setArguments(getArguments());
+            add(getFragmentManager(), fragment);
+        }
 
         @Override
         public void onStart() {
@@ -395,7 +384,7 @@ public class TvInputSetupActivity extends Activity {
             mConnection = new SimpleHtspConnection(connectionDetails);
 
             mEpgSyncTask = new EpgSyncTask(getActivity().getBaseContext(), mConnection, true);
-            mEpgSyncTask.addEpgSyncListener(mInitialSyncCompleteCallback);
+            mEpgSyncTask.addEpgSyncListener(this);
 
             mConnection.addMessageListener(mEpgSyncTask);
             mConnection.addAuthenticationListener(mEpgSyncTask);
