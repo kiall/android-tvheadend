@@ -25,7 +25,6 @@ import android.media.tv.TvTrackInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Surface;
 import android.view.View;
@@ -36,6 +35,7 @@ import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.ExoPlayerLibraryInfo;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.SimpleExoPlayer;
@@ -52,6 +52,7 @@ import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.ui.SubtitleView;
 import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.util.MimeTypes;
 
 import java.util.ArrayList;
@@ -59,6 +60,7 @@ import java.util.List;
 import java.util.Map;
 
 import ie.macinnes.htsp.SimpleHtspConnection;
+import ie.macinnes.tvheadend.BuildConfig;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.MiscUtils;
 import ie.macinnes.tvheadend.account.AccountUtils;
@@ -66,7 +68,6 @@ import ie.macinnes.tvheadend.player.EventLogger;
 import ie.macinnes.tvheadend.player.ExoPlayerUtils;
 import ie.macinnes.tvheadend.player.HtspDataSource;
 import ie.macinnes.tvheadend.player.HtspExtractor;
-import ie.macinnes.tvheadend.player.HttpDataSourceFactory;
 import ie.macinnes.tvheadend.player.SimpleTvheadendPlayer;
 import ie.macinnes.tvheadend.player.TvheadendTrackSelector;
 
@@ -298,7 +299,6 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
         mExoPlayer.addListener(mEventLogger);
         mExoPlayer.setAudioDebugListener(mEventLogger);
         mExoPlayer.setVideoDebugListener(mEventLogger);
-        mExoPlayer.setId3Output(mEventLogger);
 
         SharedPreferences sharedPreferences = mContext.getSharedPreferences(
                 Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
@@ -324,11 +324,18 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
         String username = mAccount.name;
         String password = mAccountManager.getPassword(mAccount);
 
-        // Create authentication headers and streamUri
+        // We need a local variable of this type here, so we can call the setDefaultRequestProperty
+        // method.. Once we're done with that, we assign it over to mDataSourceFactory.
+        DefaultHttpDataSourceFactory factory = new DefaultHttpDataSourceFactory(getUserAgent());
+
+        // Create authentication headers
         Map<String, String> headers = MiscUtils.createBasicAuthHeader(username, password);
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
+            factory.setDefaultRequestProperty(entry.getKey(), entry.getValue());
+        }
 
         // Produces DataSource instances through which media data is loaded.
-        mDataSourceFactory = new HttpDataSourceFactory(headers);
+        mDataSourceFactory = factory;
 
         // Produces Extractor instances for parsing the media data.
         mExtractorsFactory = new DefaultExtractorsFactory();
@@ -370,4 +377,8 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
         Toast.makeText(mContext, message, Toast.LENGTH_LONG).show();
     }
 
+    private String getUserAgent() {
+        return "android-tvheadend/" + BuildConfig.VERSION_NAME + " (Linux;Android " + Build.VERSION.RELEASE
+                + ";ExoPlayer " + ExoPlayerLibraryInfo.VERSION + ")";
+    }
 }
