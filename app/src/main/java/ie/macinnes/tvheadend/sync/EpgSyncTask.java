@@ -142,6 +142,9 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
 
             Log.i(TAG, "Enabling Async Metadata - lastUpdate: " + lastUpdate + ", maxTime: " + epgMaxTime + ", quickSync: " + mQuickSync);
 
+            // Reset the InitialSyncCompleted flag
+            mInitialSyncCompleted = false;
+            
             HtspMessage enableAsyncMetadataRequest = new HtspMessage();
 
             enableAsyncMetadataRequest.put("method", "enableAsyncMetadata");
