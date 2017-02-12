@@ -165,6 +165,7 @@ public class HtspExtractor implements Extractor {
             Log.d(TAG, "Handing track index / type: " + streamIndex + " / " + streamType);
 
             switch (streamType) {
+                // Video Stream Types
                 case "MPEG2VIDEO":
                     format = Format.createVideoSampleFormat(
                             Integer.toString(streamIndex),
@@ -204,6 +205,7 @@ public class HtspExtractor implements Extractor {
                             null,
                             null);
                     break;
+                // Audio Stream Types
                 case "AC3":
                     rate = Format.NO_VALUE;
                     if (stream.containsKey("rate")) {
@@ -226,10 +228,11 @@ public class HtspExtractor implements Extractor {
                     );
                     break;
                 case "MPEG2AUDIO":
-                  rate = Format.NO_VALUE;
-                  if (stream.containsKey("rate")) {
+                    rate = Format.NO_VALUE;
+                    if (stream.containsKey("rate")) {
                         rate = TvhMappings.sriToRate(stream.getInteger("rate"));
-                  }
+                    }
+
                     format = Format.createAudioSampleFormat(
                             Integer.toString(streamIndex),
                             MimeTypes.AUDIO_MPEG,
@@ -243,6 +246,18 @@ public class HtspExtractor implements Extractor {
                             null,
                             0,
                             stream.getString("language", "und")
+                    );
+                    break;
+                // Text Stream Types
+                case "TEXTSUB":
+                    format = Format.createTextSampleFormat(
+                            Integer.toString(streamIndex),
+                            MimeTypes.APPLICATION_SUBRIP,
+                            null,
+                            Format.NO_VALUE,
+                            C.SELECTION_FLAG_AUTOSELECT,
+                            stream.getString("language", "und"),
+                            null
                     );
                     break;
                 default:
