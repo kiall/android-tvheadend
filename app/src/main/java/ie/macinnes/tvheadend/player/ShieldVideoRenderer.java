@@ -25,7 +25,9 @@ import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.drm.DrmSessionManager;
 import com.google.android.exoplayer2.drm.FrameworkMediaCrypto;
+import com.google.android.exoplayer2.mediacodec.MediaCodecInfo;
 import com.google.android.exoplayer2.mediacodec.MediaCodecSelector;
+import com.google.android.exoplayer2.mediacodec.MediaCodecUtil;
 import com.google.android.exoplayer2.video.MediaCodecVideoRenderer;
 import com.google.android.exoplayer2.video.VideoRendererEventListener;
 
@@ -38,8 +40,9 @@ public class ShieldVideoRenderer extends MediaCodecVideoRenderer {
     }
 
     @Override
-    protected void configureCodec(MediaCodec codec, Format format, MediaCrypto crypto) {
-        super.configureCodec(codec, format, crypto);
+    protected void configureCodec(
+            MediaCodecInfo codecInfo, MediaCodec codec, Format format, MediaCrypto crypto) throws MediaCodecUtil.DecoderQueryException {
+        super.configureCodec(codecInfo, codec, format, crypto);
 
         enabled = (format.height == 1080 || format.height == 576);
         startTime = System.currentTimeMillis();

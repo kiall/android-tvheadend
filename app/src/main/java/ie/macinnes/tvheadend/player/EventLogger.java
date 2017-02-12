@@ -26,16 +26,17 @@ import com.google.android.exoplayer2.RendererCapabilities;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.audio.AudioRendererEventListener;
 import com.google.android.exoplayer2.decoder.DecoderCounters;
-import com.google.android.exoplayer2.drm.StreamingDrmSessionManager;
+import com.google.android.exoplayer2.drm.DefaultDrmSessionManager;
 import com.google.android.exoplayer2.metadata.Metadata;
 import com.google.android.exoplayer2.metadata.MetadataRenderer;
+import com.google.android.exoplayer2.metadata.emsg.EventMessage;
 import com.google.android.exoplayer2.metadata.id3.ApicFrame;
 import com.google.android.exoplayer2.metadata.id3.CommentFrame;
 import com.google.android.exoplayer2.metadata.id3.GeobFrame;
 import com.google.android.exoplayer2.metadata.id3.Id3Frame;
 import com.google.android.exoplayer2.metadata.id3.PrivFrame;
 import com.google.android.exoplayer2.metadata.id3.TextInformationFrame;
-import com.google.android.exoplayer2.metadata.id3.TxxxFrame;
+import com.google.android.exoplayer2.metadata.id3.UrlLinkFrame;
 import com.google.android.exoplayer2.source.AdaptiveMediaSourceEventListener;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.TrackGroup;
@@ -55,7 +56,7 @@ import java.util.Locale;
  */
 /* package */ public final class EventLogger implements ExoPlayer.EventListener,
     AudioRendererEventListener, VideoRendererEventListener, AdaptiveMediaSourceEventListener,
-    ExtractorMediaSource.EventListener, StreamingDrmSessionManager.EventListener,
+    ExtractorMediaSource.EventListener, DefaultDrmSessionManager.EventListener,
     MetadataRenderer.Output {
 
   private static final String TAG = EventLogger.class.getName();
@@ -280,7 +281,7 @@ import java.util.Locale;
     // Do nothing.
   }
 
-  // StreamingDrmSessionManager.EventListener
+  // DefaultDrmSessionManager.EventListener
 
   @Override
   public void onDrmSessionManagerError(Exception e) {
@@ -290,6 +291,16 @@ import java.util.Locale;
   @Override
   public void onDrmKeysLoaded() {
     Log.d(TAG, "drmKeysLoaded [" + getSessionTimeString() + "]");
+  }
+
+  @Override
+  public void onDrmKeysRestored() {
+    // Do nothing.
+  }
+
+  @Override
+  public void onDrmKeysRemoved() {
+    // Do nothing.
   }
 
   // ExtractorMediaSource.EventListener
@@ -350,32 +361,35 @@ import java.util.Locale;
   private void printMetadata(Metadata metadata, String prefix) {
     for (int i = 0; i < metadata.length(); i++) {
       Metadata.Entry entry = metadata.get(i);
-      if (entry instanceof TxxxFrame) {
-        TxxxFrame txxxFrame = (TxxxFrame) entry;
-        Log.d(TAG, prefix + String.format("%s: description=%s, value=%s", txxxFrame.id,
-            txxxFrame.description, txxxFrame.value));
+      if (entry instanceof TextInformationFrame) {
+        TextInformationFrame textInformationFrame = (TextInformationFrame) entry;
+        Log.d(TAG, prefix + String.format("%s: value=%s", textInformationFrame.id,
+                textInformationFrame.value));
+      } else if (entry instanceof UrlLinkFrame) {
+        UrlLinkFrame urlLinkFrame = (UrlLinkFrame) entry;
+        Log.d(TAG, prefix + String.format("%s: url=%s", urlLinkFrame.id, urlLinkFrame.url));
       } else if (entry instanceof PrivFrame) {
         PrivFrame privFrame = (PrivFrame) entry;
         Log.d(TAG, prefix + String.format("%s: owner=%s", privFrame.id, privFrame.owner));
       } else if (entry instanceof GeobFrame) {
         GeobFrame geobFrame = (GeobFrame) entry;
         Log.d(TAG, prefix + String.format("%s: mimeType=%s, filename=%s, description=%s",
-            geobFrame.id, geobFrame.mimeType, geobFrame.filename, geobFrame.description));
+                geobFrame.id, geobFrame.mimeType, geobFrame.filename, geobFrame.description));
       } else if (entry instanceof ApicFrame) {
         ApicFrame apicFrame = (ApicFrame) entry;
         Log.d(TAG, prefix + String.format("%s: mimeType=%s, description=%s",
-            apicFrame.id, apicFrame.mimeType, apicFrame.description));
-      } else if (entry instanceof TextInformationFrame) {
-        TextInformationFrame textInformationFrame = (TextInformationFrame) entry;
-        Log.d(TAG, prefix + String.format("%s: description=%s", textInformationFrame.id,
-            textInformationFrame.description));
+                apicFrame.id, apicFrame.mimeType, apicFrame.description));
       } else if (entry instanceof CommentFrame) {
         CommentFrame commentFrame = (CommentFrame) entry;
-        Log.d(TAG, prefix + String.format("%s: language=%s description=%s", commentFrame.id,
-            commentFrame.language, commentFrame.description));
+        Log.d(TAG, prefix + String.format("%s: language=%s, description=%s", commentFrame.id,
+                commentFrame.language, commentFrame.description));
       } else if (entry instanceof Id3Frame) {
         Id3Frame id3Frame = (Id3Frame) entry;
         Log.d(TAG, prefix + String.format("%s", id3Frame.id));
+      } else if (entry instanceof EventMessage) {
+        EventMessage eventMessage = (EventMessage) entry;
+        Log.d(TAG, prefix + String.format("EMSG: scheme=%s, id=%d, value=%s",
+                eventMessage.schemeIdUri, eventMessage.id, eventMessage.value));
       }
     }
   }
