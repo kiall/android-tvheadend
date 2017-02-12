@@ -144,7 +144,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
 
             // Reset the InitialSyncCompleted flag
             mInitialSyncCompleted = false;
-            
+
             HtspMessage enableAsyncMetadataRequest = new HtspMessage();
 
             enableAsyncMetadataRequest.put("method", "enableAsyncMetadata");

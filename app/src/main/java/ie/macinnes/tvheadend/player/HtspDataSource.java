@@ -79,6 +79,7 @@ public class HtspDataSource implements DataSource, Subscriber.Listener {
         mBuffer.limit(0);
 
         mSubscriber = new Subscriber(mConnection, this);
+        mConnection.addAuthenticationListener(mSubscriber);
     }
 
     // DataSource Methods
