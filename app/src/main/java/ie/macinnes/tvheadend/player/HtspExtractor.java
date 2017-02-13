@@ -39,6 +39,7 @@ import java.io.ObjectInputStream;
 import java.nio.ByteBuffer;
 
 import ie.macinnes.htsp.HtspMessage;
+import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.TvhMappings;
 
 
@@ -101,7 +102,8 @@ public class HtspExtractor implements Extractor {
 
         int bytesRead = input.read(rawBytes, 0, rawBytes.length);
 
-        Log.v(TAG, "Read " + bytesRead + " bytes");
+        if (Constants.DEBUG)
+            Log.v(TAG, "Read " + bytesRead + " bytes");
 
         ByteArrayInputStream inputStream = new ByteArrayInputStream(rawBytes, 0, bytesRead);
         ObjectInput objectInput = null;
@@ -141,6 +143,8 @@ public class HtspExtractor implements Extractor {
     public void release() {
 
     }
+
+
 
     // Internal Methods
     private void handleMessage(@NonNull final HtspMessage message) {
@@ -223,7 +227,28 @@ public class HtspExtractor implements Extractor {
                             C.ENCODING_PCM_16BIT,
                             null,
                             null,
-                            0,
+                            C.SELECTION_FLAG_AUTOSELECT,
+                            stream.getString("language", "und")
+                    );
+                    break;
+                case "EAC3":
+                    rate = Format.NO_VALUE;
+                    if (stream.containsKey("rate")) {
+                        rate = TvhMappings.sriToRate(stream.getInteger("rate"));
+                    }
+
+                    format = Format.createAudioSampleFormat(
+                            Integer.toString(streamIndex),
+                            MimeTypes.AUDIO_E_AC3,
+                            null,
+                            Format.NO_VALUE,
+                            Format.NO_VALUE,
+                            stream.getInteger("channels", Format.NO_VALUE),
+                            rate,
+                            C.ENCODING_PCM_16BIT,
+                            null,
+                            null,
+                            C.SELECTION_FLAG_AUTOSELECT,
                             stream.getString("language", "und")
                     );
                     break;
@@ -235,7 +260,7 @@ public class HtspExtractor implements Extractor {
 
                     format = Format.createAudioSampleFormat(
                             Integer.toString(streamIndex),
-                            MimeTypes.AUDIO_MPEG,
+                            MimeTypes.AUDIO_MPEG_L2,
                             null,
                             Format.NO_VALUE,
                             Format.NO_VALUE,
@@ -244,7 +269,49 @@ public class HtspExtractor implements Extractor {
                             C.ENCODING_PCM_16BIT,
                             null,
                             null,
-                            0,
+                            C.SELECTION_FLAG_AUTOSELECT,
+                            stream.getString("language", "und")
+                    );
+                    break;
+                case "VORBIS":
+                    rate = Format.NO_VALUE;
+                    if (stream.containsKey("rate")) {
+                        rate = TvhMappings.sriToRate(stream.getInteger("rate"));
+                    }
+
+                    format = Format.createAudioSampleFormat(
+                            Integer.toString(streamIndex),
+                            MimeTypes.AUDIO_VORBIS,
+                            null,
+                            Format.NO_VALUE,
+                            Format.NO_VALUE,
+                            stream.getInteger("channels", Format.NO_VALUE),
+                            rate,
+                            Format.NO_VALUE,
+                            null,
+                            null,
+                            C.SELECTION_FLAG_AUTOSELECT,
+                            stream.getString("language", "und")
+                    );
+                    break;
+                case "AAC":
+                    rate = Format.NO_VALUE;
+                    if (stream.containsKey("rate")) {
+                        rate = TvhMappings.sriToRate(stream.getInteger("rate"));
+                    }
+
+                    format = Format.createAudioSampleFormat(
+                            Integer.toString(streamIndex),
+                            MimeTypes.AUDIO_AAC,
+                            null,
+                            Format.NO_VALUE,
+                            Format.NO_VALUE,
+                            stream.getInteger("channels", Format.NO_VALUE),
+                            rate,
+                            Format.NO_VALUE,
+                            null,
+                            null,
+                            C.SELECTION_FLAG_AUTOSELECT,
                             stream.getString("language", "und")
                     );
                     break;

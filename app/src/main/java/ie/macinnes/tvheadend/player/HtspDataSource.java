@@ -35,6 +35,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import ie.macinnes.htsp.HtspMessage;
 import ie.macinnes.htsp.SimpleHtspConnection;
 import ie.macinnes.htsp.tasks.Subscriber;
+import ie.macinnes.tvheadend.Constants;
 
 public class HtspDataSource implements DataSource, Subscriber.Listener {
     private static final String TAG = HtspDataSource.class.getName();
@@ -103,7 +104,8 @@ public class HtspDataSource implements DataSource, Subscriber.Listener {
         // If the buffer is empty, block until we have at least 1 byte
         while (mIsOpen && mBuffer.remaining() == 0) {
             try {
-                Log.v(TAG, "Blocking for more data");
+                if (Constants.DEBUG)
+                    Log.v(TAG, "Blocking for more data");
                 Thread.sleep(250);
             } catch (InterruptedException e) {
                 // Ignore.
