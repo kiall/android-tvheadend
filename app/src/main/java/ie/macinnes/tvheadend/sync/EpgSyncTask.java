@@ -42,8 +42,10 @@ import java.util.Set;
 
 import ie.macinnes.htsp.HtspMessage;
 import ie.macinnes.htsp.tasks.Authenticator;
+import ie.macinnes.tvheadend.BuildConfig;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.DvbMappings;
+import ie.macinnes.tvheadend.R;
 import ie.macinnes.tvheadend.TvContractUtils;
 
 public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener {
@@ -418,6 +420,8 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
 
         if (message.containsKey("image")) {
             values.put(TvContract.Programs.COLUMN_POSTER_ART_URI, message.getString("image"));
+        } else if(mSharedPreferences.getBoolean(Constants.KEY_EPG_DEFAULT_POSTER_ART_ENABLED, false)) {
+            values.put(TvContract.Programs.COLUMN_POSTER_ART_URI, "android.resource://" + BuildConfig.APPLICATION_ID + "/" + R.drawable.default_event_icon);
         }
 
         return values;
