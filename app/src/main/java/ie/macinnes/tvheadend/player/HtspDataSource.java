@@ -69,6 +69,7 @@ public class HtspDataSource implements DataSource, Subscriber.Listener {
     private boolean mIsOpen = false;
 
     public HtspDataSource(Context context, SimpleHtspConnection connection) {
+        Log.d(TAG, "New HtspDataSource instantiated");
         mContext = context;
         mConnection = connection;
 
@@ -140,6 +141,7 @@ public class HtspDataSource implements DataSource, Subscriber.Listener {
 
     @Override
     public void close() throws IOException {
+        mConnection.removeAuthenticationListener(mSubscriber);
         mSubscriber.unsubscribe();
     }
 
