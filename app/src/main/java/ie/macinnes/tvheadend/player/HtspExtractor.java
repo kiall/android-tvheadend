@@ -78,7 +78,9 @@ public class HtspExtractor implements Extractor {
     private ExtractorOutput mOutput;
     private SparseArray<TrackOutput> mTrackOutputs = new SparseArray<>();
 
-    public HtspExtractor() {}
+    public HtspExtractor() {
+        Log.d(TAG, "New HtspExtractor instantiated");
+    }
 
     // Extractor Methods
     @Override
@@ -137,8 +139,6 @@ public class HtspExtractor implements Extractor {
     public void release() {
 
     }
-
-
 
     // Internal Methods
     private void handleMessage(@NonNull final HtspMessage message) {
