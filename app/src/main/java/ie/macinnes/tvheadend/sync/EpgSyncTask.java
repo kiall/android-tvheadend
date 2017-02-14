@@ -34,12 +34,16 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.SparseArray;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import ie.macinnes.htsp.HtspFileInputStream;
 import ie.macinnes.htsp.HtspMessage;
 import ie.macinnes.htsp.tasks.Authenticator;
 import ie.macinnes.tvheadend.BuildConfig;
@@ -92,6 +96,8 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
 
     private final SparseArray<ContentProviderOperation> mPendingChannelOps = new SparseArray<>();
     private final SparseArray<ContentProviderOperation> mPendingProgramOps = new SparseArray<>();
+
+    private final SparseArray<Uri> mPendingChannelLogoFetches = new SparseArray<>();
 
     private Set<Integer> mSeenChannels = new HashSet<>();
     private Set<Integer> mSeenPrograms = new HashSet<>();
@@ -273,10 +279,9 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
             flushPendingChannelOps();
         }
 
-        // TODO
-//        if (message.getChannelIcon() != null) {
-//            fetchChannelLogo(channelUri, message);
-//        }
+        if (message.containsKey("channelIcon")) {
+            mPendingChannelLogoFetches.put(channelId, Uri.parse(message.getString("channelIcon")));
+        }
 
         mSeenChannels.add(channelId);
     }
@@ -323,6 +328,59 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
 
         // Finally, reset the pending operations list
         mPendingChannelOps.clear();
+    }
+
+    private void flushPendingChannelLogoFetches() {
+        if (mPendingChannelLogoFetches.size() == 0) {
+            return;
+        }
+
+        Log.d(TAG, "Flushing " + mPendingChannelLogoFetches.size() + " channel logo fetches");
+
+        for (int i = 0; i < mPendingChannelLogoFetches.size(); i++) {
+            final int channelId = mPendingChannelLogoFetches.keyAt(i);
+            final Uri channelLogoSourceUri = mPendingChannelLogoFetches.valueAt(i);
+            final Uri channelLogoDestUri = TvContract.buildChannelLogoUri(TvContractUtils.getChannelUri(mContext, channelId));
+
+
+            InputStream is = null;
+            OutputStream os = null;
+
+            try {
+                is = new HtspFileInputStream(mDispatcher, channelLogoSourceUri.getPath());
+                os = mContentResolver.openOutputStream(channelLogoDestUri);
+
+                int read;
+                int totalRead = 0;
+                byte[] bytes = new byte[102400];
+
+                while ((read = is.read(bytes)) != -1) {
+                    os.write(bytes, 0, read);
+                    totalRead += read;
+                }
+
+                Log.d(TAG, "Successfully fetch logo from " + channelLogoSourceUri + " to " + channelLogoDestUri + " (" + totalRead + " bytes)");
+            } catch (IOException e) {
+                Log.e(TAG, "Failed to fetch logo from " + channelLogoSourceUri + " to " + channelLogoDestUri, e);
+            } finally {
+                if (is != null) {
+                    try {
+                        os.close();
+                    } catch (IOException e) {
+                        // Ignore...
+                    }
+                }
+                if (os != null) {
+                    try {
+                        os.close();
+                    } catch (IOException e) {
+                        // Ignore...
+                    }
+                }
+            }
+
+            mPendingChannelLogoFetches.remove(channelId);
+        }
     }
 
     protected void deleteChannels() {
@@ -541,6 +599,9 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
         // Clear out any stale date
         deleteChannels();
         deletePrograms();
+
+        // Fetch all the channel logos
+        flushPendingChannelLogoFetches();
 
         Log.i(TAG, "Initial sync completed");
         mInitialSyncCompleted = true;
