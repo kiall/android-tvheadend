@@ -75,14 +75,10 @@ public class HtspExtractor implements Extractor {
         }
     }
 
-    private ByteBuffer mBuffer;
-
     private ExtractorOutput mOutput;
     private SparseArray<TrackOutput> mTrackOutputs = new SparseArray<>();
 
-    public HtspExtractor() {
-        mBuffer = ByteBuffer.allocate(1024 * 1024);
-    }
+    public HtspExtractor() {}
 
     // Extractor Methods
     @Override
@@ -112,8 +108,6 @@ public class HtspExtractor implements Extractor {
             while (inputStream.available() > 0) {
                 objectInput = new ObjectInputStream(inputStream);
                 handleMessage((HtspMessage) objectInput.readObject());
-
-//                Log.w(TAG, "Read an message: " + );
             }
         } catch (IOException e) {
             // Ignore?

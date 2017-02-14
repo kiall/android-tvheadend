@@ -43,8 +43,8 @@ public class HtspDataSource implements DataSource, Subscriber.Listener {
     public static class Factory implements DataSource.Factory {
         private static final String TAG = Factory.class.getName();
 
-        protected Context mContext;
-        protected SimpleHtspConnection mConnection;
+        private Context mContext;
+        private SimpleHtspConnection mConnection;
 
         public Factory(Context context, SimpleHtspConnection connection) {
             mContext = context;
@@ -57,18 +57,14 @@ public class HtspDataSource implements DataSource, Subscriber.Listener {
         }
     }
 
-    public static final short MSG_TYPE_MUXPKT = 1;
-    public static final short MSG_TYPE_SUBSCRIPTION_START = 2;
-    public static final short MSG_TYPE_SUBSCRIPTION_STATUS = 3;
+    private Context mContext;
+    private SimpleHtspConnection mConnection;
+    private Subscriber mSubscriber;
 
-    protected Context mContext;
-    protected SimpleHtspConnection mConnection;
-    protected Subscriber mSubscriber;
+    private DataSpec mDataSpec;
 
-    protected DataSpec mDataSpec;
-
-    protected ByteBuffer mBuffer;
-    protected ReentrantLock mLock = new ReentrantLock();
+    private ByteBuffer mBuffer;
+    private ReentrantLock mLock = new ReentrantLock();
 
     private boolean mIsOpen = false;
 
@@ -76,7 +72,7 @@ public class HtspDataSource implements DataSource, Subscriber.Listener {
         mContext = context;
         mConnection = connection;
 
-        mBuffer = ByteBuffer.allocate(10485760); // 10 MB
+        mBuffer = ByteBuffer.allocate(15728640); // 15 MB
         mBuffer.limit(0);
 
         mSubscriber = new Subscriber(mConnection, this);
