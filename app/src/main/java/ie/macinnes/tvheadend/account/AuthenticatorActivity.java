@@ -91,7 +91,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         @Override
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
             GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
-                    "Tvheadend server",
+                    getString(R.string.server_name),
                     "Enter your Tvheadend server hostname or IP address", null, null);
 
             return guidance;
@@ -216,7 +216,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         @Override
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
             GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
-                    "Tvheadend Account",
+                    getString(R.string.account_name),
                     "Enter your Tvheadend username and password", null, null);
 
             return guidance;
@@ -326,7 +326,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         @Override
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
             GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
-                    "Tvheadend Account",
+                    getString(R.string.account_name),
                     "Checking your HTSP account", null, null);
 
             return guidance;
@@ -420,10 +420,10 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
                 fragment.setArguments(getArguments());
                 add(getFragmentManager(), fragment);
             } else {
-                Log.w(TAG, "Failed to validate credentials");
+                Log.w(TAG, getString(R.string.account_credential_error));
 
                 Bundle args = getArguments();
-                args.putString(Constants.KEY_ERROR_MESSAGE, "Failed to validate HTSP Credentials");
+                args.putString(Constants.KEY_ERROR_MESSAGE, getString(R.string.account_credential_error));
 
                 // Move to the failed step
                 GuidedStepFragment fragment = new FailedFragment();
@@ -438,8 +438,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         @Override
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
             GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
-                    "Tvheadend Account",
-                    "Successfully Added Account",
+                    getString(R.string.account_name),
+                    getString(R.string.account_add_successful),
                     null,
                     null);
 
@@ -449,8 +449,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         @Override
         public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
             GuidedAction action = new GuidedAction.Builder(getActivity())
-                    .title("Complete")
-                    .description("You're all set!")
+                    .title(R.string.setup_account_complete_title)
+                    .description(R.string.setup_account_complete_body)
                     .editable(false)
                     .build();
 
@@ -468,8 +468,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         @Override
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
             GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
-                    "Tvheadend Account",
-                    "Failed to add account",
+                    getString(R.string.account_name),
+                    getString(R.string.setup_complete_failed),
                     null,
                     null);
 
@@ -482,13 +482,13 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
 
             Bundle args = getArguments();
             String errorMessage = args.getString(Constants.KEY_ERROR_MESSAGE);
-            getGuidanceStylist().getDescriptionView().setText("Failed to add account: " + errorMessage);
+            getGuidanceStylist().getDescriptionView().setText(getString(R.string.account_failed_error, errorMessage));
         }
 
         @Override
         public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
             GuidedAction action = new GuidedAction.Builder(getActivity())
-                    .title("Complete")
+                    .title(R.string.setup_account_complete_title)
                     .editable(false)
                     .build();
 

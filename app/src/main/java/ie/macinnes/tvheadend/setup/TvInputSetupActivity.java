@@ -124,10 +124,10 @@ public class TvInputSetupActivity extends Activity {
         @Override
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
             GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
-                    "Introduction",
-                    "Welcome to the Tvhheadend Live Channel, we'll guide you through the setup " +
-                    "process now, once done you will be ready to watch TV",
-                    "TVHeadend",
+                    getString(R.string.setup_intro_title),
+                    getString(R.string.setup_intro_body_1) +
+                    getString(R.string.setup_intro_body_2),
+                    getString(R.string.account_label),
                     null);
 
             return guidance;
@@ -136,8 +136,8 @@ public class TvInputSetupActivity extends Activity {
         @Override
         public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
             GuidedAction action = new GuidedAction.Builder(getActivity())
-                    .title("Begin")
-                    .description("Start Tvheadend Live Channel Setup")
+                    .title(R.string.setup_begin_title)
+                    .description(R.string.setup_begin_body)
                     .editable(false)
                     .build();
 
@@ -162,9 +162,9 @@ public class TvInputSetupActivity extends Activity {
         @Override
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
             GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
-                    "Select An Account",
-                    "Please choose an existing, or create a new TVHeadend account to use",
-                    "TVHeadend",
+                    getString(R.string.setup_account_title),
+                    getString(R.string.setup_account_body),
+                    getString(R.string.account_label),
                     null);
 
             return guidance;
@@ -176,9 +176,9 @@ public class TvInputSetupActivity extends Activity {
 
             GuidedAction action = new GuidedAction.Builder(getActivity())
                     .id(ACTION_ID_SELECT_ACCOUNT)
-                    .title("Account Selection")
+                    .title(R.string.setup_account_action_title)
                     .editTitle("")
-                    .description("Select Account")
+                    .description(R.string.setup_account_body)
                     .subActions(subActions)
                     .build();
 
@@ -186,8 +186,8 @@ public class TvInputSetupActivity extends Activity {
 
             action = new GuidedAction.Builder(getActivity())
                     .id(ACTION_ID_CONFIRM)
-                    .title("Confirm")
-                    .description("Confirm This Selection")
+                    .title(R.string.setup_confirm)
+                    .description(R.string.setup_confirm_body)
                     .editable(false)
                     .build();
             action.setEnabled(false);
@@ -218,7 +218,7 @@ public class TvInputSetupActivity extends Activity {
 
             accountSubActions.add(new GuidedAction.Builder(getActivity())
                     .id(ACTION_ID_NEW_ACCOUNT)
-                    .title("Add New Account")
+                    .title(R.string.setup_account_create)
                     .description("")
                     .editable(false)
                     .build()
@@ -280,9 +280,9 @@ public class TvInputSetupActivity extends Activity {
         @Override
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
             GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
-                    "Session Selector",
-                    "There are several Session implementatioms, please choose one",
-                    "TVHeadend",
+                    getString(R.string.setup_session_title),
+                    getString(R.string.setup_session_body),
+                    getString(R.string.account_label),
                     null);
 
             return guidance;
@@ -292,8 +292,8 @@ public class TvInputSetupActivity extends Activity {
         public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
             GuidedAction action = new GuidedAction.Builder(getActivity())
                     .id(ACTION_ID_EXO_PLAYER)
-                    .title("ExoPlayer")
-                    .description("Google ExoPlayer (Recommended)")
+                    .title(R.string.ExoPlayer_title)
+                    .description(R.string.ExoPlayer_body)
                     .editable(false)
                     .build();
 
@@ -301,8 +301,8 @@ public class TvInputSetupActivity extends Activity {
 
             action = new GuidedAction.Builder(getActivity())
                     .id(ACTION_ID_VLC)
-                    .title("LibVLC")
-                    .description("VideoLAN LibVLC (Deprecated)")
+                    .title(R.string.VLC_title)
+                    .description(R.string.VLC_body)
                     .editable(false)
                     .build();
 
@@ -310,8 +310,8 @@ public class TvInputSetupActivity extends Activity {
 
             action = new GuidedAction.Builder(getActivity())
                     .id(ACTION_ID_MEDIA_PLAYER)
-                    .title("Media Player")
-                    .description("Android Media Player (Deprecated)")
+                    .title(R.string.mediaplayer_title)
+                    .description(R.string.mediaplayer_body)
                     .editable(false)
                     .build();
 
@@ -419,9 +419,9 @@ public class TvInputSetupActivity extends Activity {
         @Override
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
             GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
-                    "Syncing Channels and Program data",
-                    "Just a few seconds please :)",
-                    "TVHeadend",
+                    getString(R.string.setup_sync_title),
+                    getString(R.string.setup_sync_body),
+                    getString(R.string.account_label),
                     null);
 
             return guidance;
@@ -430,7 +430,7 @@ public class TvInputSetupActivity extends Activity {
         @Override
         public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
             GuidedAction action = new GuidedAction.Builder(getActivity())
-                    .title("Processing")
+                    .title(R.string.setup_sync_description)
                     .infoOnly(true)
                     .build();
             actions.add(action);
@@ -445,9 +445,9 @@ public class TvInputSetupActivity extends Activity {
         @Override
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
             GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
-                    "Setup Complete",
-                    "More EPG data, channel logs, etc are downloading in the background",
-                    "TVHeadend",
+                    getString(R.string.setup_complete_title),
+                    getString(R.string.setup_complete_body),
+                    getString(R.string.account_label),
                     null);
 
             return guidance;
@@ -457,8 +457,8 @@ public class TvInputSetupActivity extends Activity {
         public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
             GuidedAction action = new GuidedAction.Builder(getActivity())
                     .id(ACTION_ID_SETTINGS)
-                    .title("Settings")
-                    .description("Advanced Settings")
+                    .title(R.string.setup_settings_title)
+                    .description(R.string.setup_settings_body)
                     .editable(false)
                     .build();
 
@@ -466,8 +466,8 @@ public class TvInputSetupActivity extends Activity {
 
             action = new GuidedAction.Builder(getActivity())
                     .id(ACTION_ID_COMPLETE)
-                    .title("Complete")
-                    .description("You're all set!")
+                    .title(R.string.setup_complete_action_title)
+                    .description(R.string.setup_complete_action_body)
                     .editable(false)
                     .build();
 

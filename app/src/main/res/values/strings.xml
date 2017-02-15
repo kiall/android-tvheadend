@@ -14,10 +14,10 @@ License for the specific language governing permissions and limitations
 under the License.
 -->
 <resources>
-    <string name="app_name">TVHeadend</string>
+    <string name="app_name">Tvheadend</string>
 
-    <string name="title_activity_authenticator">TVHeadend Authenticator</string>
-    <string name="account_label">TVHeadend</string>
+    <string name="title_activity_authenticator">Tvheadend Authenticator</string>
+    <string name="account_label">Tvheadend</string>
 
     <string name="pref_disable_acra">Enable ACRA?</string>
     <string name="pref_acra_enabled">ACRA enabled</string>
@@ -29,4 +29,52 @@ under the License.
 
     <string name="pref_acra_user_email">Contact email address (optional)</string>
     <string name="pref_acra_user_email_summary">Sometimes, the developers may need to contact you for more info</string>
+
+    <string name="account_failed_error">Failed to add account: %s</string>
+    <string name="setup_processing">Processing&#8230;</string>
+    <string name="only_one_account">Only one Tvheadend account is currently supported</string>
+    <string name="account_name">Tvheadend Account</string>
+    <string name="server_name">Tvheadend Server</string>
+    <string name="account_credential_error">Failed to validate credentials</string>
+    <string name="account_add_successful">Successfully Added Account</string>
+    <string name="setup_account_complete_title">Complete</string>
+    <string name="setup_account_complete_body">You\'re all set!</string>
+    <string name="setup_complete_failed">Failed to add account</string>
+    <string name="track_name_unknown">unknown</string>
+    <string name="resolution_separator">x</string>
+    <string name="audio_format">%i ch, %i Hz</string>
+    <string name="id_prefix">id:</string>
+    <string name="setup_intro_title">Introduction</string>
+    <string name="setup_intro_body_1">Welcome to the Tvhheadend Live Channel, we'll guide you through the setup </string>
+    <string name="setup_intro_body_2">process now, once done you will be ready to watch TV</string>
+    <string name="setup_begin_title">Begin</string>
+    <string name="setup_begin_body">Start Tvheadend Live Channel Setup</string>
+    <string name="setup_account_title">Select An Account</string>
+    <string name="setup_account_body">Please choose an existing, or create a new Tvheadend account to use</string>
+    <string name="setup_account_action_title">Account Selection</string>
+    <string name="setup_confirm">Confirm</string>
+    <string name="setup_confirm_body">Confirm This Selection</string>
+    <string name="setup_account_create">Add New Account</string>
+    <string name="setup_session_title">Session Selector</string>
+    <string name="setup_session_body">There are several Session implementations, please choose one</string>
+    <string name="ExoPlayer_title">ExoPlayer</string>
+    <string name="VLC_title">LibVLC</string>
+    <string name="mediaplayer_title">Media Player</string>
+    <string name="ExoPlayer_body">Google ExoPlayer (Recommended)</string>
+    <string name="VLC_body">VideoLAN LibVLC (Deprecated)</string>
+    <string name="mediaplayer_body">Android Media Player (Deprecated)</string>
+    <string name="setup_sync_title">Syncing Channels and Program data</string>
+    <string name="setup_sync_body">Just a few seconds please :)</string>
+    <string name="setup_sync_description">Processing</string>
+    <string name="setup_complete_title">Setup Complete</string>
+    <string name="setup_complete_body">More EPG data, channel logs, etc are downloading in the background</string>
+    <string name="setup_settings_title">Settings</string>
+    <string name="setup_settings_body">Advanced Settings</string>
+    <string name="setup_complete_action_title">Complete</string>
+    <string name="setup_complete_action_body">You\'re all set!</string>
+    <string name="prepare_error_toast">Failed to prepare video</string>
+    <string name="track_format">%i - %i</string>
+    <string name="unsupported_video_error_toast">Unsupported Video Track Selected</string>
+    <string name="unsupported_audio_error_toast">Unsupported Audio Track Selected</string>
+    <string name="unsupported_text_error_toast">Unsupported Text Track Selected</string>
 </resources>
