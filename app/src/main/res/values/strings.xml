@@ -42,10 +42,10 @@ under the License.
     <string name="setup_complete_failed">Failed to add account</string>
     <string name="track_name_unknown">unknown</string>
     <string name="resolution_separator">x</string>
-    <string name="audio_format">%i ch, %i Hz</string>
+    <string name="audio_format">%1$i ch, %2$i Hz</string>
     <string name="id_prefix">id:</string>
     <string name="setup_intro_title">Introduction</string>
-    <string name="setup_intro_body_1">Welcome to the Tvhheadend Live Channel, we'll guide you through the setup </string>
+    <string name="setup_intro_body_1">Welcome to the Tvhheadend Live Channel, we\'ll guide you through the setup </string>
     <string name="setup_intro_body_2">process now, once done you will be ready to watch TV</string>
     <string name="setup_begin_title">Begin</string>
     <string name="setup_begin_body">Start Tvheadend Live Channel Setup</string>
@@ -73,7 +73,7 @@ under the License.
     <string name="setup_complete_action_title">Complete</string>
     <string name="setup_complete_action_body">You\'re all set!</string>
     <string name="prepare_error_toast">Failed to prepare video</string>
-    <string name="track_format">%i - %i</string>
+    <string name="track_format">%1$i - %2$i</string>
     <string name="unsupported_video_error_toast">Unsupported Video Track Selected</string>
     <string name="unsupported_audio_error_toast">Unsupported Audio Track Selected</string>
     <string name="unsupported_text_error_toast">Unsupported Text Track Selected</string>
