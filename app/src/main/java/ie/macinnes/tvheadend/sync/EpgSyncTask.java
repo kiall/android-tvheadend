@@ -365,7 +365,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
             } finally {
                 if (is != null) {
                     try {
-                        os.close();
+                        is.close();
                     } catch (IOException e) {
                         // Ignore...
                     }
