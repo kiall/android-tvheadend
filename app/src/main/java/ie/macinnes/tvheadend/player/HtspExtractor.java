@@ -21,26 +21,22 @@ import android.util.Log;
 import android.util.SparseArray;
 
 import com.google.android.exoplayer2.C;
-import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.extractor.Extractor;
 import com.google.android.exoplayer2.extractor.ExtractorInput;
 import com.google.android.exoplayer2.extractor.ExtractorOutput;
 import com.google.android.exoplayer2.extractor.ExtractorsFactory;
 import com.google.android.exoplayer2.extractor.PositionHolder;
 import com.google.android.exoplayer2.extractor.SeekMap;
-import com.google.android.exoplayer2.extractor.TrackOutput;
-import com.google.android.exoplayer2.util.MimeTypes;
-import com.google.android.exoplayer2.util.ParsableByteArray;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
-import java.nio.ByteBuffer;
 
 import ie.macinnes.htsp.HtspMessage;
 import ie.macinnes.tvheadend.Constants;
-import ie.macinnes.tvheadend.TvhMappings;
+import ie.macinnes.tvheadend.player.reader.StreamReader;
+import ie.macinnes.tvheadend.player.reader.StreamReadersFactory;
 
 
 public class HtspExtractor implements Extractor {
@@ -76,7 +72,7 @@ public class HtspExtractor implements Extractor {
     }
 
     private ExtractorOutput mOutput;
-    private SparseArray<TrackOutput> mTrackOutputs = new SparseArray<>();
+    private SparseArray<StreamReader> mStreamReaders = new SparseArray<>();
 
     public HtspExtractor() {
         Log.d(TAG, "New HtspExtractor instantiated");
@@ -118,7 +114,6 @@ public class HtspExtractor implements Extractor {
             Log.w(TAG, "Class Not Found");
         } finally {
             try {
-
                 if (objectInput != null) {
                     objectInput.close();
                 }
@@ -153,186 +148,23 @@ public class HtspExtractor implements Extractor {
 
     private void handleSubscriptionStart(@NonNull final HtspMessage message) {
         Log.i(TAG, "Handling Subscription Start");
-        for (ie.macinnes.htsp.HtspMessage stream : message.getHtspMessageArray("streams")) {
+
+        StreamReadersFactory streamReadersFactory = new StreamReadersFactory();
+
+        for (HtspMessage stream : message.getHtspMessageArray("streams")) {
             final int streamIndex = stream.getInteger("index");
             final String streamType = stream.getString("type");
 
-            Format format;
-            int rate;
+            Log.d(TAG, "Creating StreamReader for " + streamType + " stream at index " + streamIndex);
 
-            Log.d(TAG, "Handing track index / type: " + streamIndex + " / " + streamType);
-
-            switch (streamType) {
-                // Video Stream Types
-                case "MPEG2VIDEO":
-                    format = Format.createVideoSampleFormat(
-                            Integer.toString(streamIndex),
-                            MimeTypes.VIDEO_MPEG2,
-                            null,
-                            Format.NO_VALUE,
-                            Format.NO_VALUE,
-                            stream.getInteger("width"),
-                            stream.getInteger("height"),
-                            Format.NO_VALUE,
-                            null,
-                            null);
-                    break;
-                case "H264":
-                    format = Format.createVideoSampleFormat(
-                            Integer.toString(streamIndex),
-                            MimeTypes.VIDEO_H264,
-                            null,
-                            Format.NO_VALUE,
-                            Format.NO_VALUE,
-                            stream.getInteger("width"),
-                            stream.getInteger("height"),
-                            Format.NO_VALUE,
-                            null,
-                            null);
-                    break;
-                case "HEVC":
-                    format = Format.createVideoSampleFormat(
-                            Integer.toString(streamIndex),
-                            MimeTypes.VIDEO_H265,
-                            null,
-                            Format.NO_VALUE,
-                            Format.NO_VALUE,
-                            stream.getInteger("width"),
-                            stream.getInteger("height"),
-                            Format.NO_VALUE,
-                            null,
-                            null);
-                    break;
-                // Audio Stream Types
-                case "AC3":
-                    rate = Format.NO_VALUE;
-                    if (stream.containsKey("rate")) {
-                        rate = TvhMappings.sriToRate(stream.getInteger("rate"));
-                    }
-
-                    format = Format.createAudioSampleFormat(
-                            Integer.toString(streamIndex),
-                            MimeTypes.AUDIO_AC3,
-                            null,
-                            Format.NO_VALUE,
-                            Format.NO_VALUE,
-                            stream.getInteger("channels", Format.NO_VALUE),
-                            rate,
-                            C.ENCODING_PCM_16BIT,
-                            null,
-                            null,
-                            C.SELECTION_FLAG_AUTOSELECT,
-                            stream.getString("language", "und")
-                    );
-                    break;
-                case "EAC3":
-                    rate = Format.NO_VALUE;
-                    if (stream.containsKey("rate")) {
-                        rate = TvhMappings.sriToRate(stream.getInteger("rate"));
-                    }
-
-                    format = Format.createAudioSampleFormat(
-                            Integer.toString(streamIndex),
-                            MimeTypes.AUDIO_E_AC3,
-                            null,
-                            Format.NO_VALUE,
-                            Format.NO_VALUE,
-                            stream.getInteger("channels", Format.NO_VALUE),
-                            rate,
-                            C.ENCODING_PCM_16BIT,
-                            null,
-                            null,
-                            C.SELECTION_FLAG_AUTOSELECT,
-                            stream.getString("language", "und")
-                    );
-                    break;
-                case "MPEG2AUDIO":
-                    rate = Format.NO_VALUE;
-                    if (stream.containsKey("rate")) {
-                        rate = TvhMappings.sriToRate(stream.getInteger("rate"));
-                    }
-
-                    format = Format.createAudioSampleFormat(
-                            Integer.toString(streamIndex),
-                            MimeTypes.AUDIO_MPEG_L2,
-                            null,
-                            Format.NO_VALUE,
-                            Format.NO_VALUE,
-                            stream.getInteger("channels", Format.NO_VALUE),
-                            rate,
-                            C.ENCODING_PCM_16BIT,
-                            null,
-                            null,
-                            C.SELECTION_FLAG_AUTOSELECT,
-                            stream.getString("language", "und")
-                    );
-                    break;
-                case "VORBIS":
-                    rate = Format.NO_VALUE;
-                    if (stream.containsKey("rate")) {
-                        rate = TvhMappings.sriToRate(stream.getInteger("rate"));
-                    }
-
-                    format = Format.createAudioSampleFormat(
-                            Integer.toString(streamIndex),
-                            MimeTypes.AUDIO_VORBIS,
-                            null,
-                            Format.NO_VALUE,
-                            Format.NO_VALUE,
-                            stream.getInteger("channels", Format.NO_VALUE),
-                            rate,
-                            Format.NO_VALUE,
-                            null,
-                            null,
-                            C.SELECTION_FLAG_AUTOSELECT,
-                            stream.getString("language", "und")
-                    );
-                    break;
-                case "AAC":
-                    rate = Format.NO_VALUE;
-                    if (stream.containsKey("rate")) {
-                        rate = TvhMappings.sriToRate(stream.getInteger("rate"));
-                    }
-
-                    format = Format.createAudioSampleFormat(
-                            Integer.toString(streamIndex),
-                            MimeTypes.AUDIO_AAC,
-                            null,
-                            Format.NO_VALUE,
-                            Format.NO_VALUE,
-                            stream.getInteger("channels", Format.NO_VALUE),
-                            rate,
-                            Format.NO_VALUE,
-                            null,
-                            null,
-                            C.SELECTION_FLAG_AUTOSELECT,
-                            stream.getString("language", "und")
-                    );
-                    break;
-                // Text Stream Types
-                case "TEXTSUB":
-                    format = Format.createTextSampleFormat(
-                            Integer.toString(streamIndex),
-                            MimeTypes.APPLICATION_SUBRIP,
-                            null,
-                            Format.NO_VALUE,
-                            C.SELECTION_FLAG_AUTOSELECT,
-                            stream.getString("language", "und"),
-                            null
-                    );
-                    break;
-                default:
-                    continue;
+            final StreamReader streamReader = streamReadersFactory.createStreamReader(streamType);
+            if (streamReader != null) {
+                streamReader.createTracks(stream, mOutput);
+                mStreamReaders.put(streamIndex, streamReader);
             }
-
-            TrackOutput trackOutput = mOutput.track(streamIndex);
-
-            Log.d(TAG, "Setting Track Format: " + format.toString());
-            trackOutput.format(format);
-            mTrackOutputs.put(streamIndex, trackOutput);
         }
 
-        Log.d(TAG, "End Tracks");
+        Log.d(TAG, "All streams have now been handled");
         mOutput.endTracks();
     }
 
@@ -346,21 +178,13 @@ public class HtspExtractor implements Extractor {
 //        payload            bin   required   Actual frame data.
 
         final int streamIndex = message.getInteger("stream");
-        final byte[] payload = message.getByteArray("payload");
 
-        final ParsableByteArray pba = new ParsableByteArray(payload);
-        final TrackOutput trackOutput = mTrackOutputs.get(streamIndex);
-
-        if (trackOutput == null) {
-            // Not a track we care about, move on.
+        final StreamReader streamReader = mStreamReaders.get(streamIndex);
+        if (streamReader == null) {
+            // Not a stream we care about, move on.
             return;
         }
 
-//        Log.v(TAG, message.keySet().toString());
-
-        final long pts = message.getInteger("pts");
-
-        trackOutput.sampleData(pba, payload.length);
-        trackOutput.sampleMetadata(pts, C.BUFFER_FLAG_KEY_FRAME, payload.length, 0, null);
+        streamReader.consume(message);
     }
 }
