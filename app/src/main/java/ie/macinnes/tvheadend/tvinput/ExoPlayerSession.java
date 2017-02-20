@@ -313,8 +313,13 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
     }
 
     private void buildHtspExoPlayer() {
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences(
+                Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
+
+        String streamProfile = sharedPreferences.getString(Constants.KEY_HTSP_STREAM_PROFILE, "htsp");
+
         // Produces DataSource instances through which media data is loaded.
-        mDataSourceFactory = new HtspDataSource.Factory(mContext, mConnection);
+        mDataSourceFactory = new HtspDataSource.Factory(mContext, mConnection, streamProfile);
 
         // Produces Extractor instances for parsing the media data.
         mExtractorsFactory = new HtspExtractor.Factory();
@@ -354,12 +359,17 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
         String httpPort = mAccountManager.getUserData(mAccount, Constants.KEY_HTTP_PORT);
         String httpPath = mAccountManager.getUserData(mAccount, Constants.KEY_HTTP_PATH);
 
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences(
+                Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
+
+        String streamProfile = sharedPreferences.getString(Constants.KEY_HTTP_STREAM_PROFILE, "tif");
+
         Uri videoUri;
 
         if (httpPath == null) {
-            videoUri = Uri.parse("http://" + hostname + ":" + httpPort + "/stream/channelid/" + tvhChannelId + "?profile=tif");
+            videoUri = Uri.parse("http://" + hostname + ":" + httpPort + "/stream/channelid/" + tvhChannelId + "?profile=" + streamProfile);
         } else {
-            videoUri = Uri.parse("http://" + hostname + ":" + httpPort + "/" + httpPath + "/stream/channelid/" + tvhChannelId + "?profile=tif");
+            videoUri = Uri.parse("http://" + hostname + ":" + httpPort + "/" + httpPath + "/stream/channelid/" + tvhChannelId + "?profile=" + streamProfile);
         }
 
         // Hardcode a Test Video URI
