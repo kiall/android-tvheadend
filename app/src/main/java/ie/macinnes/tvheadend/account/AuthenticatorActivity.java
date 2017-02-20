@@ -420,7 +420,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
                 fragment.setArguments(getArguments());
                 add(getFragmentManager(), fragment);
             } else {
-                Log.w(TAG, getString(R.string.account_credential_error));
+                Log.w(TAG, "Failed to validate credentials");
 
                 Bundle args = getArguments();
                 args.putString(Constants.KEY_ERROR_MESSAGE, getString(R.string.account_credential_error));
