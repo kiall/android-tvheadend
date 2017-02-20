@@ -125,8 +125,7 @@ public class TvInputSetupActivity extends Activity {
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
             GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
                     getString(R.string.setup_intro_title),
-                    getString(R.string.setup_intro_body_1) +
-                    getString(R.string.setup_intro_body_2),
+                    getString(R.string.setup_intro_body),
                     getString(R.string.account_label),
                     null);
 
