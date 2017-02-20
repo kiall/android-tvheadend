@@ -30,7 +30,6 @@ import java.util.Map;
 
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.MiscUtils;
-import ie.macinnes.tvheadend.R;
 import ie.macinnes.tvheadend.account.AccountUtils;
 
 public class MediaPlayerSession extends BaseSession {
@@ -107,7 +106,7 @@ public class MediaPlayerSession extends BaseSession {
 
             return true;
         } else {
-            Toast.makeText(mContext, R.string.prepare_error_toast, Toast.LENGTH_SHORT).show();
+            Toast.makeText(mContext, "Failed to prepare video", Toast.LENGTH_SHORT).show();
 
             return false;
         }
