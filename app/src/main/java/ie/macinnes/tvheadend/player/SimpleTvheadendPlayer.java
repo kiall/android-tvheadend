@@ -53,14 +53,14 @@ public class SimpleTvheadendPlayer extends SimpleExoPlayer {
                                        int extensionRendererMode, AudioRendererEventListener eventListener, ArrayList<Renderer> out) {
         AudioCapabilities audioCapabilities = AudioCapabilities.getCapabilities(context);
 
+        // FFMpeg Audio Decoder
+        Log.d(TAG, "Adding FfmpegAudioRenderer");
+        out.add(new FfmpegAudioRenderer(mainHandler, eventListener, audioCapabilities));
+
         // Native Audio Decoders
         Log.d(TAG, "Adding MediaCodecAudioRenderer");
         out.add(new MediaCodecAudioRenderer(MediaCodecSelector.DEFAULT, drmSessionManager,
                 true, mainHandler, eventListener, audioCapabilities));
-
-        // FFMpeg Audio Decoder
-        Log.d(TAG, "Adding FfmpegAudioRenderer");
-        out.add(new FfmpegAudioRenderer(mainHandler, eventListener, audioCapabilities));
     }
 
     @Override
