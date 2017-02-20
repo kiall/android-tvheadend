@@ -39,6 +39,7 @@ import java.util.Map;
 import ie.macinnes.tvheadend.BuildConfig;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.MiscUtils;
+import ie.macinnes.tvheadend.R;
 import ie.macinnes.tvheadend.account.AccountUtils;
 
 public class VlcSession extends BaseSession {
@@ -181,7 +182,7 @@ public class VlcSession extends BaseSession {
 
             return true;
         } else {
-            Toast.makeText(mContext, "Failed to prepare video", Toast.LENGTH_SHORT).show();
+            Toast.makeText(mContext, R.string.prepare_error_toast, Toast.LENGTH_SHORT).show();
 
             return false;
         }
@@ -242,7 +243,7 @@ public class VlcSession extends BaseSession {
 
                 Log.d(TAG, "GAT: Found video track. ID: " + trackDescription.id + " Name: " + trackDescription.name);
 
-                trackId = getTrackId(TvTrackInfo.TYPE_VIDEO, trackDescription.id);
+                trackId = getTrackId(TvTrackInfo.TYPE_VIDEO, trackDescription.id, mContext);
 
                 TvTrackInfo.Builder builder = new TvTrackInfo.Builder(TvTrackInfo.TYPE_VIDEO, trackId);
 
@@ -259,7 +260,7 @@ public class VlcSession extends BaseSession {
 
                 Log.d(TAG, "GAT: Found audio track. ID: " + trackDescription.id + " Name: " + trackDescription.name);
 
-                trackId = getTrackId(TvTrackInfo.TYPE_AUDIO, trackDescription.id);
+                trackId = getTrackId(TvTrackInfo.TYPE_AUDIO, trackDescription.id, mContext);
 
                 TvTrackInfo.Builder builder = new TvTrackInfo.Builder(TvTrackInfo.TYPE_AUDIO, trackId);
 
@@ -276,7 +277,7 @@ public class VlcSession extends BaseSession {
 
                 Log.d(TAG, "GAT: Found subtitle track. ID: " + trackDescription.id + " Name: " + trackDescription.name);
 
-                trackId = getTrackId(TvTrackInfo.TYPE_SUBTITLE, trackDescription.id);
+                trackId = getTrackId(TvTrackInfo.TYPE_SUBTITLE, trackDescription.id, mContext);
 
                 TvTrackInfo.Builder builder = new TvTrackInfo.Builder(TvTrackInfo.TYPE_SUBTITLE, trackId);
 
@@ -287,11 +288,12 @@ public class VlcSession extends BaseSession {
         return tracks;
     }
 
-    private static String getTrackId(int trackType, int trackIndex) {
-        return trackType + "-" + trackIndex;
+    private static String getTrackId(int trackType, int trackIndex, Context context) {
+        return context.getString(R.string.track_format, trackType, trackIndex);
     }
 
     private static int getIndexFromTrackId(String trackId) {
+        //TODO: This will probably break after translations
         return Integer.parseInt(trackId.split("-")[1]);
     }
 
@@ -305,11 +307,11 @@ public class VlcSession extends BaseSession {
                     Log.d(TAG, "Received VLC MediaPlayer.Event: ESAdded/ESDeleted/Vout");
                     notifyTracksChanged(getAllTracks());
                     notifyTrackSelected(TvTrackInfo.TYPE_AUDIO,
-                            getTrackId(TvTrackInfo.TYPE_AUDIO, mMediaPlayer.getAudioTrack()));
+                            getTrackId(TvTrackInfo.TYPE_AUDIO, mMediaPlayer.getAudioTrack(), mContext));
                     notifyTrackSelected(TvTrackInfo.TYPE_VIDEO,
-                            getTrackId(TvTrackInfo.TYPE_VIDEO, mMediaPlayer.getVideoTrack()));
+                            getTrackId(TvTrackInfo.TYPE_VIDEO, mMediaPlayer.getVideoTrack(), mContext));
                     notifyTrackSelected(TvTrackInfo.TYPE_SUBTITLE,
-                            getTrackId(TvTrackInfo.TYPE_SUBTITLE, mMediaPlayer.getSpuTrack()));
+                            getTrackId(TvTrackInfo.TYPE_SUBTITLE, mMediaPlayer.getSpuTrack(), mContext));
                     break;
                 case MediaPlayer.Event.Playing:
                     Log.d(TAG, "Received VLC MediaPlayer.Event: Playing");

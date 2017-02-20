@@ -63,6 +63,7 @@ import ie.macinnes.htsp.SimpleHtspConnection;
 import ie.macinnes.tvheadend.BuildConfig;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.MiscUtils;
+import ie.macinnes.tvheadend.R;
 import ie.macinnes.tvheadend.account.AccountUtils;
 import ie.macinnes.tvheadend.player.EventLogger;
 import ie.macinnes.tvheadend.player.ExoPlayerUtils;
@@ -183,15 +184,15 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
         if (mappedTrackInfo != null) {
             if (mappedTrackInfo.getTrackTypeRendererSupport(C.TRACK_TYPE_VIDEO)
                     == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
-                showToast("Unsupported Video Track Selected");
+                showToast(mContext.getString(R.string.unsupported_video_error_toast));
             }
             if (mappedTrackInfo.getTrackTypeRendererSupport(C.TRACK_TYPE_AUDIO)
                     == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
-                showToast("Unsupported Audio Track Selected");
+                showToast(mContext.getString(R.string.unsupported_audio_error_toast));
             }
             if (mappedTrackInfo.getTrackTypeRendererSupport(C.TRACK_TYPE_TEXT)
                     == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
-                showToast("Unsupported Text Track Selected");
+                showToast(mContext.getString(R.string.unsupported_text_error_toast));
             }
         }
 
@@ -207,7 +208,7 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
                 Log.d(TAG, "Processing track: " + trackIndex);
                 Format format = trackGroup.getFormat(trackIndex);
 
-                TvTrackInfo tvTrackInfo = ExoPlayerUtils.buildTvTrackInfo(format);
+                TvTrackInfo tvTrackInfo = ExoPlayerUtils.buildTvTrackInfo(format, mContext);
 
                 if (tvTrackInfo != null) {
                     tvTrackInfos.add(tvTrackInfo);

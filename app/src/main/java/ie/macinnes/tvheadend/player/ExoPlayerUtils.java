@@ -17,6 +17,7 @@
 package ie.macinnes.tvheadend.player;
 
 
+import android.content.Context;
 import android.media.tv.TvTrackInfo;
 import android.os.Build;
 import android.text.TextUtils;
@@ -28,11 +29,13 @@ import com.google.android.exoplayer2.util.MimeTypes;
 
 import java.util.Locale;
 
+import ie.macinnes.tvheadend.R;
+
 public class ExoPlayerUtils {
     private static final String TAG = ExoPlayerUtils.class.getName();
 
-    public static TvTrackInfo buildTvTrackInfo(Format format) {
-        String trackName = ExoPlayerUtils.buildTrackName(format);
+    public static TvTrackInfo buildTvTrackInfo(Format format, Context context) {
+        String trackName = ExoPlayerUtils.buildTrackName(format, context);
         Log.d(TAG, "Processing track: " + trackName);
 
         if (format.id == null) {
@@ -91,30 +94,30 @@ public class ExoPlayerUtils {
     }
 
     // Track name construction.
-    private static String buildTrackName(Format format) {
+    private static String buildTrackName(Format format, Context context) {
         String trackName;
         if (MimeTypes.isVideo(format.sampleMimeType)) {
-            trackName = joinWithSeparator(joinWithSeparator(buildResolutionString(format),
-                    buildBitrateString(format)), buildTrackIdString(format));
+            trackName = joinWithSeparator(joinWithSeparator(buildResolutionString(format, context),
+                    buildBitrateString(format)), buildTrackIdString(format, context));
         } else if (MimeTypes.isAudio(format.sampleMimeType)) {
             trackName = joinWithSeparator(joinWithSeparator(joinWithSeparator(buildLanguageString(format),
-                    buildAudioPropertyString(format)), buildBitrateString(format)),
-                    buildTrackIdString(format));
+                    buildAudioPropertyString(format, context)), buildBitrateString(format)),
+                    buildTrackIdString(format, context));
         } else {
             trackName = joinWithSeparator(joinWithSeparator(buildLanguageString(format),
-                    buildBitrateString(format)), buildTrackIdString(format));
+                    buildBitrateString(format)), buildTrackIdString(format, context));
         }
-        return trackName.length() == 0 ? "unknown" : trackName;
+        return trackName.length() == 0 ? context.getString(R.string.track_name_unknown) : trackName;
     }
 
-    private static String buildResolutionString(Format format) {
+    private static String buildResolutionString(Format format, Context context) {
         return format.width == Format.NO_VALUE || format.height == Format.NO_VALUE
-                ? "" : format.width + "x" + format.height;
+                ? "" : format.width + context.getString(R.string.resolution_separator) + format.height;
     }
 
-    private static String buildAudioPropertyString(Format format) {
+    private static String buildAudioPropertyString(Format format, Context context) {
         return format.channelCount == Format.NO_VALUE || format.sampleRate == Format.NO_VALUE
-                ? "" : format.channelCount + "ch, " + format.sampleRate + "Hz";
+                ? "" : context.getString(R.string.audio_format, format.channelCount, format.sampleRate);
     }
 
     private static String buildLanguageString(Format format) {
@@ -124,11 +127,11 @@ public class ExoPlayerUtils {
 
     private static String buildBitrateString(Format format) {
         return format.bitrate == Format.NO_VALUE ? ""
-                : String.format(Locale.US, "%.2fMbit", format.bitrate / 1000000f);
+                : String.format(Locale.getDefault(), "%.2fMbit", format.bitrate / 1000000f);
     }
 
-    private static String buildTrackIdString(Format format) {
-        return format.id == null ? "" : ("id:" + format.id);
+    private static String buildTrackIdString(Format format, Context context) {
+        return format.id == null ? "" : (context.getString(R.string.id_prefix) + format.id);
     }
 
     private static String joinWithSeparator(String first, String second) {
