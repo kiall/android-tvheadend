@@ -45,8 +45,7 @@ under the License.
     <string name="audio_format">%1$i ch, %2$i Hz</string>
     <string name="id_prefix">id:</string>
     <string name="setup_intro_title">Introduction</string>
-    <string name="setup_intro_body_1">Welcome to the Tvhheadend Live Channel, we\'ll guide you through the setup </string>
-    <string name="setup_intro_body_2">process now, once done you will be ready to watch TV</string>
+    <string name="setup_intro_body">Welcome to the Tvhheadend Live Channel, we\'ll guide you through the setup process now, once done you will be ready to watch TV</string>
     <string name="setup_begin_title">Begin</string>
     <string name="setup_begin_body">Start Tvheadend Live Channel Setup</string>
     <string name="setup_account_title">Select An Account</string>
