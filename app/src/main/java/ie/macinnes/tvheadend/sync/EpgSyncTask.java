@@ -342,7 +342,6 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
             final Uri channelLogoSourceUri = mPendingChannelLogoFetches.valueAt(i);
             final Uri channelLogoDestUri = TvContract.buildChannelLogoUri(TvContractUtils.getChannelUri(mContext, channelId));
 
-
             InputStream is = null;
             OutputStream os = null;
 
@@ -359,9 +358,11 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
                     totalRead += read;
                 }
 
-                Log.d(TAG, "Successfully fetch logo from " + channelLogoSourceUri + " to " + channelLogoDestUri + " (" + totalRead + " bytes)");
+                Log.d(TAG, "Successfully fetched logo from " + channelLogoSourceUri + " to " + channelLogoDestUri + " (" + totalRead + " bytes)");
+
             } catch (IOException e) {
                 Log.e(TAG, "Failed to fetch logo from " + channelLogoSourceUri + " to " + channelLogoDestUri, e);
+
             } finally {
                 if (is != null) {
                     try {
