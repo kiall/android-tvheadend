@@ -20,6 +20,7 @@ import android.content.Context;
 import android.media.MediaCodec;
 import android.media.MediaCrypto;
 import android.os.Handler;
+import android.util.Log;
 
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.Format;
@@ -32,6 +33,8 @@ import com.google.android.exoplayer2.video.MediaCodecVideoRenderer;
 import com.google.android.exoplayer2.video.VideoRendererEventListener;
 
 public class ShieldVideoRenderer extends MediaCodecVideoRenderer {
+    private static final String TAG = ShieldVideoRenderer.class.getName();
+
     private long startTime;
     private boolean enabled;
 
@@ -54,6 +57,7 @@ public class ShieldVideoRenderer extends MediaCodecVideoRenderer {
         long diffMs = currentTime - startTime;
 
         if(enabled && diffMs > 13 * 60 * 1000) {
+            Log.d(TAG, "Resetting codecs as nVidia Shield workaround");
             releaseCodec();
         }
 
