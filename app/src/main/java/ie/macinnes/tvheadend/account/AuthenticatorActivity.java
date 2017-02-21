@@ -384,6 +384,9 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
                 Bundle args = getArguments();
                 args.putString(Constants.KEY_ERROR_MESSAGE, "Failed to connect to HTSP server");
 
+                // Stop the connection
+                mConnection.stop();
+
                 // Move to the failed step
                 GuidedStepFragment fragment = new FailedFragment();
                 fragment.setArguments(args);
@@ -395,7 +398,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         public void onAuthenticationStateChange(@NonNull Authenticator.State state) {
             if (state == Authenticator.State.AUTHENTICATED) {
                 // Close the connection, it's no longer needed
-                mConnection.closeConnection();
+                mConnection.stop();
 
                 // Store the account
                 final Account account = new Account(mAccountName, mAccountType);
@@ -421,6 +424,9 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
                 add(getFragmentManager(), fragment);
             } else {
                 Log.w(TAG, "Failed to validate credentials");
+
+                // Stop the connection
+                mConnection.stop();
 
                 Bundle args = getArguments();
                 args.putString(Constants.KEY_ERROR_MESSAGE, "Failed to validate HTSP Credentials");

@@ -394,7 +394,7 @@ public class TvInputSetupActivity extends Activity {
 
         @Override
         public void onStop() {
-            mConnection.closeConnection();
+            mConnection.stop();
             super.onStop();
         }
 

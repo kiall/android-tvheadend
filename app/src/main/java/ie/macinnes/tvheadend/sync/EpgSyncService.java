@@ -143,7 +143,7 @@ public class EpgSyncService extends Service {
     protected void closeConnection() {
         if (mConnection != null) {
             Log.d(TAG, "Closing HTSP connection");
-            mConnection.closeConnection();
+            mConnection.stop();
         }
 
         cleanupConnection();
