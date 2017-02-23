@@ -42,7 +42,7 @@ under the License.
     <string name="setup_complete_failed">Failed to add account</string>
     <string name="track_name_unknown">unknown</string>
     <string name="resolution_separator">x</string>
-    <string name="audio_format">%1$i ch, %2$i Hz</string>
+    <string name="audio_format">%1$s ch, %2$s Hz</string>
     <string name="id_prefix">id:</string>
     <string name="setup_intro_title">Introduction</string>
     <string name="setup_intro_body">Welcome to the Tvhheadend Live Channel, we\'ll guide you through the setup process now, once done you will be ready to watch TV</string>
