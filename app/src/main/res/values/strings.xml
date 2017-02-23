@@ -77,4 +77,22 @@ under the License.
     <string name="unsupported_video_error_toast">Unsupported Video Track Selected</string>
     <string name="unsupported_audio_error_toast">Unsupported Audio Track Selected</string>
     <string name="unsupported_text_error_toast">Unsupported Text Track Selected</string>
+    <string name="server_name_body">Enter your Tvheadend server hostname or IP address</string>
+    <string name="server_ip">Hostname/IP</string>
+    <string name="server_htsp_port">HTSP Port Number</string>
+    <string name="server_http_port">HTTP Port Number</string>
+    <string name="server_http_path">HTTP Path Prefix</string>
+    <string name="setup_continue">Next</string>
+    <string name="server_ip_invalid">Invalid Hostname</string>
+    <string name="server_htsp_port_invalid">Invalid HTSP Port</string>
+    <string name="server_http_port_invalid">Invalid HTTP Port</string>
+    <string name="account_name_body">Enter your Tvheadend username and password</string>
+    <string name="account_username">Username</string>
+    <string name="account_password">Password</string>
+    <string name="setup_account_finish">Finish</string>
+    <string name="account_username_invalid">Invalid Username</string>
+    <string name="account_password_invalid">Invalid Password</string>
+    <string name="setup_progress_title">Checking your HTSP account</string>
+    <string name="setup_progress_body">Processing</string>
+    <string name="setup_htsp_failed">Failed to connect to HTSP server</string>
 </resources>

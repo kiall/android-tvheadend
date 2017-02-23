@@ -24,6 +24,7 @@ import android.os.Handler;
 
 import ie.macinnes.tvheadend.Constants;
 
+@SuppressWarnings("MissingPermission")
 public class AccountUtils {
     // TODO: Suppressing warnings is bad... But, the Android linter is broken. getAccountsByType
     // does not require the GET_ACCOUNTS permission, it simply will return other apps accounts if
