@@ -63,7 +63,6 @@ import ie.macinnes.htsp.SimpleHtspConnection;
 import ie.macinnes.tvheadend.BuildConfig;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.MiscUtils;
-import ie.macinnes.tvheadend.R;
 import ie.macinnes.tvheadend.account.AccountUtils;
 import ie.macinnes.tvheadend.player.EventLogger;
 import ie.macinnes.tvheadend.player.ExoPlayerUtils;
@@ -184,15 +183,15 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
         if (mappedTrackInfo != null) {
             if (mappedTrackInfo.getTrackTypeRendererSupport(C.TRACK_TYPE_VIDEO)
                     == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
-                showToast(mContext.getString(R.string.unsupported_video_error_toast));
+                showToast("Unsupported Video Track Selected");
             }
             if (mappedTrackInfo.getTrackTypeRendererSupport(C.TRACK_TYPE_AUDIO)
                     == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
-                showToast(mContext.getString(R.string.unsupported_audio_error_toast));
+                showToast("Unsupported Audio Track Selected");
             }
             if (mappedTrackInfo.getTrackTypeRendererSupport(C.TRACK_TYPE_TEXT)
                     == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
-                showToast(mContext.getString(R.string.unsupported_text_error_toast));
+                showToast("Unsupported Text Track Selected");
             }
         }
 
@@ -208,7 +207,7 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
                 Log.d(TAG, "Processing track: " + trackIndex);
                 Format format = trackGroup.getFormat(trackIndex);
 
-                TvTrackInfo tvTrackInfo = ExoPlayerUtils.buildTvTrackInfo(format, mContext);
+                TvTrackInfo tvTrackInfo = ExoPlayerUtils.buildTvTrackInfo(format);
 
                 if (tvTrackInfo != null) {
                     tvTrackInfos.add(tvTrackInfo);
@@ -314,8 +313,13 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
     }
 
     private void buildHtspExoPlayer() {
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences(
+                Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
+
+        String streamProfile = sharedPreferences.getString(Constants.KEY_HTSP_STREAM_PROFILE, "htsp");
+
         // Produces DataSource instances through which media data is loaded.
-        mDataSourceFactory = new HtspDataSource.Factory(mContext, mConnection);
+        mDataSourceFactory = new HtspDataSource.Factory(mContext, mConnection, streamProfile);
 
         // Produces Extractor instances for parsing the media data.
         mExtractorsFactory = new HtspExtractor.Factory();
@@ -355,12 +359,17 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
         String httpPort = mAccountManager.getUserData(mAccount, Constants.KEY_HTTP_PORT);
         String httpPath = mAccountManager.getUserData(mAccount, Constants.KEY_HTTP_PATH);
 
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences(
+                Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
+
+        String streamProfile = sharedPreferences.getString(Constants.KEY_HTTP_STREAM_PROFILE, "tif");
+
         Uri videoUri;
 
         if (httpPath == null) {
-            videoUri = Uri.parse("http://" + hostname + ":" + httpPort + "/stream/channelid/" + tvhChannelId + "?profile=tif");
+            videoUri = Uri.parse("http://" + hostname + ":" + httpPort + "/stream/channelid/" + tvhChannelId + "?profile=" + streamProfile);
         } else {
-            videoUri = Uri.parse("http://" + hostname + ":" + httpPort + "/" + httpPath + "/stream/channelid/" + tvhChannelId + "?profile=tif");
+            videoUri = Uri.parse("http://" + hostname + ":" + httpPort + "/" + httpPath + "/stream/channelid/" + tvhChannelId + "?profile=" + streamProfile);
         }
 
         // Hardcode a Test Video URI

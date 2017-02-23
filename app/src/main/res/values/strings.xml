@@ -14,10 +14,10 @@ License for the specific language governing permissions and limitations
 under the License.
 -->
 <resources>
-    <string name="app_name">Tvheadend</string>
+    <string name="app_name">TVHeadend</string>
 
-    <string name="title_activity_authenticator">Tvheadend Authenticator</string>
-    <string name="account_label">Tvheadend</string>
+    <string name="title_activity_authenticator">TVHeadend Authenticator</string>
+    <string name="account_label">TVHeadend</string>
 
     <string name="pref_disable_acra">Enable ACRA?</string>
     <string name="pref_acra_enabled">ACRA enabled</string>

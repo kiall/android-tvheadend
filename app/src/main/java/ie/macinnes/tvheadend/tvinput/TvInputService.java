@@ -123,7 +123,7 @@ public class TvInputService extends android.media.tv.TvInputService {
     protected void closeConnection() {
         if (mConnection != null) {
             Log.d(TAG, "Closing HTSP connection");
-            mConnection.closeConnection();
+            mConnection.stop();
         }
 
         cleanupConnection();

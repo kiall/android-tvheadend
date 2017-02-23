@@ -26,9 +26,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.widget.Toast;
 
-import ie.macinnes.tvheadend.R;
-
-
 public class Authenticator extends AbstractAccountAuthenticator {
     private static final String TAG = Authenticator.class.getName();
 
@@ -54,7 +51,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
         final Bundle bundle = new Bundle();
 
         if (account != null) {
-            final String message = mContext.getString(R.string.only_one_account);
+            final String message = "Only one Tvheadend account is currently supported";
 
             bundle.putInt(AccountManager.KEY_ERROR_CODE, 1);
             bundle.putString(AccountManager.KEY_ERROR_MESSAGE, message);

@@ -68,7 +68,7 @@ repositories {
 }
 
 dependencies {
-    compile 'ie.macinnes.htsp:android-htsp:v0.0.1a9'
+    compile 'ie.macinnes.htsp:android-htsp:v0.0.1a12'
     // Used for testing local HTSP lib builds
 //    compile(name: 'library-release', ext: 'aar')
     compile fileTree(include: ['*.jar'], dir: 'libs')
@@ -84,5 +84,5 @@ dependencies {
     // Used for testing local exoplayer-ffmpeg builds
 //    compile(name: 'extension-ffmpeg-release', ext: 'aar')
     compile 'de.mrmaffen:vlc-android-sdk:1.9.8'
-    compile 'ch.acra:acra:4.9.1'
+    compile 'ch.acra:acra:4.9.2'
 }

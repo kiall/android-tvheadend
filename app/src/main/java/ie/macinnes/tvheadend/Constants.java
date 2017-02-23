@@ -33,6 +33,8 @@ public class Constants {
     // Misc Preference Keys and Values
     public static final String KEY_SETUP_COMPLETE = "SETUP-COMPLETE";
     public static final String KEY_HTSP_VIDEO_ENABLED = "htsp_video_enabled";
+    public static final String KEY_HTSP_STREAM_PROFILE = "htsp_stream_profile";
+    public static final String KEY_HTTP_STREAM_PROFILE = "http_stream_profile";
 
     // Session Selection Preference Keys and Values
     public static final String KEY_SESSION = "SESSION";

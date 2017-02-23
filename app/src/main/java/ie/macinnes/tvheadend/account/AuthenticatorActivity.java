@@ -93,7 +93,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
             GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
                     getString(R.string.server_name),
                     getString(R.string.server_name_body), null, null);
-
             return guidance;
         }
 
@@ -216,8 +215,13 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         @Override
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
             GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
+<<<<<<< HEAD
                     getString(R.string.account_name),
                     getString(R.string.account_name_body), null, null);
+=======
+                    "Tvheadend Account",
+                    "Enter your Tvheadend username and password", null, null);
+>>>>>>> origin
 
             return guidance;
         }
@@ -326,8 +330,13 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         @Override
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
             GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
+<<<<<<< HEAD
                     getString(R.string.account_name),
                     getString(R.string.setup_progress_title), null, null);
+=======
+                    "Tvheadend Account",
+                    "Checking your HTSP account", null, null);
+>>>>>>> origin
 
             return guidance;
         }
@@ -367,6 +376,13 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         }
 
         @Override
+        public void onStop() {
+            super.onStop();
+
+            mConnection.stop();
+        }
+
+        @Override
         public Handler getHandler() {
             return null;
         }
@@ -394,9 +410,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         @Override
         public void onAuthenticationStateChange(@NonNull Authenticator.State state) {
             if (state == Authenticator.State.AUTHENTICATED) {
-                // Close the connection, it's no longer needed
-                mConnection.closeConnection();
-
                 // Store the account
                 final Account account = new Account(mAccountName, mAccountType);
 
@@ -419,11 +432,11 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
                 GuidedStepFragment fragment = new CompletedFragment();
                 fragment.setArguments(getArguments());
                 add(getFragmentManager(), fragment);
-            } else {
-                Log.w(TAG, getString(R.string.account_credential_error));
+            } else if (state == Authenticator.State.FAILED) {
+                Log.w(TAG, "Failed to validate credentials");
 
                 Bundle args = getArguments();
-                args.putString(Constants.KEY_ERROR_MESSAGE, getString(R.string.account_credential_error));
+                args.putString(Constants.KEY_ERROR_MESSAGE, "Failed to validate HTSP Credentials");
 
                 // Move to the failed step
                 GuidedStepFragment fragment = new FailedFragment();
@@ -438,8 +451,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         @Override
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
             GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
-                    getString(R.string.account_name),
-                    getString(R.string.account_add_successful),
+                    "Tvheadend Account",
+                    "Successfully Added Account",
                     null,
                     null);
 
@@ -449,8 +462,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         @Override
         public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
             GuidedAction action = new GuidedAction.Builder(getActivity())
-                    .title(R.string.setup_account_complete_title)
-                    .description(R.string.setup_account_complete_body)
+                    .title("Complete")
+                    .description("You're all set!")
                     .editable(false)
                     .build();
 
@@ -468,8 +481,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         @Override
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
             GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
-                    getString(R.string.account_name),
-                    getString(R.string.setup_complete_failed),
+                    "Tvheadend Account",
+                    "Failed to add account",
                     null,
                     null);
 
@@ -482,13 +495,13 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
 
             Bundle args = getArguments();
             String errorMessage = args.getString(Constants.KEY_ERROR_MESSAGE);
-            getGuidanceStylist().getDescriptionView().setText(getString(R.string.account_failed_error, errorMessage));
+            getGuidanceStylist().getDescriptionView().setText("Failed to add account: " + errorMessage);
         }
 
         @Override
         public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
             GuidedAction action = new GuidedAction.Builder(getActivity())
-                    .title(R.string.setup_account_complete_title)
+                    .title("Complete")
                     .editable(false)
                     .build();
 

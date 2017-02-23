@@ -43,22 +43,26 @@ public class HtspDataSource implements DataSource, Subscriber.Listener {
     public static class Factory implements DataSource.Factory {
         private static final String TAG = Factory.class.getName();
 
-        private Context mContext;
-        private SimpleHtspConnection mConnection;
+        private final Context mContext;
+        private final SimpleHtspConnection mConnection;
+        private final String mStreamProfile;
 
-        public Factory(Context context, SimpleHtspConnection connection) {
+        public Factory(Context context, SimpleHtspConnection connection, String streamProfile) {
             mContext = context;
             mConnection = connection;
+            mStreamProfile = streamProfile;
         }
 
         @Override
         public HtspDataSource createDataSource() {
-            return new HtspDataSource(mContext, mConnection);
+            return new HtspDataSource(mContext, mConnection, mStreamProfile);
         }
     }
 
     private Context mContext;
     private SimpleHtspConnection mConnection;
+    private String mStreamProfile;
+
     private Subscriber mSubscriber;
 
     private DataSpec mDataSpec;
@@ -68,10 +72,11 @@ public class HtspDataSource implements DataSource, Subscriber.Listener {
 
     private boolean mIsOpen = false;
 
-    public HtspDataSource(Context context, SimpleHtspConnection connection) {
+    public HtspDataSource(Context context, SimpleHtspConnection connection, String streamProfile) {
         Log.d(TAG, "New HtspDataSource instantiated");
         mContext = context;
         mConnection = connection;
+        mStreamProfile = streamProfile;
 
         mBuffer = ByteBuffer.allocate(15728640); // 15 MB
         mBuffer.limit(0);
@@ -85,7 +90,7 @@ public class HtspDataSource implements DataSource, Subscriber.Listener {
     public long open(DataSpec dataSpec) throws IOException {
         mDataSpec = dataSpec;
 
-        mSubscriber.subscribe(Long.parseLong(dataSpec.uri.getHost()));
+        mSubscriber.subscribe(Long.parseLong(dataSpec.uri.getHost()), mStreamProfile);
 
         mIsOpen = true;
 
