@@ -215,14 +215,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         @Override
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
             GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
-<<<<<<< HEAD
                     getString(R.string.account_name),
                     getString(R.string.account_name_body), null, null);
-=======
-                    "Tvheadend Account",
-                    "Enter your Tvheadend username and password", null, null);
->>>>>>> origin
-
             return guidance;
         }
 
@@ -330,14 +324,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         @Override
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
             GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
-<<<<<<< HEAD
                     getString(R.string.account_name),
                     getString(R.string.setup_progress_title), null, null);
-=======
-                    "Tvheadend Account",
-                    "Checking your HTSP account", null, null);
->>>>>>> origin
-
             return guidance;
         }
 
@@ -436,7 +424,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
                 Log.w(TAG, "Failed to validate credentials");
 
                 Bundle args = getArguments();
-                args.putString(Constants.KEY_ERROR_MESSAGE, "Failed to validate HTSP Credentials");
+                args.putString(Constants.KEY_ERROR_MESSAGE, getString(R.string.setup_failed_htsp));
 
                 // Move to the failed step
                 GuidedStepFragment fragment = new FailedFragment();
@@ -451,8 +439,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         @Override
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
             GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
-                    "Tvheadend Account",
-                    "Successfully Added Account",
+                    getString(R.string.account_name),
+                    getString(R.string.account_add_successful),
                     null,
                     null);
 
@@ -462,8 +450,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         @Override
         public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
             GuidedAction action = new GuidedAction.Builder(getActivity())
-                    .title("Complete")
-                    .description("You're all set!")
+                    .title(R.string.setup_complete_action_title)
+                    .description(R.string.setup_account_complete_body)
                     .editable(false)
                     .build();
 
@@ -481,8 +469,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         @Override
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
             GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
-                    "Tvheadend Account",
-                    "Failed to add account",
+                    getString(R.string.account_name),
+                    getString(R.string.setup_complete_failed),
                     null,
                     null);
 
@@ -495,13 +483,13 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
 
             Bundle args = getArguments();
             String errorMessage = args.getString(Constants.KEY_ERROR_MESSAGE);
-            getGuidanceStylist().getDescriptionView().setText("Failed to add account: " + errorMessage);
+            getGuidanceStylist().getDescriptionView().setText(getString(R.string.account_failed_error, errorMessage));
         }
 
         @Override
         public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
             GuidedAction action = new GuidedAction.Builder(getActivity())
-                    .title("Complete")
+                    .title(R.string.setup_complete_action_title)
                     .editable(false)
                     .build();
 
