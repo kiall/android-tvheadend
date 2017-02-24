@@ -520,7 +520,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
 
         // Throttle the batch operation not to cause TransactionTooLargeException. If the initial
         // sync has already completed, flush for every message.
-        if (mInitialSyncCompleted || mPendingProgramOps.size() >= 500) {
+        if (mInitialSyncCompleted || mPendingProgramOps.size() >= 100) {
             flushPendingEventOps();
         }
 
