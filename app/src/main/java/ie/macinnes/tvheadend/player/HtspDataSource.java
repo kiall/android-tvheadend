@@ -33,6 +33,7 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.locks.ReentrantLock;
 
 import ie.macinnes.htsp.HtspMessage;
+import ie.macinnes.htsp.HtspNotConnectedException;
 import ie.macinnes.htsp.SimpleHtspConnection;
 import ie.macinnes.htsp.tasks.Subscriber;
 import ie.macinnes.tvheadend.Constants;
@@ -90,7 +91,11 @@ public class HtspDataSource implements DataSource, Subscriber.Listener {
     public long open(DataSpec dataSpec) throws IOException {
         mDataSpec = dataSpec;
 
-        mSubscriber.subscribe(Long.parseLong(dataSpec.uri.getHost()), mStreamProfile);
+        try {
+            mSubscriber.subscribe(Long.parseLong(dataSpec.uri.getHost()), mStreamProfile);
+        } catch (HtspNotConnectedException e) {
+            throw new IOException("Failed to open DataSource, HTSP not connected", e);
+        }
 
         mIsOpen = true;
 

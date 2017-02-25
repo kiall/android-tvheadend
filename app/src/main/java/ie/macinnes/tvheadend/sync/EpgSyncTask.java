@@ -45,6 +45,7 @@ import java.util.Set;
 
 import ie.macinnes.htsp.HtspFileInputStream;
 import ie.macinnes.htsp.HtspMessage;
+import ie.macinnes.htsp.HtspNotConnectedException;
 import ie.macinnes.htsp.tasks.Authenticator;
 import ie.macinnes.tvheadend.BuildConfig;
 import ie.macinnes.tvheadend.Constants;
@@ -172,7 +173,12 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
                 Log.d(TAG, "Skipping lastUpdate field, disabled by preference");
             }
 
-            mDispatcher.sendMessage(enableAsyncMetadataRequest);
+            try {
+                mDispatcher.sendMessage(enableAsyncMetadataRequest);
+            } catch (HtspNotConnectedException e) {
+                Log.d(TAG, "Failed to enable async metadata, HTSP not connected", e);
+                return;
+            }
         }
     }
 
