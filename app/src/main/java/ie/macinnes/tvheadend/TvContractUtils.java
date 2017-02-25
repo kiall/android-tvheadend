@@ -27,6 +27,8 @@ import android.util.SparseArray;
 public class TvContractUtils {
     private static final String TAG = TvContractUtils.class.getName();
 
+    public static final long INVALID_CHANNEL_ID = -1;
+
     public static String getInputId() {
         ComponentName componentName = new ComponentName(
                 "ie.macinnes.tvheadend",
@@ -35,7 +37,7 @@ public class TvContractUtils {
         return TvContract.buildInputId(componentName);
     }
 
-    public static Long getChannelId(Context context, int channelId) {
+    public static long getChannelId(Context context, int channelId) {
         ContentResolver resolver = context.getContentResolver();
 
         Uri channelsUri = TvContract.buildChannelsUriForInput(TvContractUtils.getInputId());
@@ -50,13 +52,13 @@ public class TvContractUtils {
             }
         }
 
-        return null;
+        return INVALID_CHANNEL_ID;
     }
 
     public static Uri getChannelUri(Context context, int channelId) {
-        Long androidChannelId = getChannelId(context, channelId);
+        long androidChannelId = getChannelId(context, channelId);
 
-        if (androidChannelId != null) {
+        if (androidChannelId != INVALID_CHANNEL_ID) {
             return TvContract.buildChannelUri(androidChannelId);
         }
 
@@ -117,9 +119,9 @@ public class TvContractUtils {
         // TODO: Cache results...
         ContentResolver resolver = context.getContentResolver();
 
-        Long androidChannelId = getChannelId(context, channelId);
+        long androidChannelId = getChannelId(context, channelId);
 
-        if (androidChannelId == null) {
+        if (androidChannelId == INVALID_CHANNEL_ID) {
             Log.w(TAG, "Failed to fetch programUri, unknown channel");
             return null;
         }
