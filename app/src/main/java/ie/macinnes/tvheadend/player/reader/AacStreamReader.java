@@ -20,6 +20,7 @@ import android.support.annotation.NonNull;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
+import com.google.android.exoplayer2.util.CodecSpecificDataUtil;
 import com.google.android.exoplayer2.util.MimeTypes;
 
 import java.util.Collections;
@@ -36,22 +37,27 @@ public class AacStreamReader extends PlainStreamReader {
     protected Format buildFormat(int streamIndex, @NonNull HtspMessage stream) {
         List<byte[]> initializationData = null;
 
-        if (stream.containsKey("meta")) {
-            initializationData = Collections.singletonList(stream.getByteArray("meta"));
-        }
-
         int rate = Format.NO_VALUE;
         if (stream.containsKey("rate")) {
             rate = TvhMappings.sriToRate(stream.getInteger("rate"));
         }
 
+        final int channels = stream.getInteger("channels", Format.NO_VALUE);
+
+        if (stream.containsKey("meta")) {
+            initializationData = Collections.singletonList(stream.getByteArray("meta"));
+        } else {
+            initializationData = Collections.singletonList(
+                    CodecSpecificDataUtil.buildAacLcAudioSpecificConfig(rate, channels));
+        }
+
         return Format.createAudioSampleFormat(
                 Integer.toString(streamIndex),
-                MimeTypes.AUDIO_AC3,
+                MimeTypes.AUDIO_AAC,
                 null,
                 Format.NO_VALUE,
                 Format.NO_VALUE,
-                stream.getInteger("channels", Format.NO_VALUE),
+                channels,
                 rate,
                 C.ENCODING_PCM_16BIT,
                 initializationData,
