@@ -108,7 +108,7 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
         SharedPreferences sharedPreferences = mContext.getSharedPreferences(
                 Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
 
-        boolean htsp = sharedPreferences.getBoolean(Constants.KEY_HTSP_VIDEO_ENABLED, false);
+        boolean htsp = sharedPreferences.getBoolean(Constants.KEY_HTSP_VIDEO_ENABLED, true);
 
         if (htsp) {
             buildHtspMediaSource(tvhChannelId);

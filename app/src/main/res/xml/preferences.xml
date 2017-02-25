@@ -75,9 +75,8 @@
     <PreferenceCategory android:title="Advanced Settings">
         <CheckBoxPreference
             android:key="htsp_video_enabled"
-            android:title="Enable HTSP Video (don't do this)"
-            android:summary="No, really, don't tick this"
-            android:defaultValue="false" />
+            android:title="Enable HTSP Video"
+            android:defaultValue="true" />
 
         <!-- TODO: This needs to be made into a list, based on fetching the list of available profiles -->
         <EditTextPreference
