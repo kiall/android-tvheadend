@@ -42,15 +42,26 @@ import java.util.ArrayList;
 public class SimpleTvheadendPlayer extends SimpleExoPlayer {
     private static final String TAG = SimpleTvheadendPlayer.class.getName();
 
-    public SimpleTvheadendPlayer(Context context, TrackSelector trackSelector, LoadControl loadControl,
-                                 DrmSessionManager<FrameworkMediaCrypto> drmSessionManager, int extensionRendererMode,
-                                 long allowedVideoJoiningTimeMs) {
+    public SimpleTvheadendPlayer(
+            Context context,
+            TrackSelector trackSelector,
+            LoadControl loadControl,
+            DrmSessionManager<FrameworkMediaCrypto> drmSessionManager,
+            int extensionRendererMode,
+            long allowedVideoJoiningTimeMs
+    ) {
         super(context, trackSelector, loadControl, drmSessionManager, extensionRendererMode, allowedVideoJoiningTimeMs);
     }
 
     @Override
-    protected void buildAudioRenderers(Context context, Handler mainHandler, DrmSessionManager<FrameworkMediaCrypto> drmSessionManager,
-                                       int extensionRendererMode, AudioRendererEventListener eventListener, ArrayList<Renderer> out) {
+    protected void buildAudioRenderers(
+            Context context,
+            Handler mainHandler,
+            DrmSessionManager<FrameworkMediaCrypto> drmSessionManager,
+            int extensionRendererMode,
+            AudioRendererEventListener eventListener,
+            ArrayList<Renderer> out
+    ) {
         AudioCapabilities audioCapabilities = AudioCapabilities.getCapabilities(context);
 
         // FFMpeg Audio Decoder
@@ -64,9 +75,15 @@ public class SimpleTvheadendPlayer extends SimpleExoPlayer {
     }
 
     @Override
-    protected void buildVideoRenderers(Context context, Handler mainHandler, DrmSessionManager<FrameworkMediaCrypto> drmSessionManager,
-                                       int extensionRendererMode, VideoRendererEventListener eventListener, long allowedVideoJoiningTimeMs,
-                                       ArrayList<Renderer> out) {
+    protected void buildVideoRenderers(
+            Context context,
+            Handler mainHandler,
+            DrmSessionManager<FrameworkMediaCrypto> drmSessionManager,
+            int extensionRendererMode,
+            VideoRendererEventListener eventListener,
+            long allowedVideoJoiningTimeMs,
+            ArrayList<Renderer> out
+    ) {
         if (Build.MODEL.equals("SHIELD Android TV")) {
             Log.d(TAG, "Adding ShieldVideoRenderer");
             out.add(new ShieldVideoRenderer(

@@ -51,7 +51,12 @@ public class AccountUtils {
     }
 
     @SuppressLint({"MissingPermission"})
-    public static void addOnAccountsUpdatedListener(Context context, final OnAccountsUpdateListener listener, Handler handler, boolean updateImmediately) {
+    public static void addOnAccountsUpdatedListener(
+            Context context,
+            final OnAccountsUpdateListener listener,
+            Handler handler,
+            boolean updateImmediately
+    ) {
         AccountManager accountManager = AccountManager.get(context);
         accountManager.addOnAccountsUpdatedListener(listener, handler, updateImmediately);
     }

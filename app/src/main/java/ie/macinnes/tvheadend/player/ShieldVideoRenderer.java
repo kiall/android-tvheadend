@@ -38,13 +38,35 @@ public class ShieldVideoRenderer extends MediaCodecVideoRenderer {
     private long startTime;
     private boolean enabled;
 
-    public ShieldVideoRenderer(Context context, MediaCodecSelector mediaCodecSelector, long allowedJoiningTimeMs, DrmSessionManager<FrameworkMediaCrypto> drmSessionManager, boolean playClearSamplesWithoutKeys, Handler eventHandler, VideoRendererEventListener eventListener, int maxDroppedFramesToNotify) {
-        super(context, mediaCodecSelector, allowedJoiningTimeMs, drmSessionManager, playClearSamplesWithoutKeys, eventHandler, eventListener, maxDroppedFramesToNotify);
+    public ShieldVideoRenderer(
+            Context context,
+            MediaCodecSelector mediaCodecSelector,
+            long allowedJoiningTimeMs,
+            DrmSessionManager<FrameworkMediaCrypto> drmSessionManager,
+            boolean playClearSamplesWithoutKeys,
+            Handler eventHandler,
+            VideoRendererEventListener eventListener,
+            int maxDroppedFramesToNotify
+    ) {
+        super(
+                context,
+                mediaCodecSelector,
+                allowedJoiningTimeMs,
+                drmSessionManager,
+                playClearSamplesWithoutKeys,
+                eventHandler,
+                eventListener,
+                maxDroppedFramesToNotify
+        );
     }
 
     @Override
     protected void configureCodec(
-            MediaCodecInfo codecInfo, MediaCodec codec, Format format, MediaCrypto crypto) throws MediaCodecUtil.DecoderQueryException {
+            MediaCodecInfo codecInfo,
+            MediaCodec codec,
+            Format format,
+            MediaCrypto crypto
+    ) throws MediaCodecUtil.DecoderQueryException {
         super.configureCodec(codecInfo, codec, format, crypto);
 
         enabled = (format.height == 1080 || format.height == 576);
