@@ -96,8 +96,9 @@ public class HtspExtractor implements Extractor {
 
         int bytesRead = input.read(rawBytes, 0, rawBytes.length);
 
-        if (Constants.DEBUG)
+        if (Constants.DEBUG) {
             Log.v(TAG, "Read " + bytesRead + " bytes");
+        }
 
         ByteArrayInputStream inputStream = new ByteArrayInputStream(rawBytes, 0, bytesRead);
         ObjectInput objectInput = null;
