@@ -179,11 +179,11 @@ public class HtspDataSource implements DataSource, Subscriber.Listener {
     // Misc Internal Methods
     private void serializeMessageToBuffer(@NonNull HtspMessage message) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        ObjectOutput objectOutput = null;
 
         mLock.lock();
-        try {
-            objectOutput = new ObjectOutputStream(outputStream);
+        try (
+                ObjectOutput objectOutput = new ObjectOutputStream(outputStream);
+        ) {
             objectOutput.writeObject(message);
             objectOutput.flush();
 
