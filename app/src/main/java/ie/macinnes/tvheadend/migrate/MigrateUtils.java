@@ -30,6 +30,9 @@ import ie.macinnes.tvheadend.account.AccountUtils;
 
 public class MigrateUtils {
     public static final String TAG = MigrateUtils.class.getName();
+    private static final int VERSION_14 = 14;
+    private static final int VERSION_38 = 38;
+    private static final int VERSION_79 = 79;
 
     public static void doMigrate(Context context) {
         Log.d(TAG, "doMigrate()");
@@ -52,13 +55,13 @@ public class MigrateUtils {
 
         // Run any migrations
         if (currentApplicationVersion != lastInstalledApplicationVersion) {
-            if (lastInstalledApplicationVersion <= 14) {
+            if (lastInstalledApplicationVersion <= VERSION_14) {
                 migrateAccountsPortName(context);
             }
-            if (lastInstalledApplicationVersion <= 38) {
+            if (lastInstalledApplicationVersion <= VERSION_38) {
                 migrateAccountHtspPort(context);
             }
-            if (lastInstalledApplicationVersion <= 79) {
+            if (lastInstalledApplicationVersion <= VERSION_79) {
                 migrateSetupCompleted(context);
             }
         }

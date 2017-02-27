@@ -40,7 +40,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
@@ -63,6 +62,27 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
             "eventAdd", "eventUpdate", "eventDelete",
             "initialSyncCompleted",
     }));
+    private static final String CHANNEL_ID_KEY = "channelId";
+    private static final String CHANNEL_NUMBER_KEY = "channelNumber";
+    private static final String CHANNEL_NUMBER_MINOR_KEY = "channelNumberMinor";
+    private static final String CHANNEL_NAME_KEY = "channelName";
+    private static final String CHANNEL_ICON_KEY = "channelIcon";
+
+    private static final String PROGRAM_DESCRIPTION_KEY = "description";
+    private static final String PROGRAM_SUMMARY_KEY = "summary";
+    private static final String PROGRAM_TITLE_KEY = "title";
+    private static final String PROGRAM_EPISODE_TITLE_KEY = "subtitle";
+    private static final String PROGRAM_CONTENT_TYPE_KEY = "contentType";
+    private static final String PROGRAM_AGE_RATING_KEY = "ageRating";
+    private static final String PROGRAM_START_TIME_KEY = "start";
+    private static final String PROGRAM_FINISH_TIME_KEY = "stop";
+    private static final String PROGRAM_SEASON_NUMBER_KEY = "seasonNumber";
+    private static final String PROGRAM_EPISODE_NUMBER_KEY = "episodeNumber";
+    private static final String PROGRAM_IMAGE = "image";
+
+    private static final String EVENT_ID_KEY = "eventId";
+
+    private static final int TWO_HOURS = 2*60*60;
 
     /**
      * A listener for EpgSync events
@@ -174,7 +194,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
 
             if (mQuickSync) {
                 // Quick sync ignores the epg time preference, and syncs 2 hours of data
-                epgMaxTime = 7200;
+                epgMaxTime = TWO_HOURS;
             }
 
             epgMaxTime = epgMaxTime + (System.currentTimeMillis() / 1000L);
@@ -244,19 +264,19 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
 
         values.put(TvContract.Channels.COLUMN_INPUT_ID, TvContractUtils.getInputId());
         values.put(TvContract.Channels.COLUMN_TYPE, TvContract.Channels.TYPE_OTHER);
-        values.put(TvContract.Channels.COLUMN_ORIGINAL_NETWORK_ID, message.getInteger("channelId"));
+        values.put(TvContract.Channels.COLUMN_ORIGINAL_NETWORK_ID, message.getInteger(CHANNEL_ID_KEY));
 
-        if (message.containsKey("channelNumber") && message.containsKey("channelNumberMinor")) {
-            final int channelNumber = message.getInteger("channelNumber");
-            final int channelNumberMinor = message.getInteger("channelNumberMinor");
+        if (message.containsKey(CHANNEL_NUMBER_KEY) && message.containsKey(CHANNEL_NUMBER_MINOR_KEY)) {
+            final int channelNumber = message.getInteger(CHANNEL_NUMBER_KEY);
+            final int channelNumberMinor = message.getInteger(CHANNEL_NUMBER_MINOR_KEY);
             values.put(TvContract.Channels.COLUMN_DISPLAY_NUMBER, channelNumber + "." + channelNumberMinor);
-        } else if (message.containsKey("channelNumber")) {
-            final int channelNumber = message.getInteger("channelNumber");
+        } else if (message.containsKey(CHANNEL_NUMBER_KEY)) {
+            final int channelNumber = message.getInteger(CHANNEL_NUMBER_KEY);
             values.put(TvContract.Channels.COLUMN_DISPLAY_NUMBER, String.valueOf(channelNumber));
         }
 
-        if (message.containsKey("channelName")) {
-            values.put(TvContract.Channels.COLUMN_DISPLAY_NAME, message.getString("channelName"));
+        if (message.containsKey(CHANNEL_NAME_KEY)) {
+            values.put(TvContract.Channels.COLUMN_DISPLAY_NAME, message.getString(CHANNEL_NAME_KEY));
         }
 
         // TODO
@@ -266,7 +286,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
     }
 
     private void handleChannelAddUpdate(@NonNull HtspMessage message) {
-        final int channelId = message.getInteger("channelId");
+        final int channelId = message.getInteger(CHANNEL_ID_KEY);
         final ContentValues values = channelToContentValues(message);
         final Uri channelUri = TvContractUtils.getChannelUri(mContext, channelId);
 
@@ -298,8 +318,8 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
             flushPendingChannelOps();
         }
 
-        if (message.containsKey("channelIcon")) {
-            mPendingChannelLogoFetches.add(new PendingChannelLogoFetch(channelId, Uri.parse(message.getString("channelIcon"))));
+        if (message.containsKey(CHANNEL_ICON_KEY)) {
+            mPendingChannelLogoFetches.add(new PendingChannelLogoFetch(channelId, Uri.parse(message.getString(CHANNEL_ICON_KEY))));
         }
 
         mSeenChannels.add(channelId);
@@ -433,78 +453,78 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
     private ContentValues eventToContentValues(@NonNull HtspMessage message) {
         ContentValues values = new ContentValues();
 
-        values.put(TvContract.Programs.COLUMN_CHANNEL_ID, TvContractUtils.getChannelId(mContext, message.getInteger("channelId")));
-        values.put(TvContract.Programs.COLUMN_INTERNAL_PROVIDER_DATA, String.valueOf(message.getInteger("eventId")));
+        values.put(TvContract.Programs.COLUMN_CHANNEL_ID, TvContractUtils.getChannelId(mContext, message.getInteger(CHANNEL_ID_KEY)));
+        values.put(TvContract.Programs.COLUMN_INTERNAL_PROVIDER_DATA, String.valueOf(message.getInteger(EVENT_ID_KEY)));
 
         // COLUMN_TITLE, COLUMN_EPISODE_TITLE, and COLUMN_SHORT_DESCRIPTION are used in the
         // Live Channels app EPG Grid. COLUMN_LONG_DESCRIPTION appears unused.
         // On Sony TVs, COLUMN_LONG_DESCRIPTION is used for the "more info" display.
 
-        if (message.containsKey("title")) {
+        if (message.containsKey(PROGRAM_TITLE_KEY)) {
             // The title of this TV program.
-            values.put(TvContract.Programs.COLUMN_TITLE, message.getString("title"));
+            values.put(TvContract.Programs.COLUMN_TITLE, message.getString(PROGRAM_TITLE_KEY));
         }
 
-        if (message.containsKey("subtitle")) {
+        if (message.containsKey(PROGRAM_EPISODE_TITLE_KEY)) {
             // The episode title of this TV program for episodic TV shows.
-            values.put(TvContract.Programs.COLUMN_EPISODE_TITLE, message.getString("subtitle"));
+            values.put(TvContract.Programs.COLUMN_EPISODE_TITLE, message.getString(PROGRAM_EPISODE_TITLE_KEY));
         }
 
-        if (message.containsKey("summary") && message.containsKey("description")) {
+        if (message.containsKey(PROGRAM_SUMMARY_KEY) && message.containsKey(PROGRAM_DESCRIPTION_KEY)) {
             // If we have both summary and description... use them both
-            values.put(TvContract.Programs.COLUMN_SHORT_DESCRIPTION, message.getString("summary"));
-            values.put(TvContract.Programs.COLUMN_LONG_DESCRIPTION, message.getString("description"));
+            values.put(TvContract.Programs.COLUMN_SHORT_DESCRIPTION, message.getString(PROGRAM_SUMMARY_KEY));
+            values.put(TvContract.Programs.COLUMN_LONG_DESCRIPTION, message.getString(PROGRAM_DESCRIPTION_KEY));
 
-        } else if (message.containsKey("summary") && !message.containsKey("description")) {
+        } else if (message.containsKey(PROGRAM_SUMMARY_KEY) && !message.containsKey(PROGRAM_DESCRIPTION_KEY)) {
             // If we have only summary, use it.
-            values.put(TvContract.Programs.COLUMN_SHORT_DESCRIPTION, message.getString("summary"));
+            values.put(TvContract.Programs.COLUMN_SHORT_DESCRIPTION, message.getString(PROGRAM_SUMMARY_KEY));
 
-        } else if (!message.containsKey("summary") && message.containsKey("description")) {
+        } else if (!message.containsKey(PROGRAM_SUMMARY_KEY) && message.containsKey(PROGRAM_DESCRIPTION_KEY)) {
             // If we have only description, use it.
-            values.put(TvContract.Programs.COLUMN_SHORT_DESCRIPTION, message.getString("description"));
+            values.put(TvContract.Programs.COLUMN_SHORT_DESCRIPTION, message.getString(PROGRAM_DESCRIPTION_KEY));
         }
 
-        if (message.containsKey("contentType")) {
+        if (message.containsKey(PROGRAM_CONTENT_TYPE_KEY)) {
             values.put(TvContract.Programs.COLUMN_CANONICAL_GENRE,
-                    DvbMappings.ProgramGenre.get(message.getInteger("contentType")));
+                    DvbMappings.ProgramGenre.get(message.getInteger(PROGRAM_CONTENT_TYPE_KEY)));
         }
 
-        if (message.containsKey("ageRating")) {
-            final int ageRating = message.getInteger("ageRating");
+        if (message.containsKey(PROGRAM_AGE_RATING_KEY)) {
+            final int ageRating = message.getInteger(PROGRAM_AGE_RATING_KEY);
             if (ageRating >= 4 && ageRating <= 18) {
                 TvContentRating rating = TvContentRating.createRating("com.android.tv", "DVB", "DVB_" + ageRating);
                 values.put(TvContract.Programs.COLUMN_CONTENT_RATING, rating.flattenToString());
             }
         }
 
-        if (message.containsKey("start")) {
-            values.put(TvContract.Programs.COLUMN_START_TIME_UTC_MILLIS, message.getLong("start") * 1000);
+        if (message.containsKey(PROGRAM_START_TIME_KEY)) {
+            values.put(TvContract.Programs.COLUMN_START_TIME_UTC_MILLIS, message.getLong(PROGRAM_START_TIME_KEY) * 1000);
         }
 
-        if (message.containsKey("stop")) {
-            values.put(TvContract.Programs.COLUMN_END_TIME_UTC_MILLIS, message.getLong("stop") * 1000);
+        if (message.containsKey(PROGRAM_FINISH_TIME_KEY)) {
+            values.put(TvContract.Programs.COLUMN_END_TIME_UTC_MILLIS, message.getLong(PROGRAM_FINISH_TIME_KEY) * 1000);
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            if (message.containsKey("seasonNumber")) {
-                values.put(TvContract.Programs.COLUMN_SEASON_DISPLAY_NUMBER, message.getInteger("seasonNumber"));
+            if (message.containsKey(PROGRAM_SEASON_NUMBER_KEY)) {
+                values.put(TvContract.Programs.COLUMN_SEASON_DISPLAY_NUMBER, message.getInteger(PROGRAM_SEASON_NUMBER_KEY));
             }
 
-            if (message.containsKey("episodeNumber")) {
-                values.put(TvContract.Programs.COLUMN_EPISODE_DISPLAY_NUMBER, message.getInteger("episodeNumber"));
+            if (message.containsKey(PROGRAM_EPISODE_NUMBER_KEY)) {
+                values.put(TvContract.Programs.COLUMN_EPISODE_DISPLAY_NUMBER, message.getInteger(PROGRAM_EPISODE_NUMBER_KEY));
             }
         } else {
-            if (message.containsKey("seasonNumber")) {
-                values.put(TvContract.Programs.COLUMN_SEASON_NUMBER, message.getInteger("seasonNumber"));
+            if (message.containsKey(PROGRAM_SEASON_NUMBER_KEY)) {
+                values.put(TvContract.Programs.COLUMN_SEASON_NUMBER, message.getInteger(PROGRAM_SEASON_NUMBER_KEY));
             }
 
-            if (message.containsKey("episodeNumber")) {
-                values.put(TvContract.Programs.COLUMN_EPISODE_NUMBER, message.getInteger("episodeNumber"));
+            if (message.containsKey(PROGRAM_EPISODE_NUMBER_KEY)) {
+                values.put(TvContract.Programs.COLUMN_EPISODE_NUMBER, message.getInteger(PROGRAM_EPISODE_NUMBER_KEY));
             }
         }
 
-        if (message.containsKey("image")) {
-            values.put(TvContract.Programs.COLUMN_POSTER_ART_URI, message.getString("image"));
+        if (message.containsKey(PROGRAM_IMAGE)) {
+            values.put(TvContract.Programs.COLUMN_POSTER_ART_URI, message.getString(PROGRAM_IMAGE));
         } else if(mSharedPreferences.getBoolean(Constants.KEY_EPG_DEFAULT_POSTER_ART_ENABLED, false)) {
             values.put(TvContract.Programs.COLUMN_POSTER_ART_URI, "android.resource://" + BuildConfig.APPLICATION_ID + "/" + R.drawable.default_event_icon);
         }
@@ -517,8 +537,8 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
         // once there are no pending operations
         flushPendingChannelOps();
 
-        final int channelId = message.getInteger("channelId");
-        final int eventId = message.getInteger("eventId");
+        final int channelId = message.getInteger(CHANNEL_ID_KEY);
+        final int eventId = message.getInteger(EVENT_ID_KEY);
         final ContentValues values = eventToContentValues(message);
         final Uri eventUri = TvContractUtils.getProgramUri(mContext, channelId, eventId);
 

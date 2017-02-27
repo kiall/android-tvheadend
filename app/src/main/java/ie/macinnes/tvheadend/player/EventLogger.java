@@ -68,6 +68,7 @@ import java.util.Locale;
     TIME_FORMAT.setMaximumFractionDigits(2);
     TIME_FORMAT.setGroupingUsed(false);
   }
+  private static final int STEREO_AUDIO = 2;
 
   private final MappingTrackSelector trackSelector;
   private final Timeline.Window window;
@@ -433,7 +434,7 @@ import java.util.Locale;
   }
 
   private static String getAdaptiveSupportString(int trackCount, int adaptiveSupport) {
-    if (trackCount < 2) {
+    if (trackCount < STEREO_AUDIO) {
       return "N/A";
     }
     switch (adaptiveSupport) {
