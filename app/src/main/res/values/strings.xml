@@ -83,4 +83,8 @@ under the License.
     <string name="mediaplayer_title">Media Player</string>
     <string name="VLC_body">VideoLAN LibVLC (Deprecated)</string>
     <string name="VLC_title">LibVLC</string>
+    <string name="video_unsupported_error">Unsupported Video Track Selected</string>
+    <string name="error_unsupported_audio">Unsupported Audio Track Selected</string>
+    <string name="error_unsupported_text">Unsupported Text Track Selected</string>
+    <string name="error_prepare_video">Failed to prepare video</string>
 </resources>
