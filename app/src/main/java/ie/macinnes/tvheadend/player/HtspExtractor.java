@@ -100,12 +100,12 @@ public class HtspExtractor implements Extractor {
             Log.v(TAG, "Read " + bytesRead + " bytes");
 
         ByteArrayInputStream inputStream = new ByteArrayInputStream(rawBytes, 0, bytesRead);
-        ObjectInput objectInput = null;
+        ObjectInputStream objectInput = null;
 
         try {
             while (inputStream.available() > 0) {
                 objectInput = new ObjectInputStream(inputStream);
-                handleMessage((HtspMessage) objectInput.readObject());
+                handleMessage((HtspMessage) objectInput.readUnshared());
             }
         } catch (IOException e) {
             // Ignore?

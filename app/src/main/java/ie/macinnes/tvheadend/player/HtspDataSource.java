@@ -26,6 +26,7 @@ import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DataSpec;
 
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
@@ -38,7 +39,7 @@ import ie.macinnes.htsp.SimpleHtspConnection;
 import ie.macinnes.htsp.tasks.Subscriber;
 import ie.macinnes.tvheadend.Constants;
 
-public class HtspDataSource implements DataSource, Subscriber.Listener {
+public class HtspDataSource implements DataSource, Subscriber.Listener, Closeable {
     private static final String TAG = HtspDataSource.class.getName();
     private static final int FIFTEEN_MB = 15*1024*1024;
 
@@ -152,6 +153,8 @@ public class HtspDataSource implements DataSource, Subscriber.Listener {
 
     @Override
     public void close() throws IOException {
+        mIsOpen = false;
+
         mConnection.removeAuthenticationListener(mSubscriber);
         mSubscriber.unsubscribe();
     }
@@ -183,9 +186,9 @@ public class HtspDataSource implements DataSource, Subscriber.Listener {
 
         mLock.lock();
         try (
-                ObjectOutput objectOutput = new ObjectOutputStream(outputStream);
+                ObjectOutputStream objectOutput = new ObjectOutputStream(outputStream);
         ) {
-            objectOutput.writeObject(message);
+            objectOutput.writeUnshared(message);
             objectOutput.flush();
 
             mBuffer.position(mBuffer.limit());
