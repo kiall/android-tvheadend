@@ -114,6 +114,13 @@ public class HtspExtractor implements Extractor {
             Log.w(TAG, "Class Not Found");
         } finally {
             try {
+                if (inputStream != null) {
+                    inputStream.close();
+                }
+            } catch (IOException ex) {
+                // Ignore
+            }
+            try {
                 if (objectInput != null) {
                     objectInput.close();
                 }
