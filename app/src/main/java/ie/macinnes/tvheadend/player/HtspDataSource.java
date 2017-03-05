@@ -121,7 +121,7 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
             }
         }
 
-        if (!mIsOpen) {
+        if (!mIsOpen && mBuffer.remaining() == 0) {
             return C.RESULT_END_OF_INPUT;
         }
 
@@ -172,7 +172,8 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
 
     @Override
     public void onSubscriptionStop(@NonNull HtspMessage message) {
-        serializeMessageToBuffer(message);
+        Log.i(TAG, "Received subscriptionStop");
+        mIsOpen = false;
     }
 
     @Override
