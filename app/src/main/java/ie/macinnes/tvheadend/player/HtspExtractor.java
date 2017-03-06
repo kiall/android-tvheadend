@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 
 import ie.macinnes.htsp.HtspMessage;
+import ie.macinnes.tvheadend.Application;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.player.reader.StreamReader;
 import ie.macinnes.tvheadend.player.reader.StreamReadersFactory;

@@ -130,6 +130,9 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
 
         if (mMediaSource != null) {
             mMediaSource.releaseSource();
+
+            // Watch for memory leaks
+            Application.getRefWatcher(mContext).watch(mMediaSource);
         }
     }
 

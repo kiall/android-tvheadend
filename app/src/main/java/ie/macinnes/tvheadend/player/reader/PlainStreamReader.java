@@ -26,6 +26,7 @@ import com.google.android.exoplayer2.extractor.TrackOutput;
 import com.google.android.exoplayer2.util.ParsableByteArray;
 
 import ie.macinnes.htsp.HtspMessage;
+import ie.macinnes.tvheadend.Application;
 
 /**
  * A PlainStreamReader simply copies the raw bytes from muxpkt's over onto the track output
@@ -56,6 +57,12 @@ abstract class PlainStreamReader implements StreamReader {
         // frametype   u32   required   Type of frame as ASCII value: 'I', 'P', 'B'
         mTrackOutput.sampleData(pba, payload.length);
         mTrackOutput.sampleMetadata(pts, C.BUFFER_FLAG_KEY_FRAME, payload.length, 0, null);
+    }
+
+    @Override
+    public void release() {
+        // Watch for memory leaks
+        Application.getRefWatcher(mContext).watch(this);
     }
 
     @NonNull

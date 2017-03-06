@@ -25,4 +25,5 @@ import ie.macinnes.htsp.HtspMessage;
 public interface StreamReader {
     void createTracks(HtspMessage stream, ExtractorOutput output);
     void consume(@NonNull final HtspMessage message);
+    void release();
 }

@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.Locale;
 
 import ie.macinnes.htsp.HtspMessage;
+import ie.macinnes.tvheadend.Application;
 
 public class TextsubStreamReader implements StreamReader {
     private static final String TAG = TextsubStreamReader.class.getName();
@@ -91,6 +92,12 @@ public class TextsubStreamReader implements StreamReader {
 
         mTrackOutput.sampleData(new ParsableByteArray(subsipSample), lengthWithPrefix);
         mTrackOutput.sampleMetadata(pts, C.BUFFER_FLAG_KEY_FRAME, lengthWithPrefix, 0, null);
+    }
+
+    @Override
+    public void release() {
+        // Watch for memory leaks
+        Application.getRefWatcher(mContext).watch(this);
     }
 
     @NonNull

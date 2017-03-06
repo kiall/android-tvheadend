@@ -37,6 +37,7 @@ import ie.macinnes.htsp.HtspMessage;
 import ie.macinnes.htsp.HtspNotConnectedException;
 import ie.macinnes.htsp.SimpleHtspConnection;
 import ie.macinnes.htsp.tasks.Subscriber;
+import ie.macinnes.tvheadend.Application;
 import ie.macinnes.tvheadend.Constants;
 
 public class HtspDataSource implements DataSource, Subscriber.Listener, Closeable {
@@ -157,6 +158,9 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
 
         mConnection.removeAuthenticationListener(mSubscriber);
         mSubscriber.unsubscribe();
+
+        // Watch for memory leaks
+        Application.getRefWatcher(mContext).watch(this);
     }
 
     // Subscription.Listener Methods

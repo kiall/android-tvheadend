@@ -19,6 +19,10 @@ under the License.
         android:name="android.software.leanback"
         android:required="false"/>
 
+    <!-- Leak canary needs access to External storage to save heap dumps -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+
     <application>
         <activity
             android:name="ie.macinnes.tvheadend.DevTestActivity"

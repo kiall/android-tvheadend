@@ -85,4 +85,8 @@ dependencies {
 //    compile(name: 'extension-ffmpeg-release', ext: 'aar')
     compile 'de.mrmaffen:vlc-android-sdk:1.9.8'
     compile 'ch.acra:acra:4.9.2'
+
+    debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5'
+    releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5'
+    testCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5'
 }
