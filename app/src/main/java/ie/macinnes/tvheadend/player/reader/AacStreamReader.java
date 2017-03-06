@@ -16,6 +16,7 @@
 
 package ie.macinnes.tvheadend.player.reader;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
 
 import com.google.android.exoplayer2.C;
@@ -31,6 +32,10 @@ import ie.macinnes.tvheadend.TvhMappings;
 
 public class AacStreamReader extends PlainStreamReader {
     private static final String TAG = AacStreamReader.class.getName();
+
+    public AacStreamReader(Context context) {
+        super(context);
+    }
 
     @NonNull
     @Override

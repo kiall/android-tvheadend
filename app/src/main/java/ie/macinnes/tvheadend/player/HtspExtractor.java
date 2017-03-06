@@ -16,6 +16,7 @@
 
 package ie.macinnes.tvheadend.player;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.SparseArray;
@@ -30,7 +31,6 @@ import com.google.android.exoplayer2.extractor.SeekMap;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 
 import ie.macinnes.htsp.HtspMessage;
@@ -45,12 +45,15 @@ public class HtspExtractor implements Extractor {
     public static class Factory implements ExtractorsFactory {
         private static final String TAG = Factory.class.getName();
 
-        public Factory() {
+        private final Context mContext;
+
+        public Factory(Context context) {
+            mContext = context;
         }
 
         @Override
         public Extractor[] createExtractors() {
-            return new Extractor[] { new HtspExtractor() };
+            return new Extractor[] { new HtspExtractor(mContext) };
         }
     }
 
@@ -71,10 +74,12 @@ public class HtspExtractor implements Extractor {
         }
     }
 
+    private Context mContext;
     private ExtractorOutput mOutput;
     private SparseArray<StreamReader> mStreamReaders = new SparseArray<>();
 
-    public HtspExtractor() {
+    public HtspExtractor(Context context) {
+        mContext = context;
         Log.d(TAG, "New HtspExtractor instantiated");
     }
 
@@ -156,7 +161,7 @@ public class HtspExtractor implements Extractor {
     private void handleSubscriptionStart(@NonNull final HtspMessage message) {
         Log.i(TAG, "Handling Subscription Start");
 
-        StreamReadersFactory streamReadersFactory = new StreamReadersFactory();
+        StreamReadersFactory streamReadersFactory = new StreamReadersFactory(mContext);
 
         for (HtspMessage stream : message.getHtspMessageArray("streams")) {
             final int streamIndex = stream.getInteger("index");

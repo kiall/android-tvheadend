@@ -17,6 +17,7 @@
 
 package ie.macinnes.tvheadend.player.reader;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
 
 import com.google.android.exoplayer2.C;
@@ -61,7 +62,12 @@ public class TextsubStreamReader implements StreamReader {
      */
     private static final int SUBRIP_TIMECODE_LENGTH = 12;
 
+    private final Context mContext;
     protected TrackOutput mTrackOutput;
+
+    public TextsubStreamReader(Context context) {
+        mContext = context;
+    }
 
     @Override
     public final void createTracks(@NonNull HtspMessage stream, @NonNull ExtractorOutput output) {

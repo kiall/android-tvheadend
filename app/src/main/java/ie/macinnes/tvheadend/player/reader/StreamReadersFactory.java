@@ -16,30 +16,38 @@
 
 package ie.macinnes.tvheadend.player.reader;
 
+import android.content.Context;
+
 public class StreamReadersFactory {
+    private final Context mContext;
+
+    public StreamReadersFactory(Context context) {
+        mContext = context;
+    }
+
     public StreamReader createStreamReader(String streamType) {
         switch (streamType) {
             // Video Stream Types
             case "H264":
-                return new H264StreamReader();
+                return new H264StreamReader(mContext);
             case "HEVC":
-                return new H265StreamReader();
+                return new H265StreamReader(mContext);
             case "MPEG2VIDEO":
-                return new Mpeg2VideoStreamReader();
+                return new Mpeg2VideoStreamReader(mContext);
             // Audio Stream Types
             case "AAC":
-                return new AacStreamReader();
+                return new AacStreamReader(mContext);
             case "AC3":
-                return new Ac3StreamReader();
+                return new Ac3StreamReader(mContext);
             case "EAC3":
-                return new Eac3StreamReader();
+                return new Eac3StreamReader(mContext);
             case "MPEG2AUDIO":
-                return new Mpeg2AudioStreamReader();
+                return new Mpeg2AudioStreamReader(mContext);
             case "VORBIS":
-                return new VorbisStreamReader();
+                return new VorbisStreamReader(mContext);
             // Text Stream Types
             case "TEXTSUB":
-                return new TextsubStreamReader();
+                return new TextsubStreamReader(mContext);
             default:
                 return null;
         }

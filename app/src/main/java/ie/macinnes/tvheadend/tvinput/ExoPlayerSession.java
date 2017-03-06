@@ -60,6 +60,7 @@ import java.util.List;
 import java.util.Map;
 
 import ie.macinnes.htsp.SimpleHtspConnection;
+import ie.macinnes.tvheadend.Application;
 import ie.macinnes.tvheadend.BuildConfig;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.MiscUtils;
@@ -323,7 +324,7 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
         mDataSourceFactory = new HtspDataSource.Factory(mContext, mConnection, streamProfile);
 
         // Produces Extractor instances for parsing the media data.
-        mExtractorsFactory = new HtspExtractor.Factory();
+        mExtractorsFactory = new HtspExtractor.Factory(mContext);
     }
 
     private void buildHttpExoPlayer() {

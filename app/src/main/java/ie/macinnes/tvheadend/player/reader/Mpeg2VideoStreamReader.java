@@ -16,6 +16,7 @@
 
 package ie.macinnes.tvheadend.player.reader;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
 
 import com.google.android.exoplayer2.Format;
@@ -24,6 +25,10 @@ import com.google.android.exoplayer2.util.MimeTypes;
 import ie.macinnes.htsp.HtspMessage;
 
 public class Mpeg2VideoStreamReader extends PlainStreamReader {
+
+    public Mpeg2VideoStreamReader(Context context) {
+        super(context);
+    }
 
     @NonNull
     @Override

@@ -16,6 +16,7 @@
 
 package ie.macinnes.tvheadend.player.reader;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
 
 import com.google.android.exoplayer2.C;
@@ -26,6 +27,10 @@ import ie.macinnes.htsp.HtspMessage;
 import ie.macinnes.tvheadend.TvhMappings;
 
 public class Mpeg2AudioStreamReader extends PlainStreamReader {
+
+    public Mpeg2AudioStreamReader(Context context) {
+        super(context);
+    }
 
     @NonNull
     @Override

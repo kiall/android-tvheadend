@@ -17,6 +17,7 @@
 
 package ie.macinnes.tvheadend.player.reader;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -34,6 +35,10 @@ import ie.macinnes.tvheadend.TvhMappings;
 
 public class VorbisStreamReader extends PlainStreamReader {
     private static final String TAG = VorbisStreamReader.class.getName();
+
+    public VorbisStreamReader(Context context) {
+        super(context);
+    }
 
     @NonNull
     @Override
