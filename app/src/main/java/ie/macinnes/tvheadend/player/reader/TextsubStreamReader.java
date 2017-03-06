@@ -81,7 +81,7 @@ public class TextsubStreamReader implements StreamReader {
     public void consume(@NonNull final HtspMessage message) {
         final long pts = message.getInteger("pts");
         final long duration = message.getInteger("duration");
-        final byte[] payload = message.getByteArray("payload");
+        final byte[] payload = new String(message.getByteArray("payload")).trim().getBytes();
 
         final int lengthWithPrefix = SUBRIP_PREFIX.length + payload.length;
         final byte[] subsipSample = Arrays.copyOf(SUBRIP_PREFIX, lengthWithPrefix);
