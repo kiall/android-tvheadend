@@ -144,7 +144,7 @@ public class HtspExtractor implements Extractor {
 
     @Override
     public void release() {
-
+        mStreamReaders.clear();
     }
 
     // Internal Methods
