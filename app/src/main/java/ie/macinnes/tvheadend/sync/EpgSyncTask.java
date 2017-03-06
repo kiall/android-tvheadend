@@ -122,6 +122,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
     private final SparseArray<ContentProviderOperation> mPendingProgramOps = new SparseArray<>();
 
     private final Queue<PendingChannelLogoFetch> mPendingChannelLogoFetches = new ConcurrentLinkedQueue<>();
+    private final byte[] mImageBytes = new byte[102400];
 
     private Set<Integer> mSeenChannels = new HashSet<>();
     private Set<Integer> mSeenPrograms = new HashSet<>();
@@ -397,10 +398,9 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
 
                 int read;
                 int totalRead = 0;
-                byte[] bytes = new byte[102400];
 
-                while ((read = is.read(bytes)) != -1) {
-                    os.write(bytes, 0, read);
+                while ((read = is.read(mImageBytes)) != -1) {
+                    os.write(mImageBytes, 0, read);
                     totalRead += read;
                 }
 

@@ -79,6 +79,8 @@ public class HtspExtractor implements Extractor {
     private ExtractorOutput mOutput;
     private SparseArray<StreamReader> mStreamReaders = new SparseArray<>();
 
+    private final byte[] mRawBytes = new byte[1024 * 1024];
+
     public HtspExtractor(Context context) {
         mContext = context;
         Log.d(TAG, "New HtspExtractor instantiated");
@@ -98,14 +100,12 @@ public class HtspExtractor implements Extractor {
 
     @Override
     public int read(ExtractorInput input, PositionHolder seekPosition) throws IOException, InterruptedException {
-        byte[] rawBytes = new byte[1024 * 1024];
-
-        int bytesRead = input.read(rawBytes, 0, rawBytes.length);
+        int bytesRead = input.read(mRawBytes, 0, mRawBytes.length);
 
         if (Constants.DEBUG)
             Log.v(TAG, "Read " + bytesRead + " bytes");
 
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(rawBytes, 0, bytesRead);
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(mRawBytes, 0, bytesRead);
         ObjectInputStream objectInput = null;
 
         try {
