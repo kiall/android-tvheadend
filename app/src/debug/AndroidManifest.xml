@@ -23,6 +23,14 @@ under the License.
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
+    <!--
+         In order to be visible for Android TV devices in the store, we MUST declare touchscreen
+         as optional
+    -->
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false"/>
+
     <application>
         <activity
             android:name="ie.macinnes.tvheadend.DevTestActivity"
