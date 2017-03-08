@@ -121,6 +121,7 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
                 Thread.sleep(250);
             } catch (InterruptedException e) {
                 // Ignore.
+                Log.w(TAG, "Caught InterruptedException, ignoring" ,e);
             }
         }
 

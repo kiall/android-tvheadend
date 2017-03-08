@@ -115,8 +115,9 @@ public class HtspExtractor implements Extractor {
                 handleMessage((HtspMessage) objectInput.readUnshared());
             }
         } catch (IOException e) {
-            // Ignore?
-            Log.w(TAG, "IOException", e);
+            // TODO: This is a problem, and returning RESULT_END_OF_INPUT is a hack... I think?
+            Log.w(TAG, "Caught IOException, returning RESULT_END_OF_INPUT", e);
+            return RESULT_END_OF_INPUT;
         } catch (ClassNotFoundException e) {
             Log.w(TAG, "Class Not Found");
         } finally {

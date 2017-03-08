@@ -68,9 +68,9 @@ repositories {
 }
 
 dependencies {
-    compile 'ie.macinnes.htsp:android-htsp:v0.0.1a13'
+    compile 'ie.macinnes.htsp:android-htsp:v0.0.1a14'
     // Used for testing local HTSP lib builds
-//    compile(name: 'library-release', ext: 'aar')
+//    compile(name: 'library-debug', ext: 'aar')
     compile fileTree(include: ['*.jar'], dir: 'libs')
     // Used for testing local libvlc builds
 //    compile(name: 'vlc-android-sdk-release', ext: 'aar')
