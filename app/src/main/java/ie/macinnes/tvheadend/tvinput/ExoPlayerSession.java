@@ -107,6 +107,8 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
         // Stop any existing playback
         stopPlayback();
 
+        Log.i(TAG, "Start playback of channel");
+
         SharedPreferences sharedPreferences = mContext.getSharedPreferences(
                 Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
 
@@ -126,6 +128,7 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
 
     @Override
     protected void stopPlayback() {
+        Log.i(TAG, "Stopping playback of channel");
         mExoPlayer.stop();
 
         if (mMediaSource != null) {

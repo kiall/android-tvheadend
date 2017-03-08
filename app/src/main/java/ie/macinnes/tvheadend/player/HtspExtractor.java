@@ -94,6 +94,7 @@ public class HtspExtractor implements Extractor {
 
     @Override
     public void init(ExtractorOutput output) {
+        Log.i(TAG, "Initializing HTSP Extractor");
         mOutput = output;
         mOutput.seekMap(new HtspSeekMap());
     }
@@ -120,9 +121,7 @@ public class HtspExtractor implements Extractor {
             Log.w(TAG, "Class Not Found");
         } finally {
             try {
-                if (inputStream != null) {
-                    inputStream.close();
-                }
+                inputStream.close();
             } catch (IOException ex) {
                 // Ignore
             }
@@ -140,11 +139,12 @@ public class HtspExtractor implements Extractor {
 
     @Override
     public void seek(long position, long timeUs) {
-
+        Log.d(TAG, "Seeking HTSP Extractor");
     }
 
     @Override
     public void release() {
+        Log.i(TAG, "Releasing HTSP Extractor");
         mStreamReaders.clear();
     }
 

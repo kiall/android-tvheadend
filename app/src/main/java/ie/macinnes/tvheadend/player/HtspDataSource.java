@@ -78,6 +78,7 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
 
     public HtspDataSource(Context context, SimpleHtspConnection connection, String streamProfile) {
         Log.d(TAG, "New HtspDataSource instantiated");
+
         mContext = context;
         mConnection = connection;
         mStreamProfile = streamProfile;
@@ -92,6 +93,7 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
     // DataSource Methods
     @Override
     public long open(DataSpec dataSpec) throws IOException {
+        Log.i(TAG, "Opening HTSP DataSource");
         mDataSpec = dataSpec;
 
         try {
@@ -154,6 +156,7 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
 
     @Override
     public void close() throws IOException {
+        Log.i(TAG, "Closing HTSP DataSource");
         mIsOpen = false;
 
         mConnection.removeAuthenticationListener(mSubscriber);
@@ -166,18 +169,25 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
     // Subscription.Listener Methods
     @Override
     public void onSubscriptionStart(@NonNull HtspMessage message) {
+        Log.d(TAG, "Received subscriptionStart");
         serializeMessageToBuffer(message);
     }
 
     @Override
     public void onSubscriptionStatus(@NonNull HtspMessage message) {
+        Log.d(TAG, "Received subscriptionStatus");
         serializeMessageToBuffer(message);
     }
 
     @Override
     public void onSubscriptionStop(@NonNull HtspMessage message) {
-        Log.i(TAG, "Received subscriptionStop");
+        Log.d(TAG, "Received subscriptionStop");
         mIsOpen = false;
+    }
+
+    @Override
+    public void onQueueStatus(@NonNull HtspMessage htspMessage) {
+
     }
 
     @Override
@@ -204,7 +214,7 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
             mBuffer.flip();
         } catch (IOException e) {
             // Ignore?
-            Log.w(TAG, "IOException", e);
+            Log.w(TAG, "Caught IOException, ignoring", e);
         } finally {
             mLock.unlock();
             try {
