@@ -48,7 +48,7 @@ abstract class PlainStreamReader implements StreamReader {
 
     @Override
     public final void consume(@NonNull final HtspMessage message) {
-        final long pts = message.getInteger("pts");
+        final long pts = message.getLong("pts");
         final byte[] payload = message.getByteArray("payload");
 
         final ParsableByteArray pba = new ParsableByteArray(payload);

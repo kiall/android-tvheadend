@@ -79,7 +79,7 @@ public class TextsubStreamReader implements StreamReader {
 
     @Override
     public void consume(@NonNull final HtspMessage message) {
-        final long pts = message.getInteger("pts");
+        final long pts = message.getLong("pts");
         final long duration = message.getInteger("duration");
         final byte[] payload = new String(message.getByteArray("payload")).trim().getBytes();
 
