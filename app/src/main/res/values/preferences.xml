@@ -18,9 +18,9 @@
 <resources>
     <!-- Video Player Settings -->
     <string-array name="video_player_names">
-        <item>ExoPlayer</item>
-        <item>VLC</item>
-        <item>Media Player</item>
+        <item>ExoPlayer (Recommended)</item>
+        <item>VLC (Deprecated)</item>
+        <item>Media Player (Deprecated)</item>
     </string-array>
 
     <string-array name="video_player_values">

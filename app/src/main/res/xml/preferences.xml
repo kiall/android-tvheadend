@@ -26,7 +26,8 @@
             android:title="Video Player Choice"
             android:dialogTitle="Video Player Choice"
             android:entries="@array/video_player_names"
-            android:entryValues="@array/video_player_values" />
+            android:entryValues="@array/video_player_values"
+            android:defaultValue="SESSION-EXO-PLAYER"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="EPG">

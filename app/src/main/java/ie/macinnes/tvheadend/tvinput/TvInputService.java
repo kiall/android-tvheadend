@@ -57,7 +57,7 @@ public class TvInputService extends android.media.tv.TvInputService {
         SharedPreferences sharedPreferences = getSharedPreferences(
                 Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
 
-        mSessionType = sharedPreferences.getString(Constants.KEY_SESSION, Constants.SESSION_MEDIA_PLAYER);
+        mSessionType = sharedPreferences.getString(Constants.KEY_SESSION, Constants.SESSION_EXO_PLAYER);
 
         mAccountManager = AccountManager.get(this);
         mAccount = AccountUtils.getActiveAccount(this);

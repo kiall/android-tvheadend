@@ -263,86 +263,10 @@ public class TvInputSetupActivity extends Activity {
         public void onGuidedActionClicked(GuidedAction action) {
             if (ACTION_ID_CONFIRM == action.getId()) {
                 // Move onto the next step
-                GuidedStepFragment fragment = new SessionSelectorFragment();
+                GuidedStepFragment fragment = new SyncingFragment();
                 fragment.setArguments(getArguments());
                 add(getFragmentManager(), fragment);
             }
-        }
-    }
-
-    public static class SessionSelectorFragment extends BaseGuidedStepFragment {
-        private static final int ACTION_ID_MEDIA_PLAYER = 1;
-        private static final int ACTION_ID_EXO_PLAYER = 2;
-        private static final int ACTION_ID_VLC = 3;
-
-        @NonNull
-        @Override
-        public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
-            GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
-                    getString(R.string.setup_session_title),
-                    getString(R.string.setup_session_body),
-                    getString(R.string.account_label),
-                    null);
-
-            return guidance;
-        }
-
-        @Override
-        public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
-            GuidedAction action = new GuidedAction.Builder(getActivity())
-                    .id(ACTION_ID_EXO_PLAYER)
-                    .title(R.string.ExoPlayer_title)
-                    .description(R.string.ExoPlayer_body)
-                    .editable(false)
-                    .build();
-
-            actions.add(action);
-
-            action = new GuidedAction.Builder(getActivity())
-                    .id(ACTION_ID_VLC)
-                    .title(R.string.VLC_title)
-                    .description(R.string.VLC_body)
-                    .editable(false)
-                    .build();
-
-            actions.add(action);
-
-            action = new GuidedAction.Builder(getActivity())
-                    .id(ACTION_ID_MEDIA_PLAYER)
-                    .title(R.string.mediaplayer_title)
-                    .description(R.string.mediaplayer_body)
-                    .editable(false)
-                    .build();
-
-            actions.add(action);
-        }
-
-        @Override
-        public void onGuidedActionClicked(GuidedAction action) {
-            String session;
-
-            if (action.getId() == ACTION_ID_MEDIA_PLAYER) {
-                session = Constants.SESSION_MEDIA_PLAYER;
-            } else if (action.getId() == ACTION_ID_EXO_PLAYER) {
-                session = Constants.SESSION_EXO_PLAYER;
-            } else if (action.getId() == ACTION_ID_VLC) {
-                session = Constants.SESSION_VLC;
-            } else {
-                return;
-            }
-
-            // Store the chosen session type
-            SharedPreferences sharedPreferences = getActivity().getSharedPreferences(
-                    Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
-
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putString(Constants.KEY_SESSION, session);
-            editor.apply();
-
-            // Move onto the next step
-            GuidedStepFragment fragment = new SyncingFragment();
-            fragment.setArguments(getArguments());
-            add(getFragmentManager(), fragment);
         }
     }
 
