@@ -18,15 +18,15 @@
 <resources>
     <!-- Video Player Settings -->
     <string-array name="video_player_names">
+        <item>ExoPlayer</item>
         <item>VLC</item>
         <item>Media Player</item>
-        <item>ExoPlayer</item>
     </string-array>
 
     <string-array name="video_player_values">
+        <item>SESSION-EXO-PLAYER</item>
         <item>SESSION-VLC</item>
         <item>SESSION-MEDIA-PLAYER</item>
-        <item>SESSION-EXO-PLAYER</item>
     </string-array>
 
     <string-array name="epg_max_time_names">
