@@ -79,6 +79,16 @@
             android:title="Enable HTSP Video"
             android:defaultValue="true" />
 
+        <CheckBoxPreference
+            android:key="ffmpeg_audio_enabled"
+            android:title="Enable FFMpeg Audio Renderer"
+            android:defaultValue="true" />
+
+        <CheckBoxPreference
+            android:key="shield_workaround_enabled"
+            android:title="Enable nVidia Shield Workaround"
+            android:defaultValue="true" />
+
         <!-- TODO: This needs to be made into a list, based on fetching the list of available profiles -->
         <EditTextPreference
             android:key="htsp_stream_profile"

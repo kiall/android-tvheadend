@@ -36,6 +36,10 @@ public class Constants {
     public static final String KEY_HTSP_STREAM_PROFILE = "htsp_stream_profile";
     public static final String KEY_HTTP_STREAM_PROFILE = "http_stream_profile";
 
+    // Advanced Preferences Keys and Values
+    public static final String KEY_FFMPEG_AUDIO_ENABLED = "ffmpeg_audio_enabled";
+    public static final String KEY_SHIELD_WORKAROUND_ENABLED = "shield_workaround_enabled";
+
     // Session Selection Preference Keys and Values
     public static final String KEY_SESSION = "SESSION";
     public static final String SESSION_MEDIA_PLAYER = "SESSION-MEDIA-PLAYER";

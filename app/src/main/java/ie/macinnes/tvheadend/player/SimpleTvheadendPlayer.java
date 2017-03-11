@@ -17,6 +17,7 @@
 package ie.macinnes.tvheadend.player;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
@@ -30,13 +31,14 @@ import com.google.android.exoplayer2.audio.MediaCodecAudioRenderer;
 import com.google.android.exoplayer2.drm.DrmSessionManager;
 import com.google.android.exoplayer2.drm.FrameworkMediaCrypto;
 import com.google.android.exoplayer2.ext.ffmpeg.FfmpegAudioRenderer;
-import com.google.android.exoplayer2.ext.ffmpeg.FfmpegLibrary;
 import com.google.android.exoplayer2.mediacodec.MediaCodecSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.video.MediaCodecVideoRenderer;
 import com.google.android.exoplayer2.video.VideoRendererEventListener;
 
 import java.util.ArrayList;
+
+import ie.macinnes.tvheadend.Constants;
 
 
 public class SimpleTvheadendPlayer extends SimpleExoPlayer {
@@ -53,9 +55,13 @@ public class SimpleTvheadendPlayer extends SimpleExoPlayer {
                                        int extensionRendererMode, AudioRendererEventListener eventListener, ArrayList<Renderer> out) {
         AudioCapabilities audioCapabilities = AudioCapabilities.getCapabilities(context);
 
-        // FFMpeg Audio Decoder
-        Log.d(TAG, "Adding FfmpegAudioRenderer");
-        out.add(new FfmpegAudioRenderer(mainHandler, eventListener, audioCapabilities));
+        SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
+
+        if (sharedPreferences.getBoolean(Constants.KEY_FFMPEG_AUDIO_ENABLED, true)) {
+            // FFMpeg Audio Decoder
+            Log.d(TAG, "Adding FfmpegAudioRenderer");
+            out.add(new FfmpegAudioRenderer(mainHandler, eventListener, audioCapabilities));
+        }
 
         // Native Audio Decoders
         Log.d(TAG, "Adding MediaCodecAudioRenderer");
@@ -67,7 +73,9 @@ public class SimpleTvheadendPlayer extends SimpleExoPlayer {
     protected void buildVideoRenderers(Context context, Handler mainHandler, DrmSessionManager<FrameworkMediaCrypto> drmSessionManager,
                                        int extensionRendererMode, VideoRendererEventListener eventListener, long allowedVideoJoiningTimeMs,
                                        ArrayList<Renderer> out) {
-        if (Build.MODEL.equals("SHIELD Android TV")) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
+
+        if (Build.MODEL.equals("SHIELD Android TV") && sharedPreferences.getBoolean(Constants.KEY_SHIELD_WORKAROUND_ENABLED, true)) {
             Log.d(TAG, "Adding ShieldVideoRenderer");
             out.add(new ShieldVideoRenderer(
                     context,
