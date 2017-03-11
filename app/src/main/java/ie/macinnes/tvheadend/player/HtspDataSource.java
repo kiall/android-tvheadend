@@ -177,7 +177,17 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
     @Override
     public void onSubscriptionStatus(@NonNull HtspMessage message) {
         Log.d(TAG, "Received subscriptionStatus");
-        serializeMessageToBuffer(message);
+
+        final String status = message.getString("status", null);
+        final String subscriptionError = message.getString("subscriptionError", null);
+
+        if (status != null) {
+            Log.d(TAG, "Subscription Status: " + status);
+        }
+
+        if (subscriptionError != null) {
+            Log.d(TAG, "Subscription Error: " + subscriptionError);
+        }
     }
 
     @Override
