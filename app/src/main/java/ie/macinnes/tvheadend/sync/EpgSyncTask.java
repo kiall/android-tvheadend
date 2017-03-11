@@ -293,8 +293,9 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
 
         if (channelUri == null) {
             // Insert the channel
-            if (Constants.DEBUG)
+            if (Constants.DEBUG) {
                 Log.v(TAG, "Insert channel " + channelId);
+            }
             mPendingChannelOps.put(
                     channelId,
                     ContentProviderOperation.newInsert(TvContract.Channels.CONTENT_URI)
@@ -303,8 +304,9 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
             );
         } else {
             // Update the channel
-            if (Constants.DEBUG)
+            if (Constants.DEBUG) {
                 Log.v(TAG, "Update channel " + channelId);
+            }
             mPendingChannelOps.put(
                     channelId,
                     ContentProviderOperation.newUpdate(channelUri)
@@ -441,8 +443,9 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
 
         for (int i = 0; i < existingChannelIds.length; i++) {
             if (!mSeenChannels.contains(existingChannelIds[i])) {
-                if (Constants.DEBUG)
+                if (Constants.DEBUG) {
                     Log.d(TAG, "Deleting channel " + existingChannelIds[i]);
+                }
                 Uri channelUri = mChannelUriMap.get(existingChannelIds[i]);
                 mChannelUriMap.remove(existingChannelIds[i]);
                 mContentResolver.delete(channelUri, null, null);
@@ -544,8 +547,9 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
 
         if (eventUri == null) {
             // Insert the event
-            if (Constants.DEBUG)
+            if (Constants.DEBUG) {
                 Log.v(TAG, "Insert event " + eventId + " on channel " + channelId);
+            }
             mPendingProgramOps.put(
                     eventId,
                     ContentProviderOperation.newInsert(TvContract.Programs.CONTENT_URI)
@@ -554,8 +558,9 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
             );
         } else {
             // Update the event
-            if (Constants.DEBUG)
+            if (Constants.DEBUG) {
                 Log.v(TAG, "Update event " + eventId + " on channel " + channelId);
+            }
             mPendingProgramOps.put(
                     eventId,
                     ContentProviderOperation.newUpdate(eventUri)
@@ -629,8 +634,9 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
 
         for (int i = 0; i < existingProgramIds.length; i++) {
             if (!mSeenPrograms.contains(existingProgramIds[i])) {
-                if (Constants.DEBUG)
+                if (Constants.DEBUG) {
                     Log.d(TAG, "Deleting program " + existingProgramIds[i]);
+                }
                 Uri programUri = mProgramUriMap.get(existingProgramIds[i]);
                 mProgramUriMap.remove(existingProgramIds[i]);
                 mContentResolver.delete(programUri, null, null);

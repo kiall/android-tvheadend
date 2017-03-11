@@ -238,7 +238,9 @@ public class VlcSession extends BaseSession {
         if (trackDescriptions != null) {
             Log.d(TAG, "GAT: Processing " + trackDescriptions.length + " video tracks");
             for (MediaPlayer.TrackDescription trackDescription : trackDescriptions) {
-                if (trackDescription.id == -1) continue;
+                if (trackDescription.id == -1) {
+                    continue;
+                }
 
                 Log.d(TAG, "GAT: Found video track. ID: " + trackDescription.id + " Name: " + trackDescription.name);
 
@@ -255,7 +257,9 @@ public class VlcSession extends BaseSession {
         if (trackDescriptions != null) {
             Log.d(TAG, "GAT: Processing " + trackDescriptions.length + " audio tracks");
             for (MediaPlayer.TrackDescription trackDescription : trackDescriptions) {
-                if (trackDescription.id == -1) continue;
+                if (trackDescription.id == -1) {
+                    continue;
+                }
 
                 Log.d(TAG, "GAT: Found audio track. ID: " + trackDescription.id + " Name: " + trackDescription.name);
 
@@ -272,7 +276,9 @@ public class VlcSession extends BaseSession {
         if (trackDescriptions != null) {
             Log.d(TAG, "GAT: Processing " + trackDescriptions.length + " text tracks");
             for (MediaPlayer.TrackDescription trackDescription : trackDescriptions) {
-                if (trackDescription.id == -1) continue;
+                if (trackDescription.id == -1) {
+                    continue;
+                }
 
                 Log.d(TAG, "GAT: Found subtitle track. ID: " + trackDescription.id + " Name: " + trackDescription.name);
 

@@ -116,8 +116,9 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
         // If the buffer is empty, block until we have at least 1 byte
         while (mIsOpen && mBuffer.remaining() == 0) {
             try {
-                if (Constants.DEBUG)
+                if (Constants.DEBUG) {
                     Log.v(TAG, "Blocking for more data");
+                }
                 Thread.sleep(250);
             } catch (InterruptedException e) {
                 // Ignore.

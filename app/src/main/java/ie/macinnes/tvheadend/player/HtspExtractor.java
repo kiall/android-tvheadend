@@ -103,8 +103,9 @@ public class HtspExtractor implements Extractor {
     public int read(ExtractorInput input, PositionHolder seekPosition) throws IOException, InterruptedException {
         int bytesRead = input.read(mRawBytes, 0, mRawBytes.length);
 
-        if (Constants.DEBUG)
+        if (Constants.DEBUG) {
             Log.v(TAG, "Read " + bytesRead + " bytes");
+        }
 
         ByteArrayInputStream inputStream = new ByteArrayInputStream(mRawBytes, 0, bytesRead);
         ObjectInputStream objectInput = null;
