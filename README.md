@@ -13,5 +13,9 @@ Sign up for Beta access (more frequent, bleeding edge releases):
 2. Join the beta on Google Play: https://play.google.com/apps/testing/ie.macinnes.tvheadend
 3. Download from Google Play: https://play.google.com/store/apps/details?id=ie.macinnes.tvheadend
 
+IRC Channel:
+
+#android-tvheadend on Freenode - not a general support channel, used for chatting with developers around specific bugs etc
+
 ![Screenshot 1](screenshots/TVH-1.png)
 ![Screenshot 2](screenshots/TVH-2.png)
