@@ -318,6 +318,13 @@ public class TvInputSetupActivity extends Activity {
         @Override
         public void onStop() {
             mConnection.stop();
+            mConnection.removeMessageListener(mEpgSyncTask);
+            mConnection.removeAuthenticationListener(mEpgSyncTask);
+            mConnection = null;
+
+            mEpgSyncTask.removeEpgSyncListener(this);
+            mEpgSyncTask = null;
+
             super.onStop();
         }
 

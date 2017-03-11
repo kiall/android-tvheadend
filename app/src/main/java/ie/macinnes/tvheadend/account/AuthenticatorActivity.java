@@ -368,6 +368,9 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
             super.onStop();
 
             mConnection.stop();
+            mConnection.removeConnectionListener(this);
+            mConnection.removeAuthenticationListener(this);
+            mConnection = null;
         }
 
         @Override

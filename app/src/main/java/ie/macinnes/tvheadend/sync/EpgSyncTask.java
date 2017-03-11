@@ -639,8 +639,8 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
     }
 
     private void handleInitialSyncCompleted(@NonNull HtspMessage message) {
-        // Ensure we wrap up any pending channel operations before moving onto events. This is no-op
-        // once there are no pending operations
+        // Ensure we wrap up any pending channel operations. This is no-op once there are no pending
+        // operations. This should only be needed when there were no events provided at all.
         flushPendingChannelOps();
 
         // Ensure we wrap up any pending event operations. This is no-op once there are no pending
