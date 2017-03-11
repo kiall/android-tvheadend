@@ -39,6 +39,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Queue;
@@ -62,6 +64,8 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
             "eventAdd", "eventUpdate", "eventDelete",
             "initialSyncCompleted",
     }));
+    private static final boolean IS_BRAVIA = Build.MODEL.contains("BRAVIA");
+
     private static final String CHANNEL_ID_KEY = "channelId";
     private static final String CHANNEL_NUMBER_KEY = "channelNumber";
     private static final String CHANNEL_NUMBER_MINOR_KEY = "channelNumberMinor";
@@ -118,14 +122,26 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
     private final SparseArray<Uri> mChannelUriMap;
     private final SparseArray<Uri> mProgramUriMap;
 
-    private final SparseArray<ContentProviderOperation> mPendingChannelOps = new SparseArray<>();
-    private final SparseArray<ContentProviderOperation> mPendingProgramOps = new SparseArray<>();
+    private final ArrayList<PendingChannelAddUpdate> mPendingChannelOps = new ArrayList<>();
+    private final ArrayList<PendingEventAddUpdate> mPendingProgramOps = new ArrayList<>();
 
     private final Queue<PendingChannelLogoFetch> mPendingChannelLogoFetches = new ConcurrentLinkedQueue<>();
     private final byte[] mImageBytes = new byte[102400];
 
     private Set<Integer> mSeenChannels = new HashSet<>();
     private Set<Integer> mSeenPrograms = new HashSet<>();
+
+    private final class PendingChannelAddUpdate {
+        public int channelId;
+        public int channelNumber;
+        public ContentProviderOperation operation;
+
+        public PendingChannelAddUpdate(int channelId, int channelNumber, ContentProviderOperation operation) {
+            this.channelId = channelId;
+            this.channelNumber = channelNumber;
+            this.operation = operation;
+        }
+    }
 
     private final class PendingChannelLogoFetch {
         public int channelId;
@@ -134,6 +150,16 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
         public PendingChannelLogoFetch(int channelId, Uri logoUri) {
             this.channelId = channelId;
             this.logoUri = logoUri;
+        }
+    }
+
+    private final class PendingEventAddUpdate {
+        public int eventId;
+        public ContentProviderOperation operation;
+
+        public PendingEventAddUpdate(int eventId, ContentProviderOperation operation) {
+            this.eventId = eventId;
+            this.operation = operation;
         }
     }
 
@@ -295,27 +321,32 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
             // Insert the channel
             if (Constants.DEBUG)
                 Log.v(TAG, "Insert channel " + channelId);
-            mPendingChannelOps.put(
-                    channelId,
+            final int channelNumber = message.getInteger(CHANNEL_NUMBER_KEY);
+            mPendingChannelOps.add(new PendingChannelAddUpdate(
+                    channelId, channelNumber,
                     ContentProviderOperation.newInsert(TvContract.Channels.CONTENT_URI)
-                            .withValues(values)
-                            .build()
-            );
+                        .withValues(values)
+                        .build()
+            ));
         } else {
             // Update the channel
             if (Constants.DEBUG)
                 Log.v(TAG, "Update channel " + channelId);
-            mPendingChannelOps.put(
-                    channelId,
+            mPendingChannelOps.add(new PendingChannelAddUpdate(
+                    channelId, -1,
                     ContentProviderOperation.newUpdate(channelUri)
                             .withValues(values)
                             .build()
-            );
+            ));
         }
 
-        // Throttle the batch operation not to cause TransactionTooLargeException. If the initial
-        // sync has already completed, flush for every message.
-        if (mInitialSyncCompleted || mPendingChannelOps.size() >= 500) {
+        if (mInitialSyncCompleted) {
+            flushPendingChannelOps();
+        } else if (!IS_BRAVIA && mPendingChannelOps.size() >= 100) {
+            // Throttle the batch operation not to cause TransactionTooLargeException. If the initial
+            // sync has already completed, flush for every message. Additionally, we have no choice
+            // on a Sony set but to not flush until we have all the channels, as sony's EPG view
+            // is buggy.
             flushPendingChannelOps();
         }
 
@@ -333,10 +364,31 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
 
         Log.d(TAG, "Flushing " + mPendingChannelOps.size() + " channel operations");
 
+        if (IS_BRAVIA) {
+            // Sort the Pending Add/Updates by their channel numbers as Sony fails to do this in
+            // their EPG view.
+            Collections.sort(mPendingChannelOps, new Comparator<PendingChannelAddUpdate>() {
+                @Override
+                public int compare(PendingChannelAddUpdate o1, PendingChannelAddUpdate o2) {
+                    if (o1.channelNumber == -1 || o2.channelNumber == -1) {
+                        // One of the events is a channelUpdate, no need (or ability) to sort it
+                        return 0;
+                    }
+                    if (o1.channelNumber > o2.channelNumber) {
+                        return 1;
+                    } else if (o1.channelNumber == o2.channelNumber) {
+                        return 0;
+                    }
+
+                    return -1;
+                }
+            });
+        }
+
         // Build out an ArrayList of Operations needed for applyBatch()
         ArrayList<ContentProviderOperation> operations = new ArrayList<>(mPendingChannelOps.size());
-        for (int i = 0; i < mPendingChannelOps.size(); i++) {
-            operations.add(mPendingChannelOps.valueAt(i));
+        for (PendingChannelAddUpdate pcau : mPendingChannelOps) {
+            operations.add(pcau.operation);
         }
 
         // Apply the batch of Operations
@@ -360,7 +412,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
 
         // Update the Channel Uri Map based on the results
         for (int i = 0; i < mPendingChannelOps.size(); i++) {
-            final int channelId = mPendingChannelOps.keyAt(i);
+            final int channelId = mPendingChannelOps.get(i).channelId;
             final ContentProviderResult result = results[i];
 
             mChannelUriMap.put(channelId, result.uri);
@@ -546,22 +598,22 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
             // Insert the event
             if (Constants.DEBUG)
                 Log.v(TAG, "Insert event " + eventId + " on channel " + channelId);
-            mPendingProgramOps.put(
+            mPendingProgramOps.add(new PendingEventAddUpdate(
                     eventId,
                     ContentProviderOperation.newInsert(TvContract.Programs.CONTENT_URI)
                             .withValues(values)
                             .build()
-            );
+            ));
         } else {
             // Update the event
             if (Constants.DEBUG)
                 Log.v(TAG, "Update event " + eventId + " on channel " + channelId);
-            mPendingProgramOps.put(
+            mPendingProgramOps.add(new PendingEventAddUpdate(
                     eventId,
                     ContentProviderOperation.newUpdate(eventUri)
                             .withValues(values)
                             .build()
-            );
+            ));
         }
 
         // Throttle the batch operation not to cause TransactionTooLargeException. If the initial
@@ -582,8 +634,8 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
 
         // Build out an ArrayList of Operations needed for applyBatch()
         ArrayList<ContentProviderOperation> operations = new ArrayList<>(mPendingProgramOps.size());
-        for (int i = 0; i < mPendingProgramOps.size(); i++) {
-            operations.add(mPendingProgramOps.valueAt(i));
+        for (PendingEventAddUpdate peau : mPendingProgramOps) {
+            operations.add(peau.operation);
         }
 
         // Apply the batch of Operations
@@ -608,7 +660,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
 
         // Update the Event Uri Map based on the results
         for (int i = 0; i < mPendingProgramOps.size(); i++) {
-            final int eventId = mPendingProgramOps.keyAt(i);
+            final int eventId = mPendingProgramOps.get(i).eventId;
             final ContentProviderResult result = results[i];
 
             mProgramUriMap.put(eventId, result.uri);
