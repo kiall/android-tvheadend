@@ -15,7 +15,7 @@ Sign up for Beta access (more frequent, bleeding edge releases):
 
 IRC Channel:
 
-#android-tvheadend on Freenode - not a general support channel, used for chatting with developers around specific bugs etc
+Join #android-tvheadend on Freenode - not a general support channel, used for chatting with developers around specific bugs etc
 
 ![Screenshot 1](screenshots/TVH-1.png)
 ![Screenshot 2](screenshots/TVH-2.png)
