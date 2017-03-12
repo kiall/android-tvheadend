@@ -37,6 +37,7 @@ import android.util.SparseArray;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -445,7 +446,13 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
             OutputStream os = null;
 
             try {
-                is = new HtspFileInputStream(mDispatcher, channelLogoSourceUri.getPath());
+                final String logoScheme = channelLogoSourceUri.getScheme();
+                if (logoScheme != null && (logoScheme.equalsIgnoreCase("http") || logoScheme.equalsIgnoreCase("https"))) {
+                    is = new URL(channelLogoSourceUri.toString()).openStream();
+                } else {
+                    is = new HtspFileInputStream(mDispatcher, channelLogoSourceUri.getPath());
+                }
+
                 os = mContentResolver.openOutputStream(channelLogoDestUri);
 
                 int read;
