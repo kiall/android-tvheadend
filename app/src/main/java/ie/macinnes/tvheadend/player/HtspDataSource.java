@@ -121,7 +121,7 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
                 Thread.sleep(250);
             } catch (InterruptedException e) {
                 // Ignore.
-                Log.w(TAG, "Caught InterruptedException, ignoring" ,e);
+                Log.w(TAG, "Caught InterruptedException, ignoring");
             }
         }
 
@@ -176,18 +176,7 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
 
     @Override
     public void onSubscriptionStatus(@NonNull HtspMessage message) {
-        Log.d(TAG, "Received subscriptionStatus");
 
-        final String status = message.getString("status", null);
-        final String subscriptionError = message.getString("subscriptionError", null);
-
-        if (status != null) {
-            Log.d(TAG, "Subscription Status: " + status);
-        }
-
-        if (subscriptionError != null) {
-            Log.d(TAG, "Subscription Error: " + subscriptionError);
-        }
     }
 
     @Override
@@ -197,7 +186,12 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
     }
 
     @Override
-    public void onQueueStatus(@NonNull HtspMessage htspMessage) {
+    public void onQueueStatus(@NonNull HtspMessage message) {
+
+    }
+
+    @Override
+    public void onSignalStatus(@NonNull HtspMessage message) {
 
     }
 
