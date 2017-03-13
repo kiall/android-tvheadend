@@ -19,17 +19,6 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:title="TVHeadend Settings">
 
-    <PreferenceCategory android:title="Video Playback">
-        <!-- TODO: These all-caps keys just look silly, but are needed for backward compat -->
-        <ListPreference
-            android:key="SESSION"
-            android:title="Video Player Choice"
-            android:dialogTitle="Video Player Choice"
-            android:entries="@array/video_player_names"
-            android:entryValues="@array/video_player_values"
-            android:defaultValue="SESSION-EXO-PLAYER"/>
-    </PreferenceCategory>
-
     <PreferenceCategory android:title="EPG">
         <CheckBoxPreference
             android:key="epg_sync_enabled"
@@ -53,24 +42,6 @@
             android:title="Enable EPG Default Poster Art"
             android:summary="Enable if EPG data provider does not include poster art"
             android:defaultValue="false" />
-    </PreferenceCategory>
-
-    <PreferenceCategory android:title="Video Player Settings">
-        <PreferenceScreen android:title="VLC Settings" android:key="vlc_settings" android:persistent="false">
-            <CheckBoxPreference
-                android:key="vlc_deinterlace_enabled"
-                android:title="Deinterlace Enabled"
-                android:defaultValue="true" />
-
-            <ListPreference
-                android:key="vlc_deinterlace_method"
-                android:title="Deinterlace Method"
-                android:dialogTitle="Deinterlace Method"
-                android:entries="@array/vlc_deinterlace_names"
-                android:entryValues="@array/vlc_deinterlace_values"
-                android:defaultValue="blend"
-                android:dependency="vlc_deinterlace_enabled"/>
-        </PreferenceScreen>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Advanced Settings">

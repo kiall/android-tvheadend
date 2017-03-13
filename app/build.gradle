@@ -83,7 +83,6 @@ dependencies {
 //    compile(name: 'library-release', ext: 'aar')
     // Used for testing local exoplayer-ffmpeg builds
 //    compile(name: 'extension-ffmpeg-release', ext: 'aar')
-    compile 'de.mrmaffen:vlc-android-sdk:1.9.8'
     compile 'ch.acra:acra:4.9.2'
 
     debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5'

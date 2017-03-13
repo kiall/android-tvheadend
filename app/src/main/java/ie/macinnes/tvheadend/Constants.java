@@ -25,7 +25,7 @@ public class Constants {
     // Misc Things
     public static final String CONTENT_AUTHORITY = TvContract.AUTHORITY;
     public static final String ACCOUNT_TYPE = "ie.macinnes.tvheadend";
-    public static final int MIGRATE_VERSION = 79;
+    public static final int MIGRATE_VERSION = 80;
 
     // Preferences Files and Keys
     public static final String PREFERENCE_TVHEADEND = "tvheadend";
@@ -40,12 +40,6 @@ public class Constants {
     public static final String KEY_FFMPEG_AUDIO_ENABLED = "ffmpeg_audio_enabled";
     public static final String KEY_SHIELD_WORKAROUND_ENABLED = "shield_workaround_enabled";
 
-    // Session Selection Preference Keys and Values
-    public static final String KEY_SESSION = "SESSION";
-    public static final String SESSION_MEDIA_PLAYER = "SESSION-MEDIA-PLAYER";
-    public static final String SESSION_EXO_PLAYER = "SESSION-EXO-PLAYER";
-    public static final String SESSION_VLC = "SESSION-VLC";
-
     // Bundle and Preference Keys
     public static final String KEY_APP_VERSION = "APP-VERSION";
     public static final String KEY_HOSTNAME = "HOSTNAME";
@@ -55,10 +49,6 @@ public class Constants {
     public static final String KEY_USERNAME = "USERNAME";
     public static final String KEY_PASSWORD = "PASSWORD";
     public static final String KEY_ERROR_MESSAGE = "ERROR-MESSAGE";
-
-    // VLC Preference Keys
-    public static final String KEY_DEINTERLACE_ENABLED = "vlc_deinterlace_enabled";
-    public static final String KEY_DEINTERLACE_METHOD = "vlc_deinterlace_method";
 
     // Session Selection Preference Keys and Values
     public static final String KEY_EPG_SYNC_ENABLED = "epg_sync_enabled";

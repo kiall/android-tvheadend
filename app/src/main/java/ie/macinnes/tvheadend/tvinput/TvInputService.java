@@ -16,9 +16,7 @@ package ie.macinnes.tvheadend.tvinput;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
@@ -38,8 +36,6 @@ public class TvInputService extends android.media.tv.TvInputService {
     private HandlerThread mHandlerThread;
     private Handler mHandler;
 
-    private String mSessionType;
-
     private SimpleHtspConnection mConnection;
 
     private AccountManager mAccountManager;
@@ -52,12 +48,6 @@ public class TvInputService extends android.media.tv.TvInputService {
         mHandlerThread = new HandlerThread(getClass().getSimpleName());
         mHandlerThread.start();
         mHandler = new Handler(mHandlerThread.getLooper());
-
-        // Fetch the chosen session type
-        SharedPreferences sharedPreferences = getSharedPreferences(
-                Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
-
-        mSessionType = sharedPreferences.getString(Constants.KEY_SESSION, Constants.SESSION_EXO_PLAYER);
 
         mAccountManager = AccountManager.get(this);
         mAccount = AccountUtils.getActiveAccount(this);
@@ -83,13 +73,7 @@ public class TvInputService extends android.media.tv.TvInputService {
     public final Session onCreateSession(String inputId) {
         Log.d(TAG, "Creating new TvInputService Session for input ID: " + inputId + ".");
 
-        if (mSessionType != null && mSessionType.equals(Constants.SESSION_VLC)) {
-            return new VlcSession(this, mHandler);
-        } else if (mSessionType != null && mSessionType.equals(Constants.SESSION_EXO_PLAYER)) {
-            return new ExoPlayerSession(this, mHandler, mConnection);
-        } else {
-            return new MediaPlayerSession(this, mHandler);
-        }
+        return new ExoPlayerSession(this, mHandler, mConnection);
     }
 
     protected void openConnection() {

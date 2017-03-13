@@ -18,6 +18,7 @@ package ie.macinnes.tvheadend.migrate;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
@@ -26,6 +27,7 @@ import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.MiscUtils;
 import ie.macinnes.tvheadend.R;
 import ie.macinnes.tvheadend.account.AccountUtils;
+import ie.macinnes.tvheadend.tvinput.TvInputService;
 
 
 public class MigrateUtils {
@@ -33,6 +35,7 @@ public class MigrateUtils {
     private static final int VERSION_14 = 14;
     private static final int VERSION_38 = 38;
     private static final int VERSION_79 = 79;
+    private static final int VERSION_80 = 80;
 
     public static void doMigrate(Context context) {
         Log.d(TAG, "doMigrate()");
@@ -41,10 +44,10 @@ public class MigrateUtils {
         PreferenceManager.setDefaultValues(context, Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE,
                                            R.xml.preferences, true);
 
-        // Store the current version
+        // Lookup the current version
         int currentApplicationVersion = Constants.MIGRATE_VERSION;
 
-        // Store the last migrated version
+        // Lookup the last migrated version
         SharedPreferences sharedPreferences = context.getSharedPreferences(
                 Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
 
@@ -63,6 +66,9 @@ public class MigrateUtils {
             }
             if (lastInstalledApplicationVersion <= VERSION_79) {
                 migrateSetupCompleted(context);
+            }
+            if (lastInstalledApplicationVersion <= VERSION_80) {
+                migrateMediaPlayerVlcRemoval(context);
             }
         }
 
@@ -111,6 +117,22 @@ public class MigrateUtils {
             int htspPort = Integer.parseInt(httpPort) + 1;
             accountManager.setUserData(account, Constants.KEY_HTSP_PORT, Integer.toString(htspPort));
         }
+    }
+
+    protected static void migrateMediaPlayerVlcRemoval(Context context) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(
+                Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
+
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.remove("SESSION");
+        editor.remove("vlc_deinterlace_enabled");
+        editor.remove("vlc_deinterlace_method");
+        editor.commit();
+
+        // Restart the TvInputService
+        Intent i = new Intent(context, TvInputService.class);
+        context.stopService(i);
+        context.startService(i);
     }
 }
 
