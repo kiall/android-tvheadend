@@ -83,9 +83,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
     public static class ServerFragment extends BaseGuidedStepFragment {
         private static final int ACTION_ID_HOSTNAME = 1;
         private static final int ACTION_ID_HTSP_PORT = 2;
-        private static final int ACTION_ID_HTTP_PORT = 3;
-        private static final int ACTION_ID_HTTP_PATH = 4;
-        private static final int ACTION_ID_NEXT = 5;
+        private static final int ACTION_ID_NEXT = 3;
 
         @NonNull
         @Override
@@ -113,26 +111,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
                     .title(R.string.server_htsp_port)
                     .descriptionEditInputType(InputType.TYPE_CLASS_NUMBER)
                     .descriptionInputType(InputType.TYPE_CLASS_NUMBER)
-                    .descriptionEditable(true)
-                    .build();
-
-            actions.add(action);
-
-            action = new GuidedAction.Builder(getActivity())
-                    .id(ACTION_ID_HTTP_PORT)
-                    .title(R.string.server_http_port)
-                    .descriptionEditInputType(InputType.TYPE_CLASS_NUMBER)
-                    .descriptionInputType(InputType.TYPE_CLASS_NUMBER)
-                    .descriptionEditable(true)
-                    .build();
-
-            actions.add(action);
-
-            action = new GuidedAction.Builder(getActivity())
-                    .id(ACTION_ID_HTTP_PATH)
-                    .title(R.string.server_http_path)
-                    .descriptionEditInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI)
-                    .descriptionInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI)
                     .descriptionEditable(true)
                     .build();
 
@@ -176,27 +154,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
                 }
 
                 args.putString(Constants.KEY_HTSP_PORT, htspPortAction.getDescription().toString());
-
-                // HTTP Port Field
-                GuidedAction httpPortAction = findActionById(ACTION_ID_HTTP_PORT);
-                CharSequence httpPortValue = httpPortAction.getDescription();
-
-                if (httpPortValue == null || TextUtils.isEmpty(httpPortValue)) {
-                    Toast.makeText(getActivity(), R.string.server_http_port_invalid, Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                args.putString(Constants.KEY_HTTP_PORT, httpPortAction.getDescription().toString());
-
-                // HTTP Path Field
-                GuidedAction httpPathAction = findActionById(ACTION_ID_HTTP_PATH);
-                CharSequence httpPathValue = httpPathAction.getDescription();
-
-                if (httpPathValue != null) {
-                    args.putString(Constants.KEY_HTTP_PATH, httpPathValue.toString());
-                } else {
-                    args.putString(Constants.KEY_HTTP_PATH, "");
-                }
 
                 // Move to the next setup
                 GuidedStepFragment fragment = new AccountFragment();
@@ -300,8 +257,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         protected String mAccountPassword;
         protected String mAccountHostname;
         protected String mAccountHtspPort;
-        protected String mAccountHttpPort;
-        protected String mAccountHttpPath;
 
         @Override
         public GuidedActionsStylist onCreateActionsStylist() {
@@ -350,8 +305,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
             mAccountPassword = args.getString(Constants.KEY_PASSWORD);
             mAccountHostname = args.getString(Constants.KEY_HOSTNAME);
             mAccountHtspPort = args.getString(Constants.KEY_HTSP_PORT);
-            mAccountHttpPort = args.getString(Constants.KEY_HTTP_PORT);
-            mAccountHttpPath = args.getString(Constants.KEY_HTTP_PATH);
 
             HtspConnection.ConnectionDetails connectionDetails = new HtspConnection.ConnectionDetails(
                     mAccountHostname, Integer.parseInt(mAccountHtspPort), mAccountName,
@@ -408,8 +361,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
 
                 userdata.putString(Constants.KEY_HOSTNAME, mAccountHostname);
                 userdata.putString(Constants.KEY_HTSP_PORT, mAccountHtspPort);
-                userdata.putString(Constants.KEY_HTTP_PORT, mAccountHttpPort);
-                userdata.putString(Constants.KEY_HTTP_PATH, mAccountHttpPath);
 
                 mAccountManager.addAccountExplicitly(account, mAccountPassword, userdata);
 

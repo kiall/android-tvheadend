@@ -46,11 +46,6 @@
 
     <PreferenceCategory android:title="Advanced Settings">
         <CheckBoxPreference
-            android:key="htsp_video_enabled"
-            android:title="Enable HTSP Video"
-            android:defaultValue="true" />
-
-        <CheckBoxPreference
             android:key="ffmpeg_audio_enabled"
             android:title="Enable FFMpeg Audio Renderer"
             android:defaultValue="true" />
@@ -66,13 +61,6 @@
             android:title="HTSP Stream Profile"
             android:summary="Stream profile to use for HTSP video"
             android:defaultValue="htsp" />
-
-        <!-- TODO: This needs to be made into a list, based on fetching the list of available profiles -->
-        <EditTextPreference
-            android:key="http_stream_profile"
-            android:title="HTTP Stream Profile"
-            android:summary="Stream profile to use for HTTP video"
-            android:defaultValue="tif" />
 
         <PreferenceScreen android:title="Crash Reporting Settings" android:key="crash_reporting_settings" android:persistent="false">
             <CheckBoxPreference android:key="acra.enable"

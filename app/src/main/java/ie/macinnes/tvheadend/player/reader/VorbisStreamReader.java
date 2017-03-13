@@ -27,7 +27,6 @@ import com.google.android.exoplayer2.ParserException;
 import com.google.android.exoplayer2.util.MimeTypes;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import ie.macinnes.htsp.HtspMessage;

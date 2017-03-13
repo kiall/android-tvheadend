@@ -16,7 +16,6 @@
 package ie.macinnes.tvheadend.migrate;
 
 import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -32,10 +31,9 @@ import ie.macinnes.tvheadend.tvinput.TvInputService;
 
 public class MigrateUtils {
     public static final String TAG = MigrateUtils.class.getName();
-    private static final int VERSION_14 = 14;
-    private static final int VERSION_38 = 38;
     private static final int VERSION_79 = 79;
     private static final int VERSION_80 = 80;
+    private static final int VERSION_81 = 81;
 
     public static void doMigrate(Context context) {
         Log.d(TAG, "doMigrate()");
@@ -58,17 +56,14 @@ public class MigrateUtils {
 
         // Run any migrations
         if (currentApplicationVersion != lastInstalledApplicationVersion) {
-            if (lastInstalledApplicationVersion <= VERSION_14) {
-                migrateAccountsPortName(context);
-            }
-            if (lastInstalledApplicationVersion <= VERSION_38) {
-                migrateAccountHtspPort(context);
-            }
             if (lastInstalledApplicationVersion <= VERSION_79) {
                 migrateSetupCompleted(context);
             }
             if (lastInstalledApplicationVersion <= VERSION_80) {
                 migrateMediaPlayerVlcRemoval(context);
+            }
+            if (lastInstalledApplicationVersion <= VERSION_81) {
+                migrateExoPlayerHttpRemoval(context);
             }
         }
 
@@ -89,36 +84,6 @@ public class MigrateUtils {
         }
     }
 
-    protected static void migrateAccountsPortName(Context context) {
-        Log.d(TAG, "migrateAccountsPortData()");
-
-        AccountManager accountManager = AccountManager.get(context);
-        Account[] accounts = AccountUtils.getAllAccounts(context);
-
-        for (Account account : accounts) {
-            String port = accountManager.getUserData(account, "PORT");
-
-            if (port != null) {
-                accountManager.setUserData(account, Constants.KEY_HTTP_PORT, port);
-                accountManager.setUserData(account, "PORT", null);
-            }
-        }
-    }
-
-    protected static void migrateAccountHtspPort(Context context) {
-        Log.d(TAG, "migrateAccountHtspPort()");
-
-        AccountManager accountManager = AccountManager.get(context);
-        Account[] accounts = AccountUtils.getAllAccounts(context);
-
-        for (Account account : accounts) {
-            String httpPort = accountManager.getUserData(account, Constants.KEY_HTTP_PORT);
-
-            int htspPort = Integer.parseInt(httpPort) + 1;
-            accountManager.setUserData(account, Constants.KEY_HTSP_PORT, Integer.toString(htspPort));
-        }
-    }
-
     protected static void migrateMediaPlayerVlcRemoval(Context context) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(
                 Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
@@ -127,6 +92,20 @@ public class MigrateUtils {
         editor.remove("SESSION");
         editor.remove("vlc_deinterlace_enabled");
         editor.remove("vlc_deinterlace_method");
+        editor.commit();
+
+        // Restart the TvInputService
+        Intent i = new Intent(context, TvInputService.class);
+        context.stopService(i);
+        context.startService(i);
+
+    }
+    protected static void migrateExoPlayerHttpRemoval(Context context) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(
+                Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
+
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.remove("http_stream_profile");
         editor.commit();
 
         // Restart the TvInputService

@@ -24,10 +24,8 @@ import android.view.View;
 import android.widget.TextView;
 
 import org.acra.ACRA;
-import org.json.JSONObject;
 
 import ie.macinnes.tvheadend.account.AccountUtils;
-import ie.macinnes.tvheadend.migrate.MigrateUtils;
 import ie.macinnes.tvheadend.settings.SettingsActivity;
 import ie.macinnes.tvheadend.sync.EpgSyncService;
 import ie.macinnes.tvheadend.tvinput.TvInputService;
@@ -100,12 +98,6 @@ public class DevTestActivity extends Activity {
 
             String htspPort = mAccountManager.getUserData(account, Constants.KEY_HTSP_PORT);
             appendDebugOutput("Account HTSP Port: " + htspPort);
-
-            String httpPort = mAccountManager.getUserData(account, Constants.KEY_HTTP_PORT);
-            appendDebugOutput("Account HTTP Port: " + httpPort);
-
-            String httpPath = mAccountManager.getUserData(account, Constants.KEY_HTTP_PATH);
-            appendDebugOutput("Account HTTP Path: " + httpPath);
         }
 
         setOk();

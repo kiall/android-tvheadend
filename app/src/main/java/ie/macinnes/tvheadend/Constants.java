@@ -25,16 +25,14 @@ public class Constants {
     // Misc Things
     public static final String CONTENT_AUTHORITY = TvContract.AUTHORITY;
     public static final String ACCOUNT_TYPE = "ie.macinnes.tvheadend";
-    public static final int MIGRATE_VERSION = 80;
+    public static final int MIGRATE_VERSION = 81;
 
     // Preferences Files and Keys
     public static final String PREFERENCE_TVHEADEND = "tvheadend";
 
     // Misc Preference Keys and Values
     public static final String KEY_SETUP_COMPLETE = "SETUP-COMPLETE";
-    public static final String KEY_HTSP_VIDEO_ENABLED = "htsp_video_enabled";
     public static final String KEY_HTSP_STREAM_PROFILE = "htsp_stream_profile";
-    public static final String KEY_HTTP_STREAM_PROFILE = "http_stream_profile";
 
     // Advanced Preferences Keys and Values
     public static final String KEY_FFMPEG_AUDIO_ENABLED = "ffmpeg_audio_enabled";
@@ -44,8 +42,6 @@ public class Constants {
     public static final String KEY_APP_VERSION = "APP-VERSION";
     public static final String KEY_HOSTNAME = "HOSTNAME";
     public static final String KEY_HTSP_PORT = "HTSP-PORT";
-    public static final String KEY_HTTP_PORT = "HTTP-PORT";
-    public static final String KEY_HTTP_PATH = "HTTP-PATH";
     public static final String KEY_USERNAME = "USERNAME";
     public static final String KEY_PASSWORD = "PASSWORD";
     public static final String KEY_ERROR_MESSAGE = "ERROR-MESSAGE";

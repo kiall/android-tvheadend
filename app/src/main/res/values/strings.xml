@@ -41,9 +41,6 @@ under the License.
     
     <string name="server_htsp_port">HTSP Port Number</string>
     <string name="server_htsp_port_invalid">Invalid HTSP Port</string>
-    <string name="server_http_path">HTTP Path Prefix</string>
-    <string name="server_http_port">HTTP Port Number</string>
-    <string name="server_http_port_invalid">Invalid HTTP Port</string>
     <string name="server_ip">Hostname/IP</string>
     <string name="server_ip_invalid">Invalid Hostname</string>
     <string name="server_name">Tvheadend Server</string>
@@ -78,5 +75,4 @@ under the License.
     <string name="video_unsupported_error">Unsupported Video Track Selected</string>
     <string name="error_unsupported_audio">Unsupported Audio Track Selected</string>
     <string name="error_unsupported_text">Unsupported Text Track Selected</string>
-    <string name="error_prepare_video">Failed to prepare video</string>
 </resources>

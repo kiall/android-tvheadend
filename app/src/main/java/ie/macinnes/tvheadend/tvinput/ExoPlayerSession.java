@@ -16,14 +16,11 @@
 
 package ie.macinnes.tvheadend.tvinput;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.media.tv.TvInputManager;
 import android.media.tv.TvTrackInfo;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
 import android.view.Surface;
@@ -35,12 +32,10 @@ import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
-import com.google.android.exoplayer2.ExoPlayerLibraryInfo;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
-import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.extractor.ExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
@@ -52,20 +47,15 @@ import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.ui.SubtitleView;
 import com.google.android.exoplayer2.upstream.DataSource;
-import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.util.MimeTypes;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import ie.macinnes.htsp.SimpleHtspConnection;
 import ie.macinnes.tvheadend.Application;
-import ie.macinnes.tvheadend.BuildConfig;
 import ie.macinnes.tvheadend.Constants;
-import ie.macinnes.tvheadend.MiscUtils;
 import ie.macinnes.tvheadend.R;
-import ie.macinnes.tvheadend.account.AccountUtils;
 import ie.macinnes.tvheadend.player.EventLogger;
 import ie.macinnes.tvheadend.player.ExoPlayerUtils;
 import ie.macinnes.tvheadend.player.HtspDataSource;
@@ -75,9 +65,6 @@ import ie.macinnes.tvheadend.player.TvheadendTrackSelector;
 
 public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventListener {
     private static final String TAG = ExoPlayerSession.class.getName();
-
-    private AccountManager mAccountManager;
-    private Account mAccount;
 
     private SimpleHtspConnection mConnection;
 
@@ -95,10 +82,6 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
 
         mConnection = connection;
 
-        // Gather Details on the TVHeadend Instance
-        mAccountManager = AccountManager.get(mContext);
-        mAccount = AccountUtils.getActiveAccount(mContext);
-
         buildExoPlayer();
     }
 
@@ -109,16 +92,7 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
 
         Log.i(TAG, "Start playback of channel");
 
-        SharedPreferences sharedPreferences = mContext.getSharedPreferences(
-                Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
-
-        boolean htsp = sharedPreferences.getBoolean(Constants.KEY_HTSP_VIDEO_ENABLED, true);
-
-        if (htsp) {
-            buildHtspMediaSource(tvhChannelId);
-        } else {
-            buildHttpMediaSource(tvhChannelId);
-        }
+        buildHtspMediaSource(tvhChannelId);
 
         mExoPlayer.prepare(mMediaSource);
         mExoPlayer.setPlayWhenReady(true);
@@ -308,16 +282,7 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
         mExoPlayer.setAudioDebugListener(mEventLogger);
         mExoPlayer.setVideoDebugListener(mEventLogger);
 
-        SharedPreferences sharedPreferences = mContext.getSharedPreferences(
-                Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
-
-        boolean htsp = sharedPreferences.getBoolean(Constants.KEY_HTSP_VIDEO_ENABLED, false);
-
-        if (htsp) {
-            buildHtspExoPlayer();
-        } else {
-            buildHttpExoPlayer();
-        }
+        buildHtspExoPlayer();
     }
 
     private void buildHtspExoPlayer() {
@@ -333,27 +298,6 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
         mExtractorsFactory = new HtspExtractor.Factory(mContext);
     }
 
-    private void buildHttpExoPlayer() {
-        String username = mAccount.name;
-        String password = mAccountManager.getPassword(mAccount);
-
-        // We need a local variable of this type here, so we can call the setDefaultRequestProperty
-        // method.. Once we're done with that, we assign it over to mDataSourceFactory.
-        DefaultHttpDataSourceFactory factory = new DefaultHttpDataSourceFactory(getUserAgent());
-
-        // Create authentication headers
-        Map<String, String> headers = MiscUtils.createBasicAuthHeader(username, password);
-        for (Map.Entry<String, String> entry : headers.entrySet()) {
-            factory.setDefaultRequestProperty(entry.getKey(), entry.getValue());
-        }
-
-        // Produces DataSource instances through which media data is loaded.
-        mDataSourceFactory = factory;
-
-        // Produces Extractor instances for parsing the media data.
-        mExtractorsFactory = new DefaultExtractorsFactory();
-    }
-
     private void buildHtspMediaSource(int tvhChannelId) {
         Uri videoUri = Uri.parse("htsp://" + tvhChannelId);
 
@@ -362,41 +306,7 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
                 mDataSourceFactory, mExtractorsFactory, null, mEventLogger);
     }
 
-    private void buildHttpMediaSource(int tvhChannelId) {
-        String hostname = mAccountManager.getUserData(mAccount, Constants.KEY_HOSTNAME);
-        String httpPort = mAccountManager.getUserData(mAccount, Constants.KEY_HTTP_PORT);
-        String httpPath = mAccountManager.getUserData(mAccount, Constants.KEY_HTTP_PATH);
-
-        SharedPreferences sharedPreferences = mContext.getSharedPreferences(
-                Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
-
-        String streamProfile = sharedPreferences.getString(Constants.KEY_HTTP_STREAM_PROFILE, "tif");
-
-        Uri videoUri;
-
-        if (httpPath == null) {
-            videoUri = Uri.parse("http://" + hostname + ":" + httpPort + "/stream/channelid/" + tvhChannelId + "?profile=" + streamProfile);
-        } else {
-            videoUri = Uri.parse("http://" + hostname + ":" + httpPort + "/" + httpPath + "/stream/channelid/" + tvhChannelId + "?profile=" + streamProfile);
-        }
-
-        // Hardcode a Test Video URI
-//        videoUri = Uri.parse("http://10.5.1.22/test1.mp4"); // Multi Audio (eng 2.0 (AC3) and eng 5.1 (DTS)), Multi Subtitle (eng, rus, etc)
-//        videoUri = Uri.parse("http://10.5.1.22/test2.mp4"); // Single Audio (und, 5.1), No Subtitle
-//        videoUri = Uri.parse("http://10.5.1.22/test2-new2.mp4"); // Multi Audio (und, 2.0 AC3 and und, 5.1 AC3), No Subtitle
-//        videoUri = Uri.parse("http://10.5.1.22/test5.mkv");
-
-        // This is the MediaSource representing the media to be played.
-        mMediaSource = new ExtractorMediaSource(videoUri,
-                mDataSourceFactory, mExtractorsFactory, null, mEventLogger);
-    }
-
     private void showToast(String message) {
         Toast.makeText(mContext, message, Toast.LENGTH_LONG).show();
-    }
-
-    private String getUserAgent() {
-        return "android-tvheadend/" + BuildConfig.VERSION_NAME + " (Linux;Android " + Build.VERSION.RELEASE
-                + ";ExoPlayer " + ExoPlayerLibraryInfo.VERSION + ")";
     }
 }
