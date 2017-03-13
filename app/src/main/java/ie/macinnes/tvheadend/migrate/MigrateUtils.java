@@ -93,12 +93,6 @@ public class MigrateUtils {
         editor.remove("vlc_deinterlace_enabled");
         editor.remove("vlc_deinterlace_method");
         editor.commit();
-
-        // Restart the TvInputService
-        Intent i = new Intent(context, TvInputService.class);
-        context.stopService(i);
-        context.startService(i);
-
     }
     protected static void migrateExoPlayerHttpRemoval(Context context) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(
@@ -107,11 +101,6 @@ public class MigrateUtils {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.remove("http_stream_profile");
         editor.commit();
-
-        // Restart the TvInputService
-        Intent i = new Intent(context, TvInputService.class);
-        context.stopService(i);
-        context.startService(i);
     }
 }
 
