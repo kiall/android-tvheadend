@@ -41,7 +41,7 @@ public class Mpeg2VideoStreamReader extends PlainStreamReader {
                 Format.NO_VALUE,
                 stream.getInteger("width"),
                 stream.getInteger("height"),
-                Format.NO_VALUE,
+                StreamReaderUtils.frameDurationToFrameRate(stream.getInteger("duration", Format.NO_VALUE)),
                 null,
                 null);
     }
