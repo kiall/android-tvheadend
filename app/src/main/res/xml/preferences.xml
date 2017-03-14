@@ -30,6 +30,11 @@
             android:key="ffmpeg_audio_enabled"
             android:title="Enable FFMpeg Audio Codecs"
             android:defaultValue="true"/>
+
+        <CheckBoxPreference
+            android:key="captions_apply_embedded_styles"
+            android:title="Apply embedded caption styles"
+            android:defaultValue="true"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="EPG">

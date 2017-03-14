@@ -18,13 +18,16 @@ package ie.macinnes.tvheadend.tvinput;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Point;
 import android.media.tv.TvInputManager;
 import android.media.tv.TvTrackInfo;
 import android.net.Uri;
 import android.os.Handler;
 import android.util.Log;
+import android.view.Display;
 import android.view.Surface;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.google.android.exoplayer2.C;
@@ -41,6 +44,7 @@ import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.TrackGroup;
 import com.google.android.exoplayer2.source.TrackGroupArray;
+import com.google.android.exoplayer2.text.CaptionStyleCompat;
 import com.google.android.exoplayer2.trackselection.AdaptiveVideoTrackSelection;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
@@ -66,6 +70,9 @@ import ie.macinnes.tvheadend.player.TvheadendTrackSelector;
 public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventListener {
     private static final String TAG = ExoPlayerSession.class.getName();
 
+    private static final float CAPTION_LINE_HEIGHT_RATIO = 0.0533f;
+    private static final int TEXT_UNIT_PIXELS = 0;
+
     private SimpleHtspConnection mConnection;
 
     private SimpleExoPlayer mExoPlayer;
@@ -81,6 +88,8 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
         Log.d(TAG, "Session created (" + mSessionNumber + ")");
 
         mConnection = connection;
+
+        setOverlayViewEnabled(true);
 
         buildExoPlayer();
     }
@@ -128,17 +137,28 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
     }
 
     @Override
-    public void onSetCaptionEnabled(boolean enabled) {
-        Log.d(TAG, "Session onSetCaptionEnabled: " + enabled + " (" + mSessionNumber + ")");
-        super.onSetCaptionEnabled(enabled);
-        setOverlayViewEnabled(enabled);
-    }
-
-    @Override
     public View onCreateOverlayView() {
         Log.d(TAG, "Session onCreateOverlayView (" + mSessionNumber + ")");
 
         SubtitleView view = new SubtitleView(mContext);
+
+        CaptionStyleCompat captionStyleCompat = CaptionStyleCompat.createFromCaptionStyle(
+                mCaptioningManager.getUserStyle()
+        );
+
+        float captionTextSize = getCaptionFontSize();
+        captionTextSize *= mCaptioningManager.getFontScale();
+
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences(
+                Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
+
+        boolean applyEmbeddedStyles = sharedPreferences.getBoolean(Constants.KEY_CAPTIONS_APPLY_EMBEDDED_STYLES, true);
+
+        view.setStyle(captionStyleCompat);
+        view.setVisibility(View.VISIBLE);
+        view.setFixedTextSize(TEXT_UNIT_PIXELS, captionTextSize);
+        view.setApplyEmbeddedStyles(applyEmbeddedStyles);
+
         mExoPlayer.setTextOutput(view);
 
         return view;
@@ -304,6 +324,15 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
         // This is the MediaSource representing the media to be played.
         mMediaSource = new ExtractorMediaSource(videoUri,
                 mDataSourceFactory, mExtractorsFactory, null, mEventLogger);
+    }
+
+    private float getCaptionFontSize() {
+        Display display = ((WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE))
+                .getDefaultDisplay();
+        Point displaySize = new Point();
+        display.getSize(displaySize);
+        return Math.max(mContext.getResources().getDimension(R.dimen.subtitle_minimum_font_size),
+                CAPTION_LINE_HEIGHT_RATIO * Math.min(displaySize.x, displaySize.y));
     }
 
     private void showToast(String message) {

@@ -34,11 +34,12 @@ public class Constants {
     public static final String KEY_SETUP_COMPLETE = "SETUP-COMPLETE";
     public static final String KEY_HTSP_STREAM_PROFILE = "htsp_stream_profile";
 
-    // Audio Preferences Keys and Values
+    // Audio and Video Preferences Keys and Values
     public static final String KEY_AUDIO_PASSTHROUGH_DECODER_ENABLED = "audio_passthrough_decodeder_enabled";
+    public static final String KEY_FFMPEG_AUDIO_ENABLED = "ffmpeg_audio_enabled";
+    public static final String KEY_CAPTIONS_APPLY_EMBEDDED_STYLES = "captions_apply_embedded_styles";
 
     // Advanced Preferences Keys and Values
-    public static final String KEY_FFMPEG_AUDIO_ENABLED = "ffmpeg_audio_enabled";
     public static final String KEY_SHIELD_WORKAROUND_ENABLED = "shield_workaround_enabled";
 
     // Bundle and Preference Keys

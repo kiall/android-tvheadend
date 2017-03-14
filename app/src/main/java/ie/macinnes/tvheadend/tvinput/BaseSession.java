@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.view.Surface;
+import android.view.accessibility.CaptioningManager;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -23,7 +24,8 @@ abstract public class BaseSession extends android.media.tv.TvInputService.Sessio
     protected final Handler mServiceHandler;
     protected final Handler mSessionHandler;
     protected final int mSessionNumber;
-    private final TvInputManager mTvInputManager;
+    protected final TvInputManager mTvInputManager;
+    protected final CaptioningManager mCaptioningManager;
 
     protected Surface mSurface;
     protected float mVolume;
@@ -39,7 +41,11 @@ abstract public class BaseSession extends android.media.tv.TvInputService.Sessio
         mSessionHandler = new Handler(this);
 
         mSessionNumber = sSessionCounter.getAndIncrement();
+
         mTvInputManager = (TvInputManager) context.getSystemService(Context.TV_INPUT_SERVICE);
+        mCaptioningManager = (CaptioningManager) context.getSystemService(Context.CAPTIONING_SERVICE);
+
+        mCaptionEnabled = mCaptioningManager.isEnabled();
     }
 
     @Override
