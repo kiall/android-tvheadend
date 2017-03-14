@@ -29,8 +29,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.nio.ByteBuffer;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import ie.macinnes.htsp.HtspMessage;
 import ie.macinnes.htsp.HtspNotConnectedException;
@@ -41,7 +40,6 @@ import ie.macinnes.tvheadend.Constants;
 
 public class HtspDataSource implements DataSource, Subscriber.Listener, Closeable {
     private static final String TAG = HtspDataSource.class.getName();
-    private static final int FIFTEEN_MB = 15*1024*1024;
 
     public static class Factory implements DataSource.Factory {
         private static final String TAG = Factory.class.getName();
@@ -70,8 +68,9 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
 
     private DataSpec mDataSpec;
 
-    private ByteBuffer mBuffer;
-    private ReentrantLock mLock = new ReentrantLock();
+    private final ConcurrentLinkedQueue<HtspMessage> mQueue = new ConcurrentLinkedQueue<>();
+    private byte[] mBuffer;
+    private int mBufferRemaining;
 
     private boolean mIsOpen = false;
 
@@ -82,8 +81,7 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
         mConnection = connection;
         mStreamProfile = streamProfile;
 
-        mBuffer = ByteBuffer.allocate(FIFTEEN_MB); // 15 MB
-        mBuffer.limit(0);
+        mBufferRemaining = 0;
 
         mSubscriber = new Subscriber(mConnection, this);
         mConnection.addAuthenticationListener(mSubscriber);
@@ -112,37 +110,38 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
             return 0;
         }
 
-        // If the buffer is empty, block until we have at least 1 byte
-        while (mIsOpen && mBuffer.remaining() == 0) {
+        if (mBufferRemaining == 0) {
+            // We need to consume another message to process this
+            HtspMessage message = null;
             try {
-                if (Constants.DEBUG)
-                    Log.v(TAG, "Blocking for more data");
-                Thread.sleep(250);
+                while (mIsOpen && message == null) {
+                    message = mQueue.poll();
+                    if (message == null) {
+                        if (Constants.DEBUG)
+                            Log.v(TAG, "Blocking for more data");
+                        Thread.sleep(250);
+                    }
+                }
             } catch (InterruptedException e) {
                 // Ignore.
                 Log.w(TAG, "Caught InterruptedException, ignoring");
             }
+
+            // Serialize the message to the output buffer
+            serializeMessageToBuffer(message);
         }
 
-        if (!mIsOpen && mBuffer.remaining() == 0) {
+        if (!mIsOpen && mBufferRemaining == 0) {
             return C.RESULT_END_OF_INPUT;
         }
 
-        int length;
+        int bufferOffset = mBuffer.length - mBufferRemaining;
+        int bytesToRead = Math.min(mBufferRemaining, readLength);
 
-        mLock.lock();
-        try {
-            int remaining = mBuffer.remaining();
-            length = remaining >= readLength ? readLength : remaining;
+        System.arraycopy(mBuffer, bufferOffset, buffer, offset, bytesToRead);
+        mBufferRemaining -= bytesToRead;
 
-            mBuffer.get(buffer, offset, length);
-            mBuffer.compact();
-            mBuffer.flip();
-        } finally {
-            mLock.unlock();
-        }
-
-        return length;
+        return bytesToRead;
     }
 
     @Override
@@ -170,7 +169,7 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
     @Override
     public void onSubscriptionStart(@NonNull HtspMessage message) {
         Log.d(TAG, "Received subscriptionStart");
-        serializeMessageToBuffer(message);
+        mQueue.add(message);
     }
 
     @Override
@@ -196,31 +195,25 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
 
     @Override
     public void onMuxpkt(@NonNull HtspMessage message) {
-        serializeMessageToBuffer(message);
+        mQueue.add(message);
     }
 
     // Misc Internal Methods
     private void serializeMessageToBuffer(@NonNull HtspMessage message) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-        mLock.lock();
         try (
                 ObjectOutputStream objectOutput = new ObjectOutputStream(outputStream);
         ) {
             objectOutput.writeUnshared(message);
             objectOutput.flush();
 
-            mBuffer.position(mBuffer.limit());
-            mBuffer.limit(mBuffer.capacity());
-
-            mBuffer.put(outputStream.toByteArray());
-
-            mBuffer.flip();
+            mBuffer = outputStream.toByteArray();
+            mBufferRemaining = mBuffer.length;
         } catch (IOException e) {
             // Ignore?
             Log.w(TAG, "Caught IOException, ignoring", e);
         } finally {
-            mLock.unlock();
             try {
                 outputStream.close();
             } catch (IOException ex) {
