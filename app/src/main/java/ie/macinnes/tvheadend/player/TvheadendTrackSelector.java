@@ -27,6 +27,8 @@ import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.FixedTrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
+import com.google.android.exoplayer2.util.MimeTypes;
+import com.google.android.exoplayer2.util.Util;
 
 
 public class TvheadendTrackSelector extends DefaultTrackSelector {
@@ -63,6 +65,40 @@ public class TvheadendTrackSelector extends DefaultTrackSelector {
         invalidate();
 
         return true;
+    }
+
+    @Override
+    protected TrackSelection[] selectTracks(RendererCapabilities[] rendererCapabilities, TrackGroupArray[] rendererTrackGroupArrays, int[][][] rendererFormatSupports) throws ExoPlaybackException {
+        // Apparently, it's very easy to end up choosing multiple audio track renderers, e.g ffmpeg
+        // decode and MediaCodec passthrough. When this happens we end up with a Multiple renderer
+        // media clocks enabled IllegalStateException exception (see Issue #107).
+        TrackSelection[] trackSelections = super.selectTracks(rendererCapabilities, rendererTrackGroupArrays, rendererFormatSupports);
+
+        // If we made multiple audio track selections, keep only one of them.
+        // TODO: Make this smarter, if the user prefers English, and we select a passthrough German
+        // track and a English mpeg-2 audio track, we really should keep the english one over the
+        // German one.
+        int selectedAudioRendererIndex = -1;
+        for (int trackSelectionIndex = 0; trackSelectionIndex < trackSelections.length; trackSelectionIndex++) {
+            final TrackSelection trackSelection = trackSelections[trackSelectionIndex];
+
+            if (trackSelection == null || !MimeTypes.isAudio(trackSelection.getSelectedFormat().sampleMimeType)) {
+                // Skip if, a) renderer has no candidate, b) not an audio renderer
+                continue;
+            }
+
+            if (selectedAudioRendererIndex != -1) {
+                // If we already made a selection, discard this extra selection
+                trackSelections[trackSelectionIndex] = null;
+                Log.d(TAG, "Discarding Audio Track Selection");
+                continue;
+            }
+
+            // Otherwise, flag that we've made our selection
+            selectedAudioRendererIndex = trackSelectionIndex;
+        }
+
+        return trackSelections;
     }
 
     protected TrackSelection selectVideoTrack(

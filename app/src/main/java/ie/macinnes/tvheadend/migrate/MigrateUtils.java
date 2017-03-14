@@ -17,7 +17,6 @@ package ie.macinnes.tvheadend.migrate;
 
 import android.accounts.Account;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
@@ -26,7 +25,6 @@ import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.MiscUtils;
 import ie.macinnes.tvheadend.R;
 import ie.macinnes.tvheadend.account.AccountUtils;
-import ie.macinnes.tvheadend.tvinput.TvInputService;
 
 
 public class MigrateUtils {

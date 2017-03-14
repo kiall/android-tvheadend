@@ -31,7 +31,9 @@ import com.google.android.exoplayer2.audio.MediaCodecAudioRenderer;
 import com.google.android.exoplayer2.drm.DrmSessionManager;
 import com.google.android.exoplayer2.drm.FrameworkMediaCrypto;
 import com.google.android.exoplayer2.ext.ffmpeg.FfmpegAudioRenderer;
+import com.google.android.exoplayer2.mediacodec.MediaCodecInfo;
 import com.google.android.exoplayer2.mediacodec.MediaCodecSelector;
+import com.google.android.exoplayer2.mediacodec.MediaCodecUtil;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.video.MediaCodecVideoRenderer;
 import com.google.android.exoplayer2.video.VideoRendererEventListener;
@@ -56,17 +58,42 @@ public class SimpleTvheadendPlayer extends SimpleExoPlayer {
         AudioCapabilities audioCapabilities = AudioCapabilities.getCapabilities(context);
 
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
-
-        if (sharedPreferences.getBoolean(Constants.KEY_FFMPEG_AUDIO_ENABLED, true)) {
-            // FFMpeg Audio Decoder
-            Log.d(TAG, "Adding FfmpegAudioRenderer");
-            out.add(new FfmpegAudioRenderer(mainHandler, eventListener, audioCapabilities));
-        }
+        final boolean enablePassthroughDecoder = sharedPreferences.getBoolean(Constants.KEY_AUDIO_PASSTHROUGH_DECODER_ENABLED, true);
 
         // Native Audio Decoders
         Log.d(TAG, "Adding MediaCodecAudioRenderer");
-        out.add(new MediaCodecAudioRenderer(MediaCodecSelector.DEFAULT, drmSessionManager,
+        MediaCodecSelector mediaCodecSelector = buildMediaCodecSelector(enablePassthroughDecoder);
+        out.add(new MediaCodecAudioRenderer(mediaCodecSelector, drmSessionManager,
                 true, mainHandler, eventListener, audioCapabilities));
+
+        // FFMpeg Audio Decoder
+        if (sharedPreferences.getBoolean(Constants.KEY_FFMPEG_AUDIO_ENABLED, true)) {
+            Log.d(TAG, "Adding FfmpegAudioRenderer");
+            out.add(new FfmpegAudioRenderer(mainHandler, eventListener, audioCapabilities));
+        }
+    }
+
+    /**
+     * Builds a MediaCodecSelector that can explicitly disable audio passthrough
+     *
+     * @param enablePassthroughDecoder
+     * @return
+     */
+    private MediaCodecSelector buildMediaCodecSelector(final boolean enablePassthroughDecoder) {
+        return new MediaCodecSelector() {
+            @Override
+            public MediaCodecInfo getDecoderInfo(String mimeType, boolean requiresSecureDecoder) throws MediaCodecUtil.DecoderQueryException {
+                return MediaCodecUtil.getDecoderInfo(mimeType, requiresSecureDecoder);
+            }
+
+            @Override
+            public MediaCodecInfo getPassthroughDecoderInfo() throws MediaCodecUtil.DecoderQueryException {
+                if (enablePassthroughDecoder) {
+                    return MediaCodecUtil.getPassthroughDecoderInfo();
+                }
+                return null;
+            }
+        };
     }
 
     @Override

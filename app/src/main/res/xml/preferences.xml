@@ -19,6 +19,19 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:title="TVHeadend Settings">
 
+    <PreferenceCategory android:title="Audio and Video">
+        <CheckBoxPreference
+            android:key="audio_passthrough_decodeder_enabled"
+            android:title="Enable Audio Passthrough"
+            android:defaultValue="true"
+            android:summary="You must also ensure the system audio settings allows passthrough"/>
+
+        <CheckBoxPreference
+            android:key="ffmpeg_audio_enabled"
+            android:title="Enable FFMpeg Audio Codecs"
+            android:defaultValue="true"/>
+    </PreferenceCategory>
+
     <PreferenceCategory android:title="EPG">
         <CheckBoxPreference
             android:key="epg_sync_enabled"
@@ -45,11 +58,6 @@
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Advanced Settings">
-        <CheckBoxPreference
-            android:key="ffmpeg_audio_enabled"
-            android:title="Enable FFMpeg Audio Renderer"
-            android:defaultValue="true" />
-
         <CheckBoxPreference
             android:key="shield_workaround_enabled"
             android:title="Enable nVidia Shield Workaround"
