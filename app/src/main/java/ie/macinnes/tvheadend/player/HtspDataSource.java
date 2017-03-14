@@ -41,7 +41,7 @@ import ie.macinnes.tvheadend.Constants;
 
 public class HtspDataSource implements DataSource, Subscriber.Listener, Closeable {
     private static final String TAG = HtspDataSource.class.getName();
-    private static final int FIFTEEN_MB = 15*1024*1024;
+    private static final int BUFFER_SIZE = 10*1024*1024;
 
     public static class Factory implements DataSource.Factory {
         private static final String TAG = Factory.class.getName();
@@ -82,7 +82,7 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
         mConnection = connection;
         mStreamProfile = streamProfile;
 
-        mBuffer = ByteBuffer.allocate(FIFTEEN_MB); // 15 MB
+        mBuffer = ByteBuffer.allocate(BUFFER_SIZE);
         mBuffer.limit(0);
 
         mSubscriber = new Subscriber(mConnection, this);
