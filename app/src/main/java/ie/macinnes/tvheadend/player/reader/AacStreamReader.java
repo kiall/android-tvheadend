@@ -18,11 +18,15 @@ package ie.macinnes.tvheadend.player.reader;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
+import com.google.android.exoplayer2.extractor.ExtractorOutput;
+import com.google.android.exoplayer2.extractor.TrackOutput;
 import com.google.android.exoplayer2.util.CodecSpecificDataUtil;
 import com.google.android.exoplayer2.util.MimeTypes;
+import com.google.android.exoplayer2.util.ParsableByteArray;
 
 import java.util.Collections;
 import java.util.List;
@@ -30,15 +34,61 @@ import java.util.List;
 import ie.macinnes.htsp.HtspMessage;
 import ie.macinnes.tvheadend.TvhMappings;
 
-public class AacStreamReader extends PlainStreamReader {
+// See https://wiki.multimedia.cx/index.php?title=ADTS
+
+public class AacStreamReader implements StreamReader {
     private static final String TAG = AacStreamReader.class.getName();
 
+    private static final int ADTS_HEADER_SIZE = 7;
+    private static final int ADTS_CRC_SIZE = 2;
+
+    private final Context mContext;
+    protected TrackOutput mTrackOutput;
+
     public AacStreamReader(Context context) {
-        super(context);
+        mContext = context;
+    }
+
+    @Override
+    public void createTracks(HtspMessage stream, ExtractorOutput output) {
+        final int streamIndex = stream.getInteger("index");
+        mTrackOutput = output.track(streamIndex);
+        mTrackOutput.format(buildFormat(streamIndex, stream));
+    }
+
+    @Override
+    public void consume(@NonNull HtspMessage message) {
+        final long pts = message.getLong("pts");
+        final byte[] payload = message.getByteArray("payload");
+
+        final ParsableByteArray pba = new ParsableByteArray(payload);
+
+        int skipLength;
+
+        if (hasCrc(payload[1])) {
+            // Have a CRC
+            skipLength = ADTS_HEADER_SIZE + ADTS_CRC_SIZE;
+        } else {
+            // No CRC
+            skipLength = ADTS_HEADER_SIZE;
+        }
+
+        pba.skipBytes(skipLength);
+
+        final int aacFrameLength = payload.length - skipLength;
+
+        // TODO: Set Buffer Flag key frame based on frametype
+        // frametype   u32   required   Type of frame as ASCII value: 'I', 'P', 'B'
+        mTrackOutput.sampleData(pba, aacFrameLength);
+        mTrackOutput.sampleMetadata(pts, C.BUFFER_FLAG_KEY_FRAME, aacFrameLength, 0, null);
+    }
+
+    @Override
+    public void release() {
+
     }
 
     @NonNull
-    @Override
     protected Format buildFormat(int streamIndex, @NonNull HtspMessage stream) {
         List<byte[]> initializationData = null;
 
@@ -70,5 +120,10 @@ public class AacStreamReader extends PlainStreamReader {
                 C.SELECTION_FLAG_AUTOSELECT,
                 stream.getString("language", "und")
         );
+    }
+
+    private boolean hasCrc(byte b) {
+        int data = b & 0xFF;
+        return (data & 0x1) == 0;
     }
 }
