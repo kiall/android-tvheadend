@@ -60,17 +60,20 @@ public class SimpleTvheadendPlayer extends SimpleExoPlayer {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
         final boolean enablePassthroughDecoder = sharedPreferences.getBoolean(Constants.KEY_AUDIO_PASSTHROUGH_DECODER_ENABLED, true);
 
-        // Native Audio Decoders
-        Log.d(TAG, "Adding MediaCodecAudioRenderer");
-        MediaCodecSelector mediaCodecSelector = buildMediaCodecSelector(enablePassthroughDecoder);
-        out.add(new MediaCodecAudioRenderer(mediaCodecSelector, drmSessionManager,
-                true, mainHandler, eventListener, audioCapabilities));
+        // Some devices are failing if the FfmpegAudioRenderer isn't listed first. However, this
+        // breaks AC3/5.1 passthrough. For now, put Ffmpeg first until we resolve the issue.
 
         // FFMpeg Audio Decoder
         if (sharedPreferences.getBoolean(Constants.KEY_FFMPEG_AUDIO_ENABLED, true)) {
             Log.d(TAG, "Adding FfmpegAudioRenderer");
             out.add(new FfmpegAudioRenderer(mainHandler, eventListener, audioCapabilities));
         }
+
+        // Native Audio Decoders
+        Log.d(TAG, "Adding MediaCodecAudioRenderer");
+        MediaCodecSelector mediaCodecSelector = buildMediaCodecSelector(enablePassthroughDecoder);
+        out.add(new MediaCodecAudioRenderer(mediaCodecSelector, drmSessionManager,
+                true, mainHandler, eventListener, audioCapabilities));
     }
 
     /**
