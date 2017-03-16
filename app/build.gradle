@@ -68,7 +68,7 @@ repositories {
 }
 
 dependencies {
-    compile 'ie.macinnes.htsp:android-htsp:v0.0.1a17'
+    compile 'ie.macinnes.htsp:android-htsp:v0.0.1a18'
     // Used for testing local HTSP lib builds
 //    compile(name: 'library-debug', ext: 'aar')
     compile fileTree(include: ['*.jar'], dir: 'libs')
