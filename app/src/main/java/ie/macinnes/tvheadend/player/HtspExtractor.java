@@ -168,12 +168,13 @@ public class HtspExtractor implements Extractor {
             final int streamIndex = stream.getInteger("index");
             final String streamType = stream.getString("type");
 
-            Log.d(TAG, "Creating StreamReader for " + streamType + " stream at index " + streamIndex);
-
             final StreamReader streamReader = streamReadersFactory.createStreamReader(streamType);
             if (streamReader != null) {
+                Log.d(TAG, "Creating StreamReader for " + streamType + " stream at index " + streamIndex);
                 streamReader.createTracks(stream, mOutput);
                 mStreamReaders.put(streamIndex, streamReader);
+            } else {
+                Log.d(TAG, "Discarding stream at index " + streamIndex + ", no suitable StreamReader");
             }
         }
 
