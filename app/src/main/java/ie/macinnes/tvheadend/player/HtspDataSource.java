@@ -179,6 +179,16 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
     }
 
     @Override
+    public void onSubscriptionSkip(@NonNull HtspMessage message) {
+
+    }
+
+    @Override
+    public void onSubscriptionSpeed(@NonNull HtspMessage message) {
+
+    }
+
+    @Override
     public void onSubscriptionStop(@NonNull HtspMessage message) {
         Log.d(TAG, "Received subscriptionStop");
         mIsOpen = false;
@@ -191,6 +201,11 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
 
     @Override
     public void onSignalStatus(@NonNull HtspMessage message) {
+
+    }
+
+    @Override
+    public void onTimeshiftStatus(@NonNull HtspMessage message) {
 
     }
 
