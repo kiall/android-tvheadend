@@ -5,10 +5,10 @@ if [ "$?" == "0" ]; then
     THIS_TAG=$(git describe --tags --abbrev=0)
     LAST_TAG=$(git describe --tags --abbrev=0 ${THIS_TAG}^)
 
-    git log $LAST_TAG...$THIS_TAG --oneline | grep -v 'Merge pull request' | cut -d' ' -f2- | sed -e 's/^/* /'
+    git log --no-merges $LAST_TAG...$THIS_TAG --oneline | grep -v 'Merge pull request' | cut -d' ' -f2- | sed -e 's/^/* /'
 
 else
     LAST_TAG=$(git describe --tags --abbrev=0)
 
-    git log $LAST_TAG...HEAD --oneline | grep -v 'Merge pull request' | cut -d' ' -f2- | sed -e 's/^/* /'
+    git log --no-merges $LAST_TAG...HEAD --oneline | grep -v 'Merge pull request' | cut -d' ' -f2- | sed -e 's/^/* /'
 fi
