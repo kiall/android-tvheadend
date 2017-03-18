@@ -82,8 +82,16 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
         mConnection = connection;
         mStreamProfile = streamProfile;
 
-        mBuffer = ByteBuffer.allocate(BUFFER_SIZE);
-        mBuffer.limit(0);
+        try {
+            mBuffer = ByteBuffer.allocate(BUFFER_SIZE);
+            mBuffer.limit(0);
+        } catch (OutOfMemoryError e) {
+            // Since we're allocating a large buffer here, it's fairly safe to assume we'll have
+            // enough memory to catch and throw this exception. We do this, as each OOM exception
+            // message is unique (lots of #'s of bytes available/used/etc) and means crash reporting
+            // doesn't group things nicely.
+            throw new RuntimeException("OutOfMemoryError when allocating HtspDataSource buffer", e);
+        }
 
         mSubscriber = new Subscriber(mConnection, this);
         mConnection.addAuthenticationListener(mSubscriber);
