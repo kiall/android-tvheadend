@@ -23,7 +23,7 @@
         <CheckBoxPreference
             android:key="audio_passthrough_decodeder_enabled"
             android:title="Enable Audio Passthrough"
-            android:defaultValue="true"
+            android:defaultValue="@bool/pref_default_audio_passthrough_decodeder_enabled"
             android:summary="You must also ensure the system audio settings allows passthrough"/>
 
         <CheckBoxPreference

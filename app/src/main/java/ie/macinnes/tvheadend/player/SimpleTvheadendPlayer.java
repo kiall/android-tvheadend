@@ -41,6 +41,7 @@ import com.google.android.exoplayer2.video.VideoRendererEventListener;
 import java.util.ArrayList;
 
 import ie.macinnes.tvheadend.Constants;
+import ie.macinnes.tvheadend.R;
 
 
 public class SimpleTvheadendPlayer extends SimpleExoPlayer {
@@ -58,7 +59,10 @@ public class SimpleTvheadendPlayer extends SimpleExoPlayer {
         AudioCapabilities audioCapabilities = AudioCapabilities.getCapabilities(context);
 
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
-        final boolean enablePassthroughDecoder = sharedPreferences.getBoolean(Constants.KEY_AUDIO_PASSTHROUGH_DECODER_ENABLED, true);
+
+        final boolean enablePassthroughDecoder = sharedPreferences.getBoolean(
+                Constants.KEY_AUDIO_PASSTHROUGH_DECODER_ENABLED,
+                context.getResources().getBoolean(R.bool.pref_default_audio_passthrough_decodeder_enabled));
 
         // Native Audio Decoders
         Log.d(TAG, "Adding MediaCodecAudioRenderer");
