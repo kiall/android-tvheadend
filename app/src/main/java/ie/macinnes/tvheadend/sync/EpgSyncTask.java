@@ -43,10 +43,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import ie.macinnes.htsp.HtspFileInputStream;
 import ie.macinnes.htsp.HtspMessage;
@@ -116,7 +116,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
     private final HandlerThread mHandlerThread;
     private final Handler mHandler;
 
-    private final List<Listener> mListeners = new ArrayList<>();
+    private final Set<Listener> mListeners = new CopyOnWriteArraySet<>();
 
     private boolean mInitialSyncCompleted = false;
 
