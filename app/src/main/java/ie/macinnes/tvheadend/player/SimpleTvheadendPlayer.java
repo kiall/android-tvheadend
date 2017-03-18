@@ -71,7 +71,12 @@ public class SimpleTvheadendPlayer extends SimpleExoPlayer {
                 true, mainHandler, eventListener, audioCapabilities));
 
         // FFMpeg Audio Decoder
-        if (sharedPreferences.getBoolean(Constants.KEY_FFMPEG_AUDIO_ENABLED, true)) {
+        final boolean enableFfmpegAudioRenderer = sharedPreferences.getBoolean(
+                Constants.KEY_FFMPEG_AUDIO_ENABLED,
+                context.getResources().getBoolean(R.bool.pref_default_audio_ffmpeg_audio_enabled)
+        );
+
+        if (enableFfmpegAudioRenderer) {
             Log.d(TAG, "Adding FfmpegAudioRenderer");
             out.add(new FfmpegAudioRenderer(mainHandler, eventListener, audioCapabilities));
         }
@@ -106,7 +111,12 @@ public class SimpleTvheadendPlayer extends SimpleExoPlayer {
                                        ArrayList<Renderer> out) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
 
-        if (Build.MODEL.equals("SHIELD Android TV") && sharedPreferences.getBoolean(Constants.KEY_SHIELD_WORKAROUND_ENABLED, true)) {
+        final boolean enableShieldWorkaround = sharedPreferences.getBoolean(
+                Constants.KEY_SHIELD_WORKAROUND_ENABLED,
+                context.getResources().getBoolean(R.bool.pref_default_shield_workaround_enabled)
+        );
+
+        if (Build.MODEL.equals("SHIELD Android TV") && enableShieldWorkaround) {
             Log.d(TAG, "Adding ShieldVideoRenderer");
             out.add(new ShieldVideoRenderer(
                     context,

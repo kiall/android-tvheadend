@@ -152,7 +152,10 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
         SharedPreferences sharedPreferences = mContext.getSharedPreferences(
                 Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
 
-        boolean applyEmbeddedStyles = sharedPreferences.getBoolean(Constants.KEY_CAPTIONS_APPLY_EMBEDDED_STYLES, true);
+        final boolean applyEmbeddedStyles = sharedPreferences.getBoolean(
+                Constants.KEY_CAPTIONS_APPLY_EMBEDDED_STYLES,
+                mContext.getResources().getBoolean(R.bool.pref_default_captions_apply_embedded_styles)
+        );
 
         view.setStyle(captionStyleCompat);
         view.setVisibility(View.VISIBLE);
@@ -309,7 +312,10 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
         SharedPreferences sharedPreferences = mContext.getSharedPreferences(
                 Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
 
-        String streamProfile = sharedPreferences.getString(Constants.KEY_HTSP_STREAM_PROFILE, "htsp");
+        final String streamProfile = sharedPreferences.getString(
+                Constants.KEY_HTSP_STREAM_PROFILE,
+                mContext.getResources().getString(R.string.pref_default_htsp_stream_profile)
+        );
 
         // Produces DataSource instances through which media data is loaded.
         mDataSourceFactory = new HtspDataSource.Factory(mContext, mConnection, streamProfile);

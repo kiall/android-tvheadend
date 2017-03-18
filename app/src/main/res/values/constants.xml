@@ -21,4 +21,13 @@
 
     <!-- Default Preference values -->
     <bool name="pref_default_audio_passthrough_decodeder_enabled">false</bool>
+    <bool name="pref_default_audio_ffmpeg_audio_enabled">true</bool>
+    <bool name="pref_default_shield_workaround_enabled">true</bool>
+    <bool name="pref_default_epg_sync_enabled">true</bool>
+    <string name="pref_default_epg_max_time">86400</string>
+    <bool name="pref_default_epg_last_update_enabled">true</bool>
+    <bool name="pref_default_epg_default_poster_art_enabled">false</bool>
+    <bool name="pref_default_captions_apply_embedded_styles">true</bool>
+    <string name="pref_default_htsp_stream_profile">htsp</string>
+
 </resources>

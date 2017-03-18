@@ -29,51 +29,51 @@
         <CheckBoxPreference
             android:key="ffmpeg_audio_enabled"
             android:title="Enable FFMpeg Audio Codecs"
-            android:defaultValue="true"/>
+            android:defaultValue="@bool/pref_default_audio_ffmpeg_audio_enabled"/>
 
         <CheckBoxPreference
             android:key="captions_apply_embedded_styles"
             android:title="Apply embedded caption styles"
-            android:defaultValue="true"/>
+            android:defaultValue="@bool/pref_default_captions_apply_embedded_styles"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="EPG">
         <CheckBoxPreference
             android:key="epg_sync_enabled"
             android:title="Enable EPG Sync"
-            android:defaultValue="true" />
+            android:defaultValue="@bool/pref_default_epg_sync_enabled" />
         <ListPreference
             android:key="epg_max_time"
             android:title="EPG Sync Duration"
             android:dialogTitle="EPG Sync Duration"
             android:entries="@array/epg_max_time_names"
             android:entryValues="@array/epg_max_time_values"
-            android:defaultValue="86400"
+            android:defaultValue="@integer/pref_default_epg_max_time"
             android:summary="Amount of EPG data to sync"/>
         <CheckBoxPreference
             android:key="epg_last_update_enabled"
             android:title="Enable Last Update Time Optimization"
             android:summary="Disable if you see gaps in EPG data"
-            android:defaultValue="true" />
+            android:defaultValue="@bool/pref_default_epg_last_update_enabled" />
         <CheckBoxPreference
             android:key="epg_default_poster_art_enabled"
             android:title="Enable EPG Default Poster Art"
             android:summary="Enable if EPG data provider does not include poster art"
-            android:defaultValue="false" />
+            android:defaultValue="@bool/pref_default_epg_default_poster_art_enabled" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Advanced Settings">
         <CheckBoxPreference
             android:key="shield_workaround_enabled"
             android:title="Enable nVidia Shield Workaround"
-            android:defaultValue="true" />
+            android:defaultValue="@bool/pref_default_shield_workaround_enabled" />
 
         <!-- TODO: This needs to be made into a list, based on fetching the list of available profiles -->
         <EditTextPreference
             android:key="htsp_stream_profile"
             android:title="HTSP Stream Profile"
             android:summary="Stream profile to use for HTSP video"
-            android:defaultValue="htsp" />
+            android:defaultValue="@string/pref_default_htsp_stream_profile" />
 
         <PreferenceScreen android:title="Crash Reporting Settings" android:key="crash_reporting_settings" android:persistent="false">
             <CheckBoxPreference android:key="acra.enable"
