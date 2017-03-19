@@ -26,6 +26,7 @@ import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.Renderer;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.audio.AudioCapabilities;
+import com.google.android.exoplayer2.audio.AudioProcessor;
 import com.google.android.exoplayer2.audio.AudioRendererEventListener;
 import com.google.android.exoplayer2.audio.MediaCodecAudioRenderer;
 import com.google.android.exoplayer2.drm.DrmSessionManager;
@@ -55,7 +56,8 @@ public class SimpleTvheadendPlayer extends SimpleExoPlayer {
 
     @Override
     protected void buildAudioRenderers(Context context, Handler mainHandler, DrmSessionManager<FrameworkMediaCrypto> drmSessionManager,
-                                       int extensionRendererMode, AudioRendererEventListener eventListener, ArrayList<Renderer> out) {
+                                       int extensionRendererMode, AudioRendererEventListener eventListener, AudioProcessor[] audioProcessors,
+                                       ArrayList<Renderer> out) {
         AudioCapabilities audioCapabilities = AudioCapabilities.getCapabilities(context);
 
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
@@ -78,7 +80,7 @@ public class SimpleTvheadendPlayer extends SimpleExoPlayer {
 
         if (enableFfmpegAudioRenderer) {
             Log.d(TAG, "Adding FfmpegAudioRenderer");
-            out.add(new FfmpegAudioRenderer(mainHandler, eventListener, audioCapabilities));
+            out.add(new FfmpegAudioRenderer(mainHandler, eventListener, audioProcessors));
         }
     }
 

@@ -100,21 +100,22 @@ public class TvheadendTrackSelector extends DefaultTrackSelector {
         return trackSelections;
     }
 
+    @Override
     protected TrackSelection selectVideoTrack(
             RendererCapabilities rendererCapabilities, TrackGroupArray groups, int[][] formatSupport,
-            int maxVideoWidth, int maxVideoHeight, boolean allowNonSeamlessAdaptiveness,
-            boolean allowMixedMimeAdaptiveness, int viewportWidth, int viewportHeight,
-            boolean orientationMayChange, TrackSelection.Factory adaptiveVideoTrackSelectionFactory,
-            boolean exceedConstraintsIfNecessary, boolean exceedRendererCapabilitiesIfNecessary)
+            int maxVideoWidth, int maxVideoHeight, int maxVideoBitrate, boolean allowNonSeamlessAdaptiveness,
+            boolean allowMixedMimeAdaptiveness, int viewportWidth, int viewportHeight, boolean orientationMayChange,
+            TrackSelection.Factory adaptiveVideoTrackSelectionFactory, boolean exceedConstraintsIfNecessary,
+            boolean exceedRendererCapabilitiesIfNecessary)
             throws ExoPlaybackException {
         Log.d(TAG, "TrackSelector selectVideoTrack");
 
         // If we haven't explicitly chosen a track, defer to the DefaultTrackSelector implementation.
         if (mVideoTrackId == null) {
             return super.selectVideoTrack(rendererCapabilities, groups, formatSupport, maxVideoWidth, maxVideoHeight,
-                    allowNonSeamlessAdaptiveness, allowMixedMimeAdaptiveness, viewportWidth, viewportHeight,
-                    orientationMayChange, adaptiveVideoTrackSelectionFactory, exceedConstraintsIfNecessary,
-                    exceedRendererCapabilitiesIfNecessary);
+                    maxVideoBitrate, allowNonSeamlessAdaptiveness, allowMixedMimeAdaptiveness, viewportWidth,
+                    viewportHeight, orientationMayChange, adaptiveVideoTrackSelectionFactory,
+                    exceedConstraintsIfNecessary, exceedRendererCapabilitiesIfNecessary);
         } else {
             for (int groupIndex = 0; groupIndex < groups.length; groupIndex++) {
                 TrackGroup trackGroup = groups.get(groupIndex);
@@ -135,6 +136,7 @@ public class TvheadendTrackSelector extends DefaultTrackSelector {
         }
     }
 
+    @Override
     protected TrackSelection selectAudioTrack(
             TrackGroupArray groups, int[][] formatSupport, String preferredAudioLanguage,
             boolean exceedRendererCapabilitiesIfNecessary) {
@@ -164,6 +166,7 @@ public class TvheadendTrackSelector extends DefaultTrackSelector {
         }
     }
 
+    @Override
     protected TrackSelection selectTextTrack(
             TrackGroupArray groups, int[][] formatSupport, String preferredTextLanguage,
             String preferredAudioLanguage, boolean exceedRendererCapabilitiesIfNecessary) {

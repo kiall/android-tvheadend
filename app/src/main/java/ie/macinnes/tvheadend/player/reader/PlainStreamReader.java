@@ -42,7 +42,7 @@ abstract class PlainStreamReader implements StreamReader {
     @Override
     public final void createTracks(@NonNull HtspMessage stream, @NonNull ExtractorOutput output) {
         final int streamIndex = stream.getInteger("index");
-        mTrackOutput = output.track(streamIndex);
+        mTrackOutput = output.track(streamIndex, getTrackType());
         mTrackOutput.format(buildFormat(streamIndex, stream));
     }
 
@@ -67,4 +67,6 @@ abstract class PlainStreamReader implements StreamReader {
 
     @NonNull
     abstract protected Format buildFormat(int streamIndex, @NonNull HtspMessage stream);
+
+    abstract protected int getTrackType();
 }

@@ -73,6 +73,11 @@ public class VorbisStreamReader extends PlainStreamReader {
         );
     }
 
+    @Override
+    protected int getTrackType() {
+        return C.TRACK_TYPE_AUDIO;
+    }
+
     /**
      * Builds initialization data for a {@link Format} from Vorbis codec private data.
      *

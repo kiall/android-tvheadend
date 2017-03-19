@@ -55,4 +55,9 @@ public class Mpeg2AudioStreamReader extends PlainStreamReader {
                 stream.getString("language", "und")
         );
     }
+
+    @Override
+    protected int getTrackType() {
+        return C.TRACK_TYPE_AUDIO;
+    }
 }

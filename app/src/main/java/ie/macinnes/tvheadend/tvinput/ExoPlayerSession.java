@@ -45,7 +45,7 @@ import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.TrackGroup;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.text.CaptionStyleCompat;
-import com.google.android.exoplayer2.trackselection.AdaptiveVideoTrackSelection;
+import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
@@ -284,10 +284,10 @@ public class ExoPlayerSession extends BaseSession implements ExoPlayer.EventList
 
     // Misc Internal Methods
     private void buildExoPlayer() {
-        TrackSelection.Factory videoTrackSelectionFactory =
-                new AdaptiveVideoTrackSelection.Factory(null);
+        TrackSelection.Factory trackSelectionFactory =
+                new AdaptiveTrackSelection.Factory(null);
 
-        mTrackSelector = new TvheadendTrackSelector(videoTrackSelectionFactory);
+        mTrackSelector = new TvheadendTrackSelector(trackSelectionFactory);
 
         LoadControl loadControl = new DefaultLoadControl();
 

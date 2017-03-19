@@ -51,7 +51,7 @@ public class AacStreamReader implements StreamReader {
     @Override
     public void createTracks(HtspMessage stream, ExtractorOutput output) {
         final int streamIndex = stream.getInteger("index");
-        mTrackOutput = output.track(streamIndex);
+        mTrackOutput = output.track(streamIndex, C.TRACK_TYPE_AUDIO);
         mTrackOutput.format(buildFormat(streamIndex, stream));
     }
 

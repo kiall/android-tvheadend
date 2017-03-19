@@ -77,12 +77,12 @@ dependencies {
     compile 'com.android.support:support-v4:25.2.0'
     compile 'com.android.support:leanback-v17:25.2.0'
     compile 'com.android.support:preference-leanback-v17:25.2.0'
-    compile 'com.google.android.exoplayer:exoplayer:r2.2.0k1'
-    compile 'com.google.android.exoplayer:extension-ffmpeg:r2.2.0k1'
+    compile 'com.google.android.exoplayer:exoplayer:r2.3.0k1'
+    compile 'com.google.android.exoplayer:extension-ffmpeg:r2.3.0k1'
     // Used for testing local exoplayer builds
-//    compile(name: 'library-release', ext: 'aar')
+//    compile(name: 'library-debug', ext: 'aar')
     // Used for testing local exoplayer-ffmpeg builds
-//    compile(name: 'extension-ffmpeg-release', ext: 'aar')
+//    compile(name: 'extension-ffmpeg-debug', ext: 'aar')
     compile 'ch.acra:acra:4.9.2'
 
     debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5'
