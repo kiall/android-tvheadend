@@ -48,7 +48,7 @@
             android:dialogTitle="EPG Sync Duration"
             android:entries="@array/epg_max_time_names"
             android:entryValues="@array/epg_max_time_values"
-            android:defaultValue="@integer/pref_default_epg_max_time"
+            android:defaultValue="@string/pref_default_epg_max_time"
             android:summary="Amount of EPG data to sync"/>
         <CheckBoxPreference
             android:key="epg_last_update_enabled"
