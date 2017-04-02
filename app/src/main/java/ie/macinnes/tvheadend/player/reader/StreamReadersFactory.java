@@ -48,6 +48,8 @@ public class StreamReadersFactory {
             // Text Stream Types
             case "TEXTSUB":
                 return new TextsubStreamReader(mContext);
+            case "DVBSUB":
+                return new DvbsubStreamReader(mContext);
             default:
                 return null;
         }
