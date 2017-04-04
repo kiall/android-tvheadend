@@ -40,9 +40,34 @@ public class Mpeg2AudioStreamReader extends PlainStreamReader {
             rate = TvhMappings.sriToRate(stream.getInteger("rate"));
         }
 
+        // TVHeadend calls all MPEG Audio MPEG2AUDIO - e.g. it could be either mp2 or mp3 audio. We
+        // need to use the new audio_version field (4.1.2498+ only). Default to mp2 as that's most
+        // common for DVB.
+        int audioVersion = 2;
+
+        if (stream.containsKey("audio_version")) {
+            audioVersion = stream.getInteger("audio_version");
+        }
+
+        String mimeType;
+
+        switch (audioVersion) {
+            case 1: // MP1 Audio - V.Unlikely these days
+                mimeType = MimeTypes.AUDIO_MPEG_L1;
+                break;
+            case 2: // MP2 Audio - Pretty common in DVB streams
+                mimeType = MimeTypes.AUDIO_MPEG_L2;
+                break;
+            case 3: // MP3 Audio - Pretty common in IPTV streams
+                mimeType = MimeTypes.AUDIO_MPEG;
+                break;
+            default:
+                throw new RuntimeException("Unknown MPEG Audio Version: " + audioVersion);
+        }
+
         return Format.createAudioSampleFormat(
                 Integer.toString(streamIndex),
-                MimeTypes.AUDIO_MPEG_L2,
+                mimeType,
                 null,
                 Format.NO_VALUE,
                 Format.NO_VALUE,
