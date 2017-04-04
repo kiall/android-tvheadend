@@ -60,7 +60,7 @@ public class HtspExtractor implements Extractor {
     private class HtspSeekMap implements SeekMap {
         @Override
         public boolean isSeekable() {
-            return false;
+            return true;
         }
 
         @Override
@@ -70,7 +70,7 @@ public class HtspExtractor implements Extractor {
 
         @Override
         public long getPosition(long timeUs) {
-            return 0;
+            return timeUs;
         }
     }
 
