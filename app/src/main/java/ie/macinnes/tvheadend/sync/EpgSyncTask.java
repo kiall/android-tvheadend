@@ -23,6 +23,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.OperationApplicationException;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteFullException;
 import android.media.tv.TvContentRating;
 import android.media.tv.TvContract;
 import android.net.Uri;
@@ -407,7 +408,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
         try {
             results = mContext.getContentResolver().applyBatch(
                     Constants.CONTENT_AUTHORITY, operations);
-        } catch (RemoteException | OperationApplicationException e) {
+        } catch (RemoteException | OperationApplicationException | SQLiteFullException e) {
             Log.e(TAG, "Failed to flush pending channel operations", e);
             return;
         }
@@ -667,7 +668,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
         try {
             results = mContext.getContentResolver().applyBatch(
                     Constants.CONTENT_AUTHORITY, operations);
-        } catch (RemoteException | OperationApplicationException e) {
+        } catch (RemoteException | OperationApplicationException | SQLiteFullException e) {
             Log.e(TAG, "Failed to flush pending event operations", e);
             return;
         }
