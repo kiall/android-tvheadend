@@ -1,0 +1,332 @@
+/*
+ * Copyright (c) 2017 Kiall Mac Innes <kiall@macinnes.ie>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package ie.macinnes.tvheadend.player;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.graphics.Point;
+import android.media.tv.TvTrackInfo;
+import android.net.Uri;
+import android.util.Log;
+import android.util.SparseArray;
+import android.view.Display;
+import android.view.Surface;
+import android.view.View;
+import android.view.WindowManager;
+import android.view.accessibility.CaptioningManager;
+
+import com.google.android.exoplayer2.C;
+import com.google.android.exoplayer2.DefaultLoadControl;
+import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.Format;
+import com.google.android.exoplayer2.LoadControl;
+import com.google.android.exoplayer2.RendererCapabilities;
+import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.Timeline;
+import com.google.android.exoplayer2.extractor.ExtractorsFactory;
+import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.TrackGroup;
+import com.google.android.exoplayer2.source.TrackGroupArray;
+import com.google.android.exoplayer2.text.CaptionStyleCompat;
+import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
+import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelection;
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.google.android.exoplayer2.ui.SubtitleView;
+import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.util.MimeTypes;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import ie.macinnes.htsp.SimpleHtspConnection;
+import ie.macinnes.tvheadend.Application;
+import ie.macinnes.tvheadend.Constants;
+import ie.macinnes.tvheadend.R;
+
+public class Player implements ExoPlayer.EventListener {
+    private static final String TAG = Player.class.getName();
+
+    private static final float CAPTION_LINE_HEIGHT_RATIO = 0.0533f;
+    private static final int TEXT_UNIT_PIXELS = 0;
+
+    public interface Listener {
+        /**
+         * Called when ther player state changes.
+         *
+         * @param playWhenReady Whether playback will proceed when ready.
+         * @param playbackState One of the {@code STATE} constants defined in the {@link ExoPlayer}
+         *     interface.
+         */
+        void onPlayerStateChanged(boolean playWhenReady, int playbackState);
+
+        /**
+         * Called when an error occurs.
+         *
+         * @param error The error.
+         */
+        void onPlayerError(ExoPlaybackException error);
+
+        /**
+         * Called when the available or selected tracks change.
+         *
+         * @param tracks a list of tracks
+         */
+        void onTracksChanged(List<TvTrackInfo> tracks, SparseArray<String> selectedTracks);
+    }
+
+    private final Context mContext;
+    private final SimpleHtspConnection mConnection;
+    private final Listener mListener;
+
+
+    private SimpleExoPlayer mExoPlayer;
+    private TvheadendTrackSelector mTrackSelector;
+    private EventLogger mEventLogger;
+    private DataSource.Factory mDataSourceFactory;
+    private ExtractorsFactory mExtractorsFactory;
+
+    private MediaSource mMediaSource;
+
+    public Player(Context context, SimpleHtspConnection connection, Listener listener) {
+        mContext = context;
+        mConnection = connection;
+        mListener = listener;
+
+        buildExoPlayer();
+    }
+
+    public void open(Uri channelUri) {
+        // Stop any existing playback
+        stop();
+
+        // Create the media source
+        buildHtspMediaSource(channelUri);
+
+        // Prepare the media source
+        mExoPlayer.prepare(mMediaSource);
+    }
+
+    public void release() {
+        // Stop any existing playback
+        stop();
+
+        // Release ExoPlayer
+        mExoPlayer.removeListener(this);
+        mExoPlayer.release();
+    }
+
+    public void setSurface(Surface surface) {
+        mExoPlayer.setVideoSurface(surface);
+    }
+
+    public void setVolume(float volume) {
+        mExoPlayer.setVolume(volume);
+    }
+
+    public boolean selectTrack(int type, String trackId) {
+        return mTrackSelector.selectTrack(type, trackId);
+    }
+
+    public void play() {
+        mExoPlayer.setPlayWhenReady(true);
+    }
+
+    public void pause() {
+        mExoPlayer.setPlayWhenReady(true);
+    }
+
+    public void stop() {
+        mExoPlayer.stop();
+        mTrackSelector.clearSelectionOverrides();
+
+        if (mMediaSource != null) {
+            mMediaSource.releaseSource();
+
+            // Watch for memory leaks
+            Application.getRefWatcher(mContext).watch(mMediaSource);
+        }
+    }
+
+    public View getSubtitleView(CaptioningManager.CaptionStyle captionStyle, float fontScale) {
+        SubtitleView view = new SubtitleView(mContext);
+
+        CaptionStyleCompat captionStyleCompat = CaptionStyleCompat.createFromCaptionStyle(captionStyle);
+
+        float captionTextSize = getCaptionFontSize();
+        captionTextSize *= fontScale;
+
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences(
+                Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
+
+        final boolean applyEmbeddedStyles = sharedPreferences.getBoolean(
+                Constants.KEY_CAPTIONS_APPLY_EMBEDDED_STYLES,
+                mContext.getResources().getBoolean(R.bool.pref_default_captions_apply_embedded_styles)
+        );
+
+        view.setStyle(captionStyleCompat);
+        view.setVisibility(View.VISIBLE);
+        view.setFixedTextSize(TEXT_UNIT_PIXELS, captionTextSize);
+        view.setApplyEmbeddedStyles(applyEmbeddedStyles);
+
+        mExoPlayer.setTextOutput(view);
+
+        return view;
+    }
+
+    // Misc Internal Methods
+    private void buildExoPlayer() {
+        TrackSelection.Factory trackSelectionFactory =
+                new AdaptiveTrackSelection.Factory(null);
+
+        mTrackSelector = new TvheadendTrackSelector(trackSelectionFactory);
+
+        LoadControl loadControl = new DefaultLoadControl();
+
+        int extensionRendererMode = SimpleExoPlayer.EXTENSION_RENDERER_MODE_PREFER;
+
+        mExoPlayer = new SimpleTvheadendPlayer(
+                mContext, mTrackSelector, loadControl, null, extensionRendererMode,
+                ExoPlayerFactory.DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS);
+
+        mExoPlayer.addListener(this);
+
+        // Add the EventLogger
+        mEventLogger = new EventLogger(mTrackSelector);
+        mExoPlayer.addListener(mEventLogger);
+        mExoPlayer.setAudioDebugListener(mEventLogger);
+        mExoPlayer.setVideoDebugListener(mEventLogger);
+
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences(
+                Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
+
+        final String streamProfile = sharedPreferences.getString(
+                Constants.KEY_HTSP_STREAM_PROFILE,
+                mContext.getResources().getString(R.string.pref_default_htsp_stream_profile)
+        );
+
+        // Produces DataSource instances through which media data is loaded.
+        mDataSourceFactory = new HtspDataSource.Factory(mContext, mConnection, streamProfile);
+
+        // Produces Extractor instances for parsing the media data.
+        mExtractorsFactory = new HtspExtractor.Factory(mContext);
+    }
+
+    private void buildHtspMediaSource(Uri channelUri) {
+        // This is the MediaSource representing the media to be played.
+        mMediaSource = new ExtractorMediaSource(channelUri,
+                mDataSourceFactory, mExtractorsFactory, null, mEventLogger);
+    }
+
+    private float getCaptionFontSize() {
+        Display display = ((WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE))
+                .getDefaultDisplay();
+        Point displaySize = new Point();
+        display.getSize(displaySize);
+        return Math.max(mContext.getResources().getDimension(R.dimen.subtitle_minimum_font_size),
+                CAPTION_LINE_HEIGHT_RATIO * Math.min(displaySize.x, displaySize.y));
+    }
+
+    private boolean getTrackStatusBoolean(TrackSelection selection, TrackGroup group,
+                                          int trackIndex) {
+        return selection != null && selection.getTrackGroup() == group
+                && selection.indexOf(trackIndex) != C.INDEX_UNSET;
+    }
+
+    // ExoPlayer.EventListener Methods
+    @Override
+    public void onTimelineChanged(Timeline timeline, Object manifest) {
+
+    }
+
+    @Override
+    public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
+        MappingTrackSelector.MappedTrackInfo mappedTrackInfo = mTrackSelector.getCurrentMappedTrackInfo();
+        if (mappedTrackInfo == null) {
+            return;
+        }
+
+        // Process Tracks
+        List<TvTrackInfo> tracks = new ArrayList<>();
+        SparseArray<String> selectedTracks = new SparseArray<>();
+
+        for (int rendererIndex = 0; rendererIndex < mappedTrackInfo.length; rendererIndex++) {
+            TrackGroupArray rendererTrackGroups = mappedTrackInfo.getTrackGroups(rendererIndex);
+            TrackSelection trackSelection = trackSelections.get(rendererIndex);
+            if (rendererTrackGroups.length > 0) {
+                for (int groupIndex = 0; groupIndex < rendererTrackGroups.length; groupIndex++) {
+                    TrackGroup trackGroup = rendererTrackGroups.get(groupIndex);
+                    for (int trackIndex = 0; trackIndex < trackGroup.length; trackIndex++) {
+                        int formatSupport = mappedTrackInfo.getTrackFormatSupport(rendererIndex, groupIndex, trackIndex);
+
+                        if (formatSupport == RendererCapabilities.FORMAT_HANDLED) {
+                            Format format = trackGroup.getFormat(trackIndex);
+                            TvTrackInfo tvTrackInfo = ExoPlayerUtils.buildTvTrackInfo(format);
+
+                            if (tvTrackInfo != null) {
+                                tracks.add(tvTrackInfo);
+
+                                Boolean selected = getTrackStatusBoolean(trackSelection, trackGroup, trackIndex);
+
+                                if (selected) {
+                                    int trackType = MimeTypes.getTrackType(format.sampleMimeType);
+
+                                    switch (trackType) {
+                                        case C.TRACK_TYPE_VIDEO:
+                                            selectedTracks.put(TvTrackInfo.TYPE_VIDEO, format.id);
+                                            break;
+                                        case C.TRACK_TYPE_AUDIO:
+                                            selectedTracks.put(TvTrackInfo.TYPE_AUDIO, format.id);
+                                            break;
+                                        case C.TRACK_TYPE_TEXT:
+                                            selectedTracks.put(TvTrackInfo.TYPE_SUBTITLE, format.id);
+                                            break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        mListener.onTracksChanged(tracks, selectedTracks);
+    }
+
+    @Override
+    public void onLoadingChanged(boolean isLoading) {
+
+    }
+
+    @Override
+    public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+        mListener.onPlayerStateChanged(playWhenReady, playbackState);
+    }
+
+    @Override
+    public void onPlayerError(ExoPlaybackException error) {
+        mListener.onPlayerError(error);
+    }
+
+    @Override
+    public void onPositionDiscontinuity() {
+
+    }
+}

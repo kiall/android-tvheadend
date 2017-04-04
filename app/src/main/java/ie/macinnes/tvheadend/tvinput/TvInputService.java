@@ -17,8 +17,6 @@ package ie.macinnes.tvheadend.tvinput;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Intent;
-import android.os.Handler;
-import android.os.HandlerThread;
 import android.util.Log;
 
 import ie.macinnes.htsp.HtspConnection;
@@ -33,9 +31,6 @@ import ie.macinnes.tvheadend.sync.EpgSyncService;
 public class TvInputService extends android.media.tv.TvInputService {
     private static final String TAG = TvInputService.class.getName();
 
-    private HandlerThread mHandlerThread;
-    private Handler mHandler;
-
     private SimpleHtspConnection mConnection;
 
     private AccountManager mAccountManager;
@@ -44,10 +39,6 @@ public class TvInputService extends android.media.tv.TvInputService {
     @Override
     public void onCreate() {
         super.onCreate();
-
-        mHandlerThread = new HandlerThread(getClass().getSimpleName());
-        mHandlerThread.start();
-        mHandler = new Handler(mHandlerThread.getLooper());
 
         mAccountManager = AccountManager.get(this);
         mAccount = AccountUtils.getActiveAccount(this);
@@ -63,17 +54,13 @@ public class TvInputService extends android.media.tv.TvInputService {
         super.onDestroy();
 
         closeConnection();
-
-        mHandlerThread.quit();
-        mHandlerThread = null;
-        mHandler = null;
     }
 
     @Override
     public final Session onCreateSession(String inputId) {
         Log.d(TAG, "Creating new TvInputService Session for input ID: " + inputId + ".");
 
-        return new ExoPlayerSession(this, mHandler, mConnection);
+        return new LiveSession(this, mConnection);
     }
 
     protected void openConnection() {

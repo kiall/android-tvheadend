@@ -44,8 +44,8 @@ public class TvheadendTrackSelector extends DefaultTrackSelector {
         super(adaptiveVideoTrackSelectionFactory);
     }
 
-    public boolean onSelectTrack(int type, String trackId) {
-        Log.d(TAG, "TrackSelector onSelectTrack: " + type + " / " + trackId);
+    public boolean selectTrack(int type, String trackId) {
+        Log.d(TAG, "TrackSelector selectTrack: " + type + " / " + trackId);
 
         switch (type) {
             case TvTrackInfo.TYPE_VIDEO:
