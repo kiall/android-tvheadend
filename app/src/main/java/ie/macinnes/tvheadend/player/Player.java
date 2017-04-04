@@ -21,6 +21,7 @@ import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.media.tv.TvTrackInfo;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.Display;
@@ -50,13 +51,14 @@ import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.ui.SubtitleView;
-import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.util.MimeTypes;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import ie.macinnes.htsp.HtspMessage;
 import ie.macinnes.htsp.SimpleHtspConnection;
+import ie.macinnes.htsp.tasks.Subscriber;
 import ie.macinnes.tvheadend.Application;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.R;
@@ -100,10 +102,11 @@ public class Player implements ExoPlayer.EventListener {
     private SimpleExoPlayer mExoPlayer;
     private TvheadendTrackSelector mTrackSelector;
     private EventLogger mEventLogger;
-    private DataSource.Factory mDataSourceFactory;
+    private HtspDataSource.Factory mDataSourceFactory;
     private ExtractorsFactory mExtractorsFactory;
 
     private MediaSource mMediaSource;
+    private Subscriber mSubscriber;
 
     public Player(Context context, SimpleHtspConnection connection, Listener listener) {
         mContext = context;
@@ -122,6 +125,7 @@ public class Player implements ExoPlayer.EventListener {
 
         // Prepare the media source
         mExoPlayer.prepare(mMediaSource);
+        mExoPlayer.setPlayWhenReady(true);
     }
 
     public void release() {
@@ -145,12 +149,22 @@ public class Player implements ExoPlayer.EventListener {
         return mTrackSelector.selectTrack(type, trackId);
     }
 
-    public void play() {
+    public void resume() {
+        if (mSubscriber != null) {
+            Log.d(TAG, "Resuming Subscriber");
+            mSubscriber.resume();
+        }
+
         mExoPlayer.setPlayWhenReady(true);
     }
 
     public void pause() {
-        mExoPlayer.setPlayWhenReady(true);
+        mExoPlayer.setPlayWhenReady(false);
+
+        if (mSubscriber != null) {
+            Log.d(TAG, "Pausing Subscriber");
+            mSubscriber.pause();
+        }
     }
 
     public void stop() {
@@ -163,6 +177,8 @@ public class Player implements ExoPlayer.EventListener {
             // Watch for memory leaks
             Application.getRefWatcher(mContext).watch(mMediaSource);
         }
+
+        mSubscriber = null;
     }
 
     public View getSubtitleView(CaptioningManager.CaptionStyle captionStyle, float fontScale) {
@@ -312,7 +328,10 @@ public class Player implements ExoPlayer.EventListener {
 
     @Override
     public void onLoadingChanged(boolean isLoading) {
-
+        if (isLoading) {
+            // Fetch the Subscriber for later use
+            mSubscriber = mDataSourceFactory.getMostRecentDataSource().getSubscriber();
+        }
     }
 
     @Override
