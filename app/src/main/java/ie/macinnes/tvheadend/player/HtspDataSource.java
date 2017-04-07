@@ -29,6 +29,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -50,6 +51,8 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
         private final SimpleHtspConnection mConnection;
         private final String mStreamProfile;
 
+        private WeakReference<HtspDataSource> mMostRecentDataSource;
+
         public Factory(Context context, SimpleHtspConnection connection, String streamProfile) {
             mContext = context;
             mConnection = connection;
@@ -58,7 +61,16 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
 
         @Override
         public HtspDataSource createDataSource() {
-            return new HtspDataSource(mContext, mConnection, mStreamProfile);
+            mMostRecentDataSource = new WeakReference<>(new HtspDataSource(mContext, mConnection, mStreamProfile));
+            return mMostRecentDataSource.get();
+        }
+
+        public HtspDataSource getMostRecentDataSource() {
+            if (mMostRecentDataSource != null) {
+                return mMostRecentDataSource.get();
+            }
+
+            return null;
         }
     }
 
@@ -97,6 +109,10 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
         mConnection.addAuthenticationListener(mSubscriber);
     }
 
+    public Subscriber getSubscriber() {
+        return mSubscriber;
+    }
+
     // DataSource Methods
     @Override
     public long open(DataSpec dataSpec) throws IOException {
@@ -104,7 +120,7 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
         mDataSpec = dataSpec;
 
         try {
-            mSubscriber.subscribe(Long.parseLong(dataSpec.uri.getHost()), mStreamProfile);
+            mSubscriber.subscribe(Long.parseLong(dataSpec.uri.getHost()), mStreamProfile, 3600);
         } catch (HtspNotConnectedException e) {
             throw new IOException("Failed to open DataSource, HTSP not connected", e);
         }

@@ -17,9 +17,11 @@
 package ie.macinnes.tvheadend.tvinput;
 
 import android.content.Context;
+import android.media.PlaybackParams;
 import android.media.tv.TvInputManager;
 import android.media.tv.TvTrackInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -77,7 +79,10 @@ public class LiveSession extends TvInputService.Session implements Player.Listen
         Uri channelUri = Uri.parse("htsp://" + tvhChannelId);
 
         mPlayer.open(channelUri);
-        mPlayer.play();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            notifyTimeShiftStatusChanged(TvInputManager.TIME_SHIFT_STATUS_AVAILABLE);
+        }
 
         return true;
     }
@@ -165,6 +170,36 @@ public class LiveSession extends TvInputService.Session implements Player.Listen
     @Override
     public void onPlayerError(ExoPlaybackException error) {
 
+    }
+
+    @Override
+    public void onTimeShiftPause() {
+        mPlayer.pause();
+    }
+
+    @Override
+    public void onTimeShiftResume() {
+        mPlayer.resume();
+    }
+
+    @Override
+    public void onTimeShiftSeekTo(long timeMs) {
+        super.onTimeShiftSeekTo(timeMs);
+    }
+
+    @Override
+    public void onTimeShiftSetPlaybackParams(PlaybackParams params) {
+        super.onTimeShiftSetPlaybackParams(params);
+    }
+
+    @Override
+    public long onTimeShiftGetStartPosition() {
+        return super.onTimeShiftGetStartPosition();
+    }
+
+    @Override
+    public long onTimeShiftGetCurrentPosition() {
+        return super.onTimeShiftGetCurrentPosition();
     }
 
     // Inner Classes
