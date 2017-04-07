@@ -51,6 +51,7 @@ import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.ui.SubtitleView;
 import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DefaultAllocator;
 import com.google.android.exoplayer2.util.MimeTypes;
 
 import java.util.ArrayList;
@@ -198,7 +199,7 @@ public class Player implements ExoPlayer.EventListener {
 
         mTrackSelector = new TvheadendTrackSelector(trackSelectionFactory);
 
-        LoadControl loadControl = new DefaultLoadControl();
+        LoadControl loadControl = buildLoadControl();
 
         int extensionRendererMode = SimpleExoPlayer.EXTENSION_RENDERER_MODE_PREFER;
 
@@ -227,6 +228,31 @@ public class Player implements ExoPlayer.EventListener {
 
         // Produces Extractor instances for parsing the media data.
         mExtractorsFactory = new HtspExtractor.Factory(mContext);
+    }
+
+    private LoadControl buildLoadControl() {
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences(
+                Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
+
+        TrackSelection.Factory trackSelectionFactory =
+                new AdaptiveTrackSelection.Factory(null);
+
+        mTrackSelector = new TvheadendTrackSelector(trackSelectionFactory);
+
+        int bufferForPlaybackMs = Integer.parseInt(
+                sharedPreferences.getString(
+                        Constants.KEY_BUFFER_PLAYBACK_MS,
+                        mContext.getResources().getString(R.string.pref_default_buffer_playback_ms)
+                )
+        );
+
+        return new DefaultLoadControl(
+                new DefaultAllocator(true, C.DEFAULT_BUFFER_SEGMENT_SIZE),
+                DefaultLoadControl.DEFAULT_MIN_BUFFER_MS,
+                DefaultLoadControl.DEFAULT_MAX_BUFFER_MS,
+                bufferForPlaybackMs,
+                DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS
+        );
     }
 
     private void buildHtspMediaSource(Uri channelUri) {

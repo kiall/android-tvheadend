@@ -20,6 +20,15 @@
     android:title="TVHeadend Settings">
 
     <PreferenceCategory android:title="Audio and Video">
+        <ListPreference
+            android:key="buffer_playback_ms"
+            android:title="Buffer Duration"
+            android:dialogTitle="Buffer Seconds"
+            android:entries="@array/buffer_playback_ms_names"
+            android:entryValues="@array/buffer_playback_ms_values"
+            android:defaultValue="@string/pref_default_buffer_playback_ms"
+            android:summary="How many seconds to buffer before starting playback"/>
+
         <CheckBoxPreference
             android:key="audio_passthrough_decodeder_enabled"
             android:title="Enable Audio Passthrough"

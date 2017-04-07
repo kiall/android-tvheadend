@@ -20,6 +20,7 @@
     <dimen name="subtitle_minimum_font_size">13sp</dimen>
 
     <!-- Default Preference values -->
+    <string name="pref_default_buffer_playback_ms">500</string>
     <bool name="pref_default_audio_passthrough_decodeder_enabled">false</bool>
     <bool name="pref_default_audio_ffmpeg_audio_enabled">true</bool>
     <bool name="pref_default_shield_workaround_enabled">true</bool>

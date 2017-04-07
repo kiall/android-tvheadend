@@ -35,4 +35,28 @@
         <item>604800</item>
         <item>691200</item>
     </string-array>
+
+    <string-array name="buffer_playback_ms_names">
+        <item>No Buffer</item>
+        <item>0.5 Seconds</item>
+        <item>1 Second</item>
+        <item>1.5 Seconds</item>
+        <item>2 Seconds</item>
+        <item>2.5 Seconds</item>
+        <item>3 Seconds</item>
+        <item>4 Seconds</item>
+        <item>5 Seconds</item>
+    </string-array>
+
+    <string-array name="buffer_playback_ms_values">
+        <item>0</item>
+        <item>500</item>
+        <item>1000</item>
+        <item>1500</item>
+        <item>2000</item>
+        <item>2500</item>
+        <item>3000</item>
+        <item>4000</item>
+        <item>5000</item>
+    </string-array>
 </resources>
