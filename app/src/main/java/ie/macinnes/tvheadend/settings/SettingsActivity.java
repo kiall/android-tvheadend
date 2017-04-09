@@ -20,14 +20,13 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import ie.macinnes.tvheadend.R;
 
 public class SettingsActivity extends Activity {
-
     public static Intent getPreferencesIntent(Context context) {
-        Intent intent = new Intent(context, SettingsActivity.class);
-        return intent;
+        return new Intent(context, SettingsActivity.class);
     }
 
     @Override
@@ -35,5 +34,12 @@ public class SettingsActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.fragment_settings);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        Toast.makeText(this, R.string.settings_require_restart, Toast.LENGTH_LONG).show();
     }
 }
