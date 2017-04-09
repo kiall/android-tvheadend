@@ -111,9 +111,6 @@ public class TvInputSetupActivity extends Activity {
 
             Context context = getActivity();
 
-            // Flag setup as incomplete
-            MiscUtils.setSetupComplete(context, false);
-
             // Stop the EPG service
             Intent intent = new Intent(context, EpgSyncService.class);
             context.stopService(intent);
