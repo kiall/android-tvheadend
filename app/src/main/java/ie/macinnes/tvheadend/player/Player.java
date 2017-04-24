@@ -97,7 +97,6 @@ public class Player implements ExoPlayer.EventListener {
     private final SimpleHtspConnection mConnection;
     private final Listener mListener;
 
-    private final SharedPreferences mSharedPreferences;
 
     private SimpleExoPlayer mExoPlayer;
     private TvheadendTrackSelector mTrackSelector;
@@ -111,9 +110,6 @@ public class Player implements ExoPlayer.EventListener {
         mContext = context;
         mConnection = connection;
         mListener = listener;
-
-        mSharedPreferences = mContext.getSharedPreferences(
-                Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
 
         buildExoPlayer();
     }
@@ -178,7 +174,10 @@ public class Player implements ExoPlayer.EventListener {
         float captionTextSize = getCaptionFontSize();
         captionTextSize *= fontScale;
 
-        final boolean applyEmbeddedStyles = mSharedPreferences.getBoolean(
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences(
+                Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
+
+        final boolean applyEmbeddedStyles = sharedPreferences.getBoolean(
                 Constants.KEY_CAPTIONS_APPLY_EMBEDDED_STYLES,
                 mContext.getResources().getBoolean(R.bool.pref_default_captions_apply_embedded_styles)
         );
@@ -216,7 +215,10 @@ public class Player implements ExoPlayer.EventListener {
         mExoPlayer.setAudioDebugListener(mEventLogger);
         mExoPlayer.setVideoDebugListener(mEventLogger);
 
-        final String streamProfile = mSharedPreferences.getString(
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences(
+                Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
+
+        final String streamProfile = sharedPreferences.getString(
                 Constants.KEY_HTSP_STREAM_PROFILE,
                 mContext.getResources().getString(R.string.pref_default_htsp_stream_profile)
         );
@@ -229,8 +231,16 @@ public class Player implements ExoPlayer.EventListener {
     }
 
     private LoadControl buildLoadControl() {
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences(
+                Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
+
+        TrackSelection.Factory trackSelectionFactory =
+                new AdaptiveTrackSelection.Factory(null);
+
+        mTrackSelector = new TvheadendTrackSelector(trackSelectionFactory);
+
         int bufferForPlaybackMs = Integer.parseInt(
-                mSharedPreferences.getString(
+                sharedPreferences.getString(
                         Constants.KEY_BUFFER_PLAYBACK_MS,
                         mContext.getResources().getString(R.string.pref_default_buffer_playback_ms)
                 )
