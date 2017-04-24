@@ -30,6 +30,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 import ie.macinnes.htsp.HtspMessage;
@@ -42,6 +43,7 @@ import ie.macinnes.tvheadend.Constants;
 public class HtspDataSource implements DataSource, Subscriber.Listener, Closeable {
     private static final String TAG = HtspDataSource.class.getName();
     private static final int BUFFER_SIZE = 10*1024*1024;
+    private static final AtomicInteger sDataSourceCount = new AtomicInteger();
 
     public static class Factory implements DataSource.Factory {
         private static final String TAG = Factory.class.getName();
@@ -66,6 +68,7 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
     private SimpleHtspConnection mConnection;
     private String mStreamProfile;
 
+    private final int mDataSourceNumber;
     private Subscriber mSubscriber;
 
     private DataSpec mDataSpec;
@@ -76,11 +79,13 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
     private boolean mIsOpen = false;
 
     public HtspDataSource(Context context, SimpleHtspConnection connection, String streamProfile) {
-        Log.d(TAG, "New HtspDataSource instantiated");
-
         mContext = context;
         mConnection = connection;
         mStreamProfile = streamProfile;
+
+        mDataSourceNumber = sDataSourceCount.incrementAndGet();
+
+        Log.d(TAG, "New HtspDataSource instantiated ("+mDataSourceNumber+")");
 
         try {
             mBuffer = ByteBuffer.allocate(BUFFER_SIZE);
@@ -90,7 +95,7 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
             // enough memory to catch and throw this exception. We do this, as each OOM exception
             // message is unique (lots of #'s of bytes available/used/etc) and means crash reporting
             // doesn't group things nicely.
-            throw new RuntimeException("OutOfMemoryError when allocating HtspDataSource buffer", e);
+            throw new RuntimeException("OutOfMemoryError when allocating HtspDataSource buffer ("+mDataSourceNumber+")", e);
         }
 
         mSubscriber = new Subscriber(mConnection);
@@ -101,13 +106,13 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
     // DataSource Methods
     @Override
     public long open(DataSpec dataSpec) throws IOException {
-        Log.i(TAG, "Opening HTSP DataSource");
+        Log.i(TAG, "Opening HTSP DataSource ("+mDataSourceNumber+")");
         mDataSpec = dataSpec;
 
         try {
             mSubscriber.subscribe(Long.parseLong(dataSpec.uri.getHost()), mStreamProfile);
         } catch (HtspNotConnectedException e) {
-            throw new IOException("Failed to open DataSource, HTSP not connected", e);
+            throw new IOException("Failed to open DataSource, HTSP not connected ("+mDataSourceNumber+")", e);
         }
 
         mIsOpen = true;
@@ -125,11 +130,11 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
         while (mIsOpen && mBuffer.remaining() == 0) {
             try {
                 if (Constants.DEBUG)
-                    Log.v(TAG, "Blocking for more data");
+                    Log.v(TAG, "Blocking for more data ("+mDataSourceNumber+")");
                 Thread.sleep(250);
             } catch (InterruptedException e) {
                 // Ignore.
-                Log.w(TAG, "Caught InterruptedException, ignoring");
+                Log.w(TAG, "Caught InterruptedException, ignoring ("+mDataSourceNumber+")");
             }
         }
 
@@ -165,22 +170,18 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
 
     @Override
     public void close() throws IOException {
-        Log.i(TAG, "Closing HTSP DataSource");
+        Log.i(TAG, "Closing HTSP DataSource ("+mDataSourceNumber+")");
         mIsOpen = false;
 
         mConnection.removeAuthenticationListener(mSubscriber);
         mSubscriber.removeSubscriptionListener(this);
         mSubscriber.unsubscribe();
-        mSubscriber = null;
-
-        // Watch for memory leaks
-        Application.getRefWatcher(mContext).watch(this);
     }
 
     // Subscription.Listener Methods
     @Override
     public void onSubscriptionStart(@NonNull HtspMessage message) {
-        Log.d(TAG, "Received subscriptionStart");
+        Log.d(TAG, "Received subscriptionStart ("+mDataSourceNumber+")");
         serializeMessageToBuffer(message);
     }
 
@@ -201,7 +202,7 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
 
     @Override
     public void onSubscriptionStop(@NonNull HtspMessage message) {
-        Log.d(TAG, "Received subscriptionStop");
+        Log.d(TAG, "Received subscriptionStop ("+mDataSourceNumber+")");
         mIsOpen = false;
     }
 
@@ -244,7 +245,7 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
             mBuffer.flip();
         } catch (IOException e) {
             // Ignore?
-            Log.w(TAG, "Caught IOException, ignoring", e);
+            Log.w(TAG, "Caught IOException, ignoring ("+mDataSourceNumber+")", e);
         } finally {
             mLock.unlock();
             try {
