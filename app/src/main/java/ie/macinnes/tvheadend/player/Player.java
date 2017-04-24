@@ -19,11 +19,8 @@ package ie.macinnes.tvheadend.player;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Point;
-import android.media.PlaybackParams;
 import android.media.tv.TvTrackInfo;
 import android.net.Uri;
-import android.os.Build;
-import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.Display;
@@ -53,6 +50,7 @@ import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.ui.SubtitleView;
+import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultAllocator;
 import com.google.android.exoplayer2.util.MimeTypes;
 
@@ -60,7 +58,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ie.macinnes.htsp.SimpleHtspConnection;
-import ie.macinnes.htsp.tasks.Subscriber;
 import ie.macinnes.tvheadend.Application;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.R;
@@ -70,8 +67,6 @@ public class Player implements ExoPlayer.EventListener {
 
     private static final float CAPTION_LINE_HEIGHT_RATIO = 0.0533f;
     private static final int TEXT_UNIT_PIXELS = 0;
-
-    public static final long INVALID_TIMESHIFT_TIME = Subscriber.INVALID_TIMESHIFT_TIME;
 
     public interface Listener {
         /**
@@ -107,11 +102,10 @@ public class Player implements ExoPlayer.EventListener {
     private SimpleExoPlayer mExoPlayer;
     private TvheadendTrackSelector mTrackSelector;
     private EventLogger mEventLogger;
-    private HtspDataSource.Factory mDataSourceFactory;
+    private DataSource.Factory mDataSourceFactory;
     private ExtractorsFactory mExtractorsFactory;
 
     private MediaSource mMediaSource;
-    private Subscriber mSubscriber;
 
     public Player(Context context, SimpleHtspConnection connection, Listener listener) {
         mContext = context;
@@ -133,7 +127,6 @@ public class Player implements ExoPlayer.EventListener {
 
         // Prepare the media source
         mExoPlayer.prepare(mMediaSource);
-        mExoPlayer.setPlayWhenReady(true);
     }
 
     public void release() {
@@ -157,67 +150,12 @@ public class Player implements ExoPlayer.EventListener {
         return mTrackSelector.selectTrack(type, trackId);
     }
 
-    public void resume() {
-        if (mSubscriber != null) {
-            Log.d(TAG, "Resuming Subscriber");
-            mSubscriber.resume();
-        }
-
+    public void play() {
         mExoPlayer.setPlayWhenReady(true);
     }
 
     public void pause() {
-        mExoPlayer.setPlayWhenReady(false);
-
-        if (mSubscriber != null) {
-            Log.d(TAG, "Pausing Subscriber");
-            mSubscriber.pause();
-        }
-    }
-
-    public void seek(long timeMs) {
-        Log.d(TAG, "seek to time: " + timeMs);
-
-        long seekPts = (timeMs * 1000) - mSubscriber.getTimeshiftStartTime();
-        seekPts = Math.max(seekPts, mSubscriber.getTimeshiftStartPts());
-
-        mExoPlayer.seekTo(seekPts / 1000);
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    public void setPlaybackParams(PlaybackParams params) {
-        float speed = params.getSpeed();
-        int translatedSpeed;
-
-        if (speed == 0.0) {
-            translatedSpeed = 100;
-        } else if (speed == -2.0) {
-            translatedSpeed = -200;
-        } else if (speed == -4.0) {
-            translatedSpeed = -300;
-        } else if (speed == -12.0) {
-            translatedSpeed = -400;
-        } else if (speed == -48.0) {
-            translatedSpeed = -500;
-        } else if (speed == 2.0) {
-            translatedSpeed = 200;
-        } else if (speed == 4.0) {
-            translatedSpeed = 300;
-        } else if (speed == 12.0) {
-            translatedSpeed = 400;
-        } else if (speed == 48.0) {
-            translatedSpeed = 500;
-        } else {
-            Log.d(TAG, "Unknown speed??? " + speed);
-            return;
-        }
-
-        Log.d(TAG, "Speed: " + params.getSpeed() + " / " + translatedSpeed);
-
-        if (mSubscriber != null) {
-            mSubscriber.setSpeed(translatedSpeed);
-            mExoPlayer.setPlaybackParams(new PlaybackParams().setSpeed(speed));
-        }
+        mExoPlayer.setPlayWhenReady(true);
     }
 
     public void stop() {
@@ -230,30 +168,6 @@ public class Player implements ExoPlayer.EventListener {
             // Watch for memory leaks
             Application.getRefWatcher(mContext).watch(mMediaSource);
         }
-
-        mSubscriber = null;
-    }
-
-    public long getTimeshiftStartPosition() {
-        if (mSubscriber != null) {
-            long startTime = mSubscriber.getTimeshiftStartTime();
-            if (startTime != Subscriber.INVALID_TIMESHIFT_TIME) {
-                return startTime / 1000;
-            }
-        }
-
-        return INVALID_TIMESHIFT_TIME;
-    }
-
-    public long getTimeshiftCurrentPosition() {
-        if (mSubscriber != null) {
-            long offset = mSubscriber.getTimeshiftOffsetPts();
-            if (offset != Subscriber.INVALID_TIMESHIFT_TIME) {
-                return System.currentTimeMillis() + (offset / 1000);
-            }
-        }
-
-        return INVALID_TIMESHIFT_TIME;
     }
 
     public View getSubtitleView(CaptioningManager.CaptionStyle captionStyle, float fontScale) {
@@ -414,10 +328,7 @@ public class Player implements ExoPlayer.EventListener {
 
     @Override
     public void onLoadingChanged(boolean isLoading) {
-        if (isLoading) {
-            // Fetch the Subscriber for later use
-            mSubscriber = mDataSourceFactory.getMostRecentDataSource().getSubscriber();
-        }
+
     }
 
     @Override

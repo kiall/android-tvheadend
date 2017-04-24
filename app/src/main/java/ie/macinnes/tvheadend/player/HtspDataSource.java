@@ -17,7 +17,6 @@
 package ie.macinnes.tvheadend.player;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -30,7 +29,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -40,11 +38,9 @@ import ie.macinnes.htsp.SimpleHtspConnection;
 import ie.macinnes.htsp.tasks.Subscriber;
 import ie.macinnes.tvheadend.Application;
 import ie.macinnes.tvheadend.Constants;
-import ie.macinnes.tvheadend.R;
 
 public class HtspDataSource implements DataSource, Subscriber.Listener, Closeable {
     private static final String TAG = HtspDataSource.class.getName();
-    private static final boolean DEBUG = Constants.DEBUG;
     private static final int BUFFER_SIZE = 10*1024*1024;
 
     public static class Factory implements DataSource.Factory {
@@ -54,8 +50,6 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
         private final SimpleHtspConnection mConnection;
         private final String mStreamProfile;
 
-        private WeakReference<HtspDataSource> mMostRecentDataSource;
-
         public Factory(Context context, SimpleHtspConnection connection, String streamProfile) {
             mContext = context;
             mConnection = connection;
@@ -64,29 +58,13 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
 
         @Override
         public HtspDataSource createDataSource() {
-            HtspDataSource oldDataSource = getMostRecentDataSource();
-            if (oldDataSource != null) {
-                oldDataSource.release();
-            }
-            mMostRecentDataSource = new WeakReference<>(new HtspDataSource(mContext, mConnection, mStreamProfile));
-            return mMostRecentDataSource.get();
-        }
-
-        public HtspDataSource getMostRecentDataSource() {
-            if (mMostRecentDataSource != null) {
-                return mMostRecentDataSource.get();
-            }
-
-            return null;
+            return new HtspDataSource(mContext, mConnection, mStreamProfile);
         }
     }
 
     private Context mContext;
     private SimpleHtspConnection mConnection;
     private String mStreamProfile;
-
-    private final SharedPreferences mSharedPreferences;
-    private int mTimeshiftPeriod = 0;
 
     private Subscriber mSubscriber;
 
@@ -104,18 +82,6 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
         mConnection = connection;
         mStreamProfile = streamProfile;
 
-        mSharedPreferences = mContext.getSharedPreferences(
-                Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
-
-        boolean timeshiftEnabled = mSharedPreferences.getBoolean(
-                Constants.KEY_TIMESHIFT_ENABLED,
-                mContext.getResources().getBoolean(R.bool.pref_default_timeshift_enabled));
-
-        if (timeshiftEnabled) {
-            // TODO: Eventually, this should be a preference.
-            mTimeshiftPeriod = 3600;
-        }
-
         try {
             mBuffer = ByteBuffer.allocate(BUFFER_SIZE);
             mBuffer.limit(0);
@@ -132,59 +98,19 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
         mConnection.addAuthenticationListener(mSubscriber);
     }
 
-    public Subscriber getSubscriber() {
-        return mSubscriber;
-    }
-
-    public void release() {
-        if (mConnection != null) {
-            mConnection.removeAuthenticationListener(mSubscriber);
-            mConnection = null;
-        }
-
-        if (mSubscriber != null) {
-            mSubscriber.removeSubscriptionListener(this);
-            mSubscriber.unsubscribe();
-            mSubscriber = null;
-        }
-
-        // Watch for memory leaks
-        Application.getRefWatcher(mContext).watch(this);
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        // This is a total hack, but there's not much else we can do?
-        // https://github.com/google/ExoPlayer/issues/2662
-        if (mSubscriber != null || mConnection != null) {
-            Log.w(TAG, "Datasource finalize relied upon to release the subscription");
-            release();
-        }
-    }
-
     // DataSource Methods
     @Override
     public long open(DataSpec dataSpec) throws IOException {
         Log.i(TAG, "Opening HTSP DataSource");
         mDataSpec = dataSpec;
 
-        mIsOpen = true;
-
-        long seekPosition = mDataSpec.position;
-        if (seekPosition > 0) {
-            Log.d(TAG, "seek to time PTS: " + seekPosition);
-            mSubscriber.skip(seekPosition);
-            mBuffer.clear();
-            mBuffer.limit(0);
-            return C.LENGTH_UNSET;
-        }
-
         try {
-            mSubscriber.subscribe(Long.parseLong(dataSpec.uri.getHost()), mStreamProfile, mTimeshiftPeriod);
+            mSubscriber.subscribe(Long.parseLong(dataSpec.uri.getHost()), mStreamProfile);
         } catch (HtspNotConnectedException e) {
-            mIsOpen = false;
             throw new IOException("Failed to open DataSource, HTSP not connected", e);
         }
+
+        mIsOpen = true;
 
         return C.LENGTH_UNSET;
     }
@@ -198,7 +124,7 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
         // If the buffer is empty, block until we have at least 1 byte
         while (mIsOpen && mBuffer.remaining() == 0) {
             try {
-                if (DEBUG)
+                if (Constants.DEBUG)
                     Log.v(TAG, "Blocking for more data");
                 Thread.sleep(250);
             } catch (InterruptedException e) {
@@ -241,6 +167,14 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
     public void close() throws IOException {
         Log.i(TAG, "Closing HTSP DataSource");
         mIsOpen = false;
+
+        mConnection.removeAuthenticationListener(mSubscriber);
+        mSubscriber.removeSubscriptionListener(this);
+        mSubscriber.unsubscribe();
+        mSubscriber = null;
+
+        // Watch for memory leaks
+        Application.getRefWatcher(mContext).watch(this);
     }
 
     // Subscription.Listener Methods

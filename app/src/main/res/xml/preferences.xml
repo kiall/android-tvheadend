@@ -84,12 +84,6 @@
             android:summary="Stream profile to use for HTSP video"
             android:defaultValue="@string/pref_default_htsp_stream_profile" />
 
-        <CheckBoxPreference
-            android:key="timeshift_enabled"
-            android:title="Enable timeshift support"
-            android:summary="DO NOT ENABLE THIS"
-            android:defaultValue="@bool/pref_default_timeshift_enabled"/>
-
         <PreferenceScreen android:title="Crash Reporting Settings" android:key="crash_reporting_settings" android:persistent="false">
             <CheckBoxPreference android:key="acra.enable"
                                 android:title="@string/pref_disable_acra"

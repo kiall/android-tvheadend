@@ -32,6 +32,7 @@ public class Constants {
 
     // Misc Preference Keys and Values
     public static final String KEY_SETUP_COMPLETE = "SETUP-COMPLETE";
+    public static final String KEY_HTSP_STREAM_PROFILE = "htsp_stream_profile";
 
     // Audio and Video Preferences Keys and Values
     public static final String KEY_BUFFER_PLAYBACK_MS = "buffer_playback_ms";
@@ -41,8 +42,6 @@ public class Constants {
 
     // Advanced Preferences Keys and Values
     public static final String KEY_SHIELD_WORKAROUND_ENABLED = "shield_workaround_enabled";
-    public static final String KEY_HTSP_STREAM_PROFILE = "htsp_stream_profile";
-    public static final String KEY_TIMESHIFT_ENABLED = "timeshift_enabled";
 
     // Bundle and Preference Keys
     public static final String KEY_APP_VERSION = "APP-VERSION";

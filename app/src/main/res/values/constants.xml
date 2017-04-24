@@ -30,5 +30,5 @@
     <bool name="pref_default_epg_default_poster_art_enabled">false</bool>
     <bool name="pref_default_captions_apply_embedded_styles">true</bool>
     <string name="pref_default_htsp_stream_profile">htsp</string>
-    <bool name="pref_default_timeshift_enabled">false</bool>
+
 </resources>
