@@ -93,8 +93,7 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
             throw new RuntimeException("OutOfMemoryError when allocating HtspDataSource buffer", e);
         }
 
-        mSubscriber = new Subscriber(mConnection);
-        mSubscriber.addSubscriptionListener(this);
+        mSubscriber = new Subscriber(mConnection, this);
         mConnection.addAuthenticationListener(mSubscriber);
     }
 
@@ -169,9 +168,7 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
         mIsOpen = false;
 
         mConnection.removeAuthenticationListener(mSubscriber);
-        mSubscriber.removeSubscriptionListener(this);
         mSubscriber.unsubscribe();
-        mSubscriber = null;
 
         // Watch for memory leaks
         Application.getRefWatcher(mContext).watch(this);
