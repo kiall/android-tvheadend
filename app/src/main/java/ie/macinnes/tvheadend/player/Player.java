@@ -36,7 +36,9 @@ import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.LoadControl;
+import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.RendererCapabilities;
+import com.google.android.exoplayer2.RenderersFactory;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.ExtractorsFactory;
@@ -202,12 +204,10 @@ public class Player implements ExoPlayer.EventListener {
 
         LoadControl loadControl = buildLoadControl();
 
-        int extensionRendererMode = SimpleExoPlayer.EXTENSION_RENDERER_MODE_PREFER;
+        RenderersFactory renderersFactory = new TvheadendRenderersFactory(
+                mContext, null, TvheadendRenderersFactory.DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS);
 
-        mExoPlayer = new SimpleTvheadendPlayer(
-                mContext, mTrackSelector, loadControl, null, extensionRendererMode,
-                ExoPlayerFactory.DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS);
-
+        mExoPlayer = ExoPlayerFactory.newSimpleInstance(renderersFactory, mTrackSelector, loadControl);
         mExoPlayer.addListener(this);
 
         // Add the EventLogger
@@ -343,6 +343,11 @@ public class Player implements ExoPlayer.EventListener {
 
     @Override
     public void onPositionDiscontinuity() {
+
+    }
+
+    @Override
+    public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
 
     }
 }
