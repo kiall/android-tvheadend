@@ -17,16 +17,21 @@
 package ie.macinnes.tvheadend.tvinput;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.media.PlaybackParams;
 import android.media.tv.TvInputManager;
 import android.media.tv.TvTrackInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.Surface;
 import android.view.View;
 import android.view.accessibility.CaptioningManager;
+import android.widget.Toast;
 
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
@@ -34,6 +39,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import ie.macinnes.htsp.SimpleHtspConnection;
+import ie.macinnes.tvheadend.Constants;
+import ie.macinnes.tvheadend.R;
 import ie.macinnes.tvheadend.TvContractUtils;
 import ie.macinnes.tvheadend.player.Player;
 
@@ -45,6 +52,7 @@ public class LiveSession extends TvInputService.Session implements Player.Listen
     private final int mSessionNumber;
     private final Handler mHandler;
     private final CaptioningManager mCaptioningManager;
+    private final SharedPreferences mSharedPreferences;
 
     private Player mPlayer;
 
@@ -57,6 +65,9 @@ public class LiveSession extends TvInputService.Session implements Player.Listen
         mSessionNumber = sSessionCounter.getAndIncrement();
         mHandler = new Handler();
         mCaptioningManager = (CaptioningManager) context.getSystemService(Context.CAPTIONING_SERVICE);
+
+        mSharedPreferences = mContext.getSharedPreferences(
+                Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
 
         Log.d(TAG, "Session created (" + mSessionNumber + ")");
 
@@ -78,6 +89,14 @@ public class LiveSession extends TvInputService.Session implements Player.Listen
 
         mPlayer.open(channelUri);
         mPlayer.play();
+
+        boolean timeshiftEnabled = mSharedPreferences.getBoolean(
+                Constants.KEY_TIMESHIFT_ENABLED,
+                mContext.getResources().getBoolean(R.bool.pref_default_timeshift_enabled));
+
+        if (timeshiftEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            notifyTimeShiftStatusChanged(TvInputManager.TIME_SHIFT_STATUS_AVAILABLE);
+        }
 
         return true;
     }
@@ -164,6 +183,43 @@ public class LiveSession extends TvInputService.Session implements Player.Listen
     @Override
     public void onPlayerError(ExoPlaybackException error) {
 
+    }
+
+    @Override
+    public void onTimeShiftPause() {
+        mPlayer.pause();
+    }
+
+    @Override
+    public void onTimeShiftResume() {
+        mPlayer.resume();
+    }
+
+    @Override
+    public void onTimeShiftSeekTo(long timeMs) {
+        Log.d(TAG, "onTimeShiftSeekTo: " + timeMs);
+
+        Toast.makeText(mContext, "Unsupported", Toast.LENGTH_SHORT).show();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    @Override
+    public void onTimeShiftSetPlaybackParams(PlaybackParams params) {
+        Log.d(TAG, "onTimeShiftSetPlaybackParams: " + params);
+
+        Toast.makeText(mContext, "Unsupported", Toast.LENGTH_SHORT).show();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    @Override
+    public long onTimeShiftGetStartPosition() {
+        return mPlayer.getTimeshiftStartPosition();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    @Override
+    public long onTimeShiftGetCurrentPosition() {
+        return mPlayer.getTimeshiftCurrentPosition();
     }
 
     // Inner Classes
