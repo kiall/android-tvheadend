@@ -49,12 +49,15 @@ import com.google.android.exoplayer2.source.TrackGroup;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.text.CaptionStyleCompat;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.ui.DebugTextViewHelper;
 import com.google.android.exoplayer2.ui.SubtitleView;
+import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultAllocator;
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.util.MimeTypes;
 
 import java.util.ArrayList;
@@ -247,11 +250,8 @@ public class Player implements ExoPlayer.EventListener {
 
     // Misc Internal Methods
     private void buildExoPlayer() {
-        TrackSelection.Factory trackSelectionFactory =
-                new AdaptiveTrackSelection.Factory(null);
-
         mRenderersFactory = new TvheadendRenderersFactory(mContext);
-        mTrackSelector = new TvheadendTrackSelector(trackSelectionFactory);
+        mTrackSelector = buildTrackSelector();
         mLoadControl = buildLoadControl();
 
         mExoPlayer = ExoPlayerFactory.newSimpleInstance(mRenderersFactory, mTrackSelector, mLoadControl);
@@ -273,6 +273,20 @@ public class Player implements ExoPlayer.EventListener {
 
         // Produces Extractor instances for parsing the media data.
         mExtractorsFactory = new HtspExtractor.Factory(mContext);
+    }
+
+
+    private TvheadendTrackSelector buildTrackSelector() {
+        TrackSelection.Factory trackSelectionFactory =
+                new AdaptiveTrackSelection.Factory(null);
+
+        TvheadendTrackSelector trackSelector = new TvheadendTrackSelector(trackSelectionFactory);
+
+        DefaultTrackSelector.Parameters p = new DefaultTrackSelector.Parameters()
+                .withExceedRendererCapabilitiesIfNecessary(true);
+        trackSelector.setParameters(p);
+
+        return trackSelector;
     }
 
     private LoadControl buildLoadControl() {
@@ -339,7 +353,7 @@ public class Player implements ExoPlayer.EventListener {
                     for (int trackIndex = 0; trackIndex < trackGroup.length; trackIndex++) {
                         int formatSupport = mappedTrackInfo.getTrackFormatSupport(rendererIndex, groupIndex, trackIndex);
 
-                        if (formatSupport == RendererCapabilities.FORMAT_HANDLED) {
+                        if (formatSupport == RendererCapabilities.FORMAT_HANDLED || formatSupport == RendererCapabilities.FORMAT_EXCEEDS_CAPABILITIES) {
                             Format format = trackGroup.getFormat(trackIndex);
                             TvTrackInfo tvTrackInfo = ExoPlayerUtils.buildTvTrackInfo(format);
 
