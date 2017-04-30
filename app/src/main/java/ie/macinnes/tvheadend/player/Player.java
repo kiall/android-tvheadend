@@ -217,8 +217,10 @@ public class Player implements ExoPlayer.EventListener {
         );
 
         if (enableDebugTextView) {
+            TextView textView = (TextView) mOverlayView.findViewById(R.id.debug_text_view);
+            textView.setVisibility(View.VISIBLE);
             return new DebugTextViewHelper(
-                    mExoPlayer, (TextView) mOverlayView.findViewById(R.id.debug_text_view));
+                    mExoPlayer, textView);
         } else {
             return null;
         }

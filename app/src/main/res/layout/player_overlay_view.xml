@@ -29,6 +29,7 @@
         android:paddingRight="4dp"
         android:textSize="10sp"
         android:textColor="@android:color/white"
+        android:visibility="invisible"
         tools:ignore="SmallSp"/>
 
     <com.google.android.exoplayer2.ui.SubtitleView android:id="@+id/subtitle_view"
