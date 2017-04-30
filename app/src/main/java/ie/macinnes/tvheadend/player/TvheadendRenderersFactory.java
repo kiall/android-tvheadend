@@ -20,13 +20,10 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.Renderer;
-import com.google.android.exoplayer2.RenderersFactory;
-import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.audio.AudioCapabilities;
 import com.google.android.exoplayer2.audio.AudioProcessor;
 import com.google.android.exoplayer2.audio.AudioRendererEventListener;
@@ -37,8 +34,6 @@ import com.google.android.exoplayer2.ext.ffmpeg.FfmpegAudioRenderer;
 import com.google.android.exoplayer2.mediacodec.MediaCodecInfo;
 import com.google.android.exoplayer2.mediacodec.MediaCodecSelector;
 import com.google.android.exoplayer2.mediacodec.MediaCodecUtil;
-import com.google.android.exoplayer2.metadata.MetadataRenderer;
-import com.google.android.exoplayer2.text.TextRenderer;
 import com.google.android.exoplayer2.video.MediaCodecVideoRenderer;
 import com.google.android.exoplayer2.video.VideoRendererEventListener;
 
@@ -50,18 +45,8 @@ import ie.macinnes.tvheadend.R;
 public class TvheadendRenderersFactory extends DefaultRenderersFactory {
     private static final String TAG = TvheadendRenderersFactory.class.getName();
 
-    private final Context mContext;
-    private final DrmSessionManager<FrameworkMediaCrypto> mDrmSessionManager;
-    private final long mAllowedVideoJoiningTimeMs;
-
-    public TvheadendRenderersFactory(Context context,
-                                     DrmSessionManager<FrameworkMediaCrypto> drmSessionManager,
-                                     long allowedVideoJoiningTimeMs) {
-        super(context, drmSessionManager, EXTENSION_RENDERER_MODE_ON, allowedVideoJoiningTimeMs);
-
-        mContext = context;
-        mDrmSessionManager = drmSessionManager;
-        mAllowedVideoJoiningTimeMs = allowedVideoJoiningTimeMs;
+    public TvheadendRenderersFactory(Context context) {
+        super(context, null, EXTENSION_RENDERER_MODE_ON, DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS);
     }
 
     /**

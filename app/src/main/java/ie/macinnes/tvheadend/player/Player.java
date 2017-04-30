@@ -102,7 +102,9 @@ public class Player implements ExoPlayer.EventListener {
     private final SharedPreferences mSharedPreferences;
 
     private SimpleExoPlayer mExoPlayer;
+    private RenderersFactory mRenderersFactory;
     private TvheadendTrackSelector mTrackSelector;
+    private LoadControl mLoadControl;
     private EventLogger mEventLogger;
     private DataSource.Factory mDataSourceFactory;
     private ExtractorsFactory mExtractorsFactory;
@@ -200,14 +202,11 @@ public class Player implements ExoPlayer.EventListener {
         TrackSelection.Factory trackSelectionFactory =
                 new AdaptiveTrackSelection.Factory(null);
 
+        mRenderersFactory = new TvheadendRenderersFactory(mContext);
         mTrackSelector = new TvheadendTrackSelector(trackSelectionFactory);
+        mLoadControl = buildLoadControl();
 
-        LoadControl loadControl = buildLoadControl();
-
-        RenderersFactory renderersFactory = new TvheadendRenderersFactory(
-                mContext, null, TvheadendRenderersFactory.DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS);
-
-        mExoPlayer = ExoPlayerFactory.newSimpleInstance(renderersFactory, mTrackSelector, loadControl);
+        mExoPlayer = ExoPlayerFactory.newSimpleInstance(mRenderersFactory, mTrackSelector, mLoadControl);
         mExoPlayer.addListener(this);
 
         // Add the EventLogger
