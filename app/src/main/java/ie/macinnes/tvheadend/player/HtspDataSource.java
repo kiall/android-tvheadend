@@ -25,10 +25,13 @@ import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DataSpec;
 
+import org.acra.ACRA;
+
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
@@ -52,6 +55,8 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
         private final SimpleHtspConnection mConnection;
         private final String mStreamProfile;
 
+        private WeakReference<HtspDataSource> mCurrentHtspDataSource;
+
         public Factory(Context context, SimpleHtspConnection connection, String streamProfile) {
             mContext = context;
             mConnection = connection;
@@ -60,7 +65,26 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
 
         @Override
         public HtspDataSource createDataSource() {
-            return new HtspDataSource(mContext, mConnection, mStreamProfile);
+            releaseCurrentDataSource();
+
+            mCurrentHtspDataSource = new WeakReference<>(new HtspDataSource(mContext, mConnection, mStreamProfile));
+            return mCurrentHtspDataSource.get();
+        }
+
+        public HtspDataSource getCurrentDataSource() {
+            if (mCurrentHtspDataSource != null) {
+                return mCurrentHtspDataSource.get();
+            }
+
+            return null;
+        }
+
+        public void releaseCurrentDataSource() {
+            if (mCurrentHtspDataSource != null) {
+                mCurrentHtspDataSource.get().release();
+                mCurrentHtspDataSource.clear();
+                mCurrentHtspDataSource = null;
+            }
         }
     }
 
@@ -77,6 +101,7 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
     private ReentrantLock mLock = new ReentrantLock();
 
     private boolean mIsOpen = false;
+    private boolean mIsSubscribed = false;
 
     public HtspDataSource(Context context, SimpleHtspConnection connection, String streamProfile) {
         mContext = context;
@@ -103,16 +128,56 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
         mConnection.addAuthenticationListener(mSubscriber);
     }
 
+    public void release() {
+        if (mConnection != null) {
+            mConnection.removeAuthenticationListener(mSubscriber);
+            mConnection = null;
+        }
+
+        if (mSubscriber != null) {
+            mSubscriber.removeSubscriptionListener(this);
+            mSubscriber.unsubscribe();
+            mSubscriber = null;
+        }
+
+        // Watch for memory leaks
+        Application.getRefWatcher(mContext).watch(this);
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        // This is a total hack, but there's not much else we can do?
+        // https://github.com/google/ExoPlayer/issues/2662 - Luckily, i've not found it's actually
+        // been used anywhere at this moment.
+        if (mSubscriber != null || mConnection != null) {
+            Log.e(TAG, "Datasource finalize relied upon to release the subscription");
+
+            release();
+
+            try {
+                // If we see this in the wild, I want to know about it. Fake an exception and send
+                // and crash report.
+                ACRA.getErrorReporter().handleException(new Exception(
+                        "Datasource finalize relied upon to release the subscription"));
+            } catch (IllegalStateException e) {
+                // Ignore, ACRA is not available.
+            }
+        }
+    }
+
     // DataSource Methods
     @Override
     public long open(DataSpec dataSpec) throws IOException {
         Log.i(TAG, "Opening HTSP DataSource ("+mDataSourceNumber+")");
         mDataSpec = dataSpec;
 
-        try {
-            mSubscriber.subscribe(Long.parseLong(dataSpec.uri.getHost()), mStreamProfile);
-        } catch (HtspNotConnectedException e) {
-            throw new IOException("Failed to open DataSource, HTSP not connected ("+mDataSourceNumber+")", e);
+        if (!mIsSubscribed) {
+            try {
+                mSubscriber.subscribe(Long.parseLong(dataSpec.uri.getHost()), mStreamProfile);
+                mIsSubscribed = true;
+            } catch (HtspNotConnectedException e) {
+                throw new IOException("Failed to open DataSource, HTSP not connected (" + mDataSourceNumber + ")", e);
+            }
         }
 
         mIsOpen = true;
@@ -134,7 +199,8 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
                 Thread.sleep(250);
             } catch (InterruptedException e) {
                 // Ignore.
-                Log.w(TAG, "Caught InterruptedException, ignoring ("+mDataSourceNumber+")");
+                Log.w(TAG, "Caught InterruptedException ("+mDataSourceNumber+")");
+                return 0;
             }
         }
 
@@ -172,10 +238,6 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
     public void close() throws IOException {
         Log.i(TAG, "Closing HTSP DataSource ("+mDataSourceNumber+")");
         mIsOpen = false;
-
-        mConnection.removeAuthenticationListener(mSubscriber);
-        mSubscriber.removeSubscriptionListener(this);
-        mSubscriber.unsubscribe();
     }
 
     // Subscription.Listener Methods

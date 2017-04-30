@@ -21,7 +21,6 @@ import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.media.tv.TvTrackInfo;
 import android.net.Uri;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.Display;
 import android.view.LayoutInflater;
@@ -55,7 +54,6 @@ import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.ui.DebugTextViewHelper;
 import com.google.android.exoplayer2.ui.SubtitleView;
-import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultAllocator;
 import com.google.android.exoplayer2.util.MimeTypes;
 
@@ -63,7 +61,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ie.macinnes.htsp.SimpleHtspConnection;
-import ie.macinnes.tvheadend.Application;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.R;
 
@@ -109,7 +106,7 @@ public class Player implements ExoPlayer.EventListener {
     private TvheadendTrackSelector mTrackSelector;
     private LoadControl mLoadControl;
     private EventLogger mEventLogger;
-    private DataSource.Factory mDataSourceFactory;
+    private HtspDataSource.Factory mDataSourceFactory;
     private ExtractorsFactory mExtractorsFactory;
 
     private View mOverlayView;
@@ -180,6 +177,7 @@ public class Player implements ExoPlayer.EventListener {
     public void stop() {
         mExoPlayer.stop();
         mTrackSelector.clearSelectionOverrides();
+        mDataSourceFactory.releaseCurrentDataSource();
 
         if (mMediaSource != null) {
             mMediaSource.releaseSource();
