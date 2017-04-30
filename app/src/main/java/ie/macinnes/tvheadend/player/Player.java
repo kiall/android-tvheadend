@@ -183,9 +183,6 @@ public class Player implements ExoPlayer.EventListener {
 
         if (mMediaSource != null) {
             mMediaSource.releaseSource();
-
-            // Watch for memory leaks
-            Application.getRefWatcher(mContext).watch(mMediaSource);
         }
     }
 
