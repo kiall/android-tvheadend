@@ -82,6 +82,12 @@
             android:title="Enable Debug Text View"
             android:defaultValue="@bool/pref_default_debug_text_view_enabled" />
 
+        <CheckBoxPreference
+            android:key="timeshift_enabled"
+            android:title="Enable timeshift support"
+            android:summary="DO NOT ENABLE THIS"
+            android:defaultValue="@bool/pref_default_timeshift_enabled"/>
+
         <!-- TODO: This needs to be made into a list, based on fetching the list of available profiles -->
         <EditTextPreference
             android:key="htsp_stream_profile"
