@@ -77,6 +77,11 @@
             android:title="Enable nVidia Shield Workaround"
             android:defaultValue="@bool/pref_default_shield_workaround_enabled" />
 
+        <CheckBoxPreference
+            android:key="debug_text_view_enabled"
+            android:title="Enable Debug Text View"
+            android:defaultValue="@bool/pref_default_debug_text_view_enabled" />
+
         <!-- TODO: This needs to be made into a list, based on fetching the list of available profiles -->
         <EditTextPreference
             android:key="htsp_stream_profile"

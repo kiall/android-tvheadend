@@ -24,10 +24,12 @@ import android.net.Uri;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.Display;
+import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.accessibility.CaptioningManager;
+import android.widget.TextView;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
@@ -51,6 +53,7 @@ import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.google.android.exoplayer2.ui.DebugTextViewHelper;
 import com.google.android.exoplayer2.ui.SubtitleView;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultAllocator;
@@ -109,6 +112,10 @@ public class Player implements ExoPlayer.EventListener {
     private DataSource.Factory mDataSourceFactory;
     private ExtractorsFactory mExtractorsFactory;
 
+    private View mOverlayView;
+    private DebugTextViewHelper mDebugViewHelper;
+    private SubtitleView mSubtitleView;
+
     private MediaSource mMediaSource;
 
     public Player(Context context, SimpleHtspConnection connection, Listener listener) {
@@ -136,6 +143,14 @@ public class Player implements ExoPlayer.EventListener {
     public void release() {
         // Stop any existing playback
         stop();
+
+        if (mDebugViewHelper != null) {
+            mDebugViewHelper.stop();
+            mDebugViewHelper = null;
+        }
+
+        mSubtitleView = null;
+        mOverlayView = null;
 
         // Release ExoPlayer
         mExoPlayer.removeListener(this);
@@ -174,8 +189,48 @@ public class Player implements ExoPlayer.EventListener {
         }
     }
 
-    public View getSubtitleView(CaptioningManager.CaptionStyle captionStyle, float fontScale) {
-        SubtitleView view = new SubtitleView(mContext);
+    public View getOverlayView(CaptioningManager.CaptionStyle captionStyle, float fontScale) {
+        if (mOverlayView == null) {
+            LayoutInflater lI = (LayoutInflater) mContext.getSystemService(
+                    Context.LAYOUT_INFLATER_SERVICE);
+            mOverlayView = lI.inflate(R.layout.player_overlay_view, null);
+        }
+
+        if (mDebugViewHelper == null) {
+            mDebugViewHelper = getDebugTextView();
+
+            if (mDebugViewHelper != null) {
+                mDebugViewHelper.start();
+            }
+        }
+
+        if (mSubtitleView == null) {
+            mSubtitleView = getSubtitleView(captionStyle, fontScale);
+
+            if (mSubtitleView != null) {
+                mExoPlayer.setTextOutput(mSubtitleView);
+            }
+        }
+
+        return mOverlayView;
+    }
+
+    private DebugTextViewHelper getDebugTextView() {
+        final boolean enableDebugTextView = mSharedPreferences.getBoolean(
+                Constants.KEY_DEBUG_TEXT_VIEW_ENABLED,
+                mContext.getResources().getBoolean(R.bool.pref_default_debug_text_view_enabled)
+        );
+
+        if (enableDebugTextView) {
+            return new DebugTextViewHelper(
+                    mExoPlayer, (TextView) mOverlayView.findViewById(R.id.debug_text_view));
+        } else {
+            return null;
+        }
+    }
+
+    private SubtitleView getSubtitleView(CaptioningManager.CaptionStyle captionStyle, float fontScale) {
+        SubtitleView view = (SubtitleView) mOverlayView.findViewById(R.id.subtitle_view);
 
         CaptionStyleCompat captionStyleCompat = CaptionStyleCompat.createFromCaptionStyle(captionStyle);
 
@@ -191,8 +246,6 @@ public class Player implements ExoPlayer.EventListener {
         view.setVisibility(View.VISIBLE);
         view.setFixedTextSize(TEXT_UNIT_PIXELS, captionTextSize);
         view.setApplyEmbeddedStyles(applyEmbeddedStyles);
-
-        mExoPlayer.setTextOutput(view);
 
         return view;
     }

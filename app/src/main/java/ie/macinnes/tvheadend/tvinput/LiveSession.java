@@ -118,9 +118,8 @@ public class LiveSession extends TvInputService.Session implements Player.Listen
     @Override
     public View onCreateOverlayView() {
         Log.d(TAG, "Session onCreateOverlayView (" + mSessionNumber + ")");
-
-        return mPlayer.getSubtitleView(
-            mCaptioningManager.getUserStyle(), mCaptioningManager.getFontScale());
+        return mPlayer.getOverlayView(
+                mCaptioningManager.getUserStyle(), mCaptioningManager.getFontScale());
     }
 
     @Override

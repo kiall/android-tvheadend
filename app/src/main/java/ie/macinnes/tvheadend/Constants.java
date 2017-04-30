@@ -42,6 +42,7 @@ public class Constants {
 
     // Advanced Preferences Keys and Values
     public static final String KEY_SHIELD_WORKAROUND_ENABLED = "shield_workaround_enabled";
+    public static final String KEY_DEBUG_TEXT_VIEW_ENABLED = "debug_text_view_enabled";
 
     // Bundle and Preference Keys
     public static final String KEY_APP_VERSION = "APP-VERSION";
