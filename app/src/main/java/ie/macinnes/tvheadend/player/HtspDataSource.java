@@ -17,6 +17,7 @@
 package ie.macinnes.tvheadend.player;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -42,6 +43,7 @@ import ie.macinnes.htsp.SimpleHtspConnection;
 import ie.macinnes.htsp.tasks.Subscriber;
 import ie.macinnes.tvheadend.Application;
 import ie.macinnes.tvheadend.Constants;
+import ie.macinnes.tvheadend.R;
 
 public class HtspDataSource implements DataSource, Subscriber.Listener, Closeable {
     private static final String TAG = HtspDataSource.class.getName();
@@ -92,6 +94,9 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
     private SimpleHtspConnection mConnection;
     private String mStreamProfile;
 
+    private final SharedPreferences mSharedPreferences;
+    private int mTimeshiftPeriod = 0;
+
     private final int mDataSourceNumber;
     private Subscriber mSubscriber;
 
@@ -107,6 +112,18 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
         mContext = context;
         mConnection = connection;
         mStreamProfile = streamProfile;
+
+        mSharedPreferences = mContext.getSharedPreferences(
+                Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
+
+        boolean timeshiftEnabled = mSharedPreferences.getBoolean(
+                Constants.KEY_TIMESHIFT_ENABLED,
+                mContext.getResources().getBoolean(R.bool.pref_default_timeshift_enabled));
+
+        if (timeshiftEnabled) {
+            // TODO: Eventually, this should be a preference.
+            mTimeshiftPeriod = 3600;
+        }
 
         mDataSourceNumber = sDataSourceCount.incrementAndGet();
 
@@ -126,6 +143,10 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
         mSubscriber = new Subscriber(mConnection);
         mSubscriber.addSubscriptionListener(this);
         mConnection.addAuthenticationListener(mSubscriber);
+    }
+
+    public Subscriber getSubscriber() {
+        return mSubscriber;
     }
 
     public void release() {
@@ -173,11 +194,21 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
 
         if (!mIsSubscribed) {
             try {
-                mSubscriber.subscribe(Long.parseLong(dataSpec.uri.getHost()), mStreamProfile);
+                mSubscriber.subscribe(Long.parseLong(
+                        dataSpec.uri.getHost()), mStreamProfile, mTimeshiftPeriod);
                 mIsSubscribed = true;
             } catch (HtspNotConnectedException e) {
                 throw new IOException("Failed to open DataSource, HTSP not connected (" + mDataSourceNumber + ")", e);
             }
+        }
+
+        long seekPosition = mDataSpec.position;
+        if (seekPosition > 0 && mTimeshiftPeriod > 0) {
+            Log.d(TAG, "seek to time PTS: " + seekPosition);
+
+            mSubscriber.skip(seekPosition);
+            mBuffer.clear();
+            mBuffer.limit(0);
         }
 
         mIsOpen = true;
