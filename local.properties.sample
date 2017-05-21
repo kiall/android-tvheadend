@@ -1,0 +1,6 @@
+ie.macinnes.playServiceAccount=playServiceAccount.json
+ie.macinnes.keystore=keystore.jks
+ie.macinnes.keystorePassword=SuperSecretPassword
+ie.macinnes.keyAlias=My Key Name
+ie.macinnes.keyPassword=SuperSecretPassword
+ie.macinnes.acraReportUri=https://example.com/report

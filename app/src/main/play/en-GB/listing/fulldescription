@@ -1,0 +1,5 @@
+Live Channels addon for TVHeadend. Pulls in DVB-T/S/C content from your TVHeadend server, including EPG, and makes it available within the live channels app on Nexus Player, or Streaming Channels app on Sony Android TVs.
+
+The app is open source, contributors are welcome :)
+
+Important: A Tvheadend server is required, this app provides no content directly, relying entirely on your Tvheadend server for content.

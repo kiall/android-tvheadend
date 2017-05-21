@@ -1,0 +1,107 @@
+image: $CI_REGISTRY/gitlab/docker-gitlab-ci/android:master
+
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
+stages:
+  - build
+  - quality
+  - assemble
+  - release
+
+before_script:
+  - export GRADLE_USER_HOME=`pwd`/.gradle-home
+  - echo $ANDROID_KEYSTORE | base64 -d > keystore.jks
+  - echo $PLAY_SERVICE_ACCOUNT | base64 -d > playServiceAccount.json
+  - echo $LOCAL_PROPERTIES | base64 -d > local.properties
+
+cache:
+  key: "$CI_BUILD_REF_NAME"
+  paths:
+    - .gradle-home/wrapper
+    - .gradle-home/caches
+    - .gradle/
+
+build:
+  stage: build
+  script:
+    - ./gradlew compileReleaseSources
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - app/build/intermediates/
+      - app/build/generated/
+
+lint:
+  stage: quality
+  dependencies:
+    - build
+  script:
+    - ./gradlew lintRelease
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - app/build/reports/
+
+assemble:
+  stage: assemble
+  dependencies:
+    - build
+  script:
+    - ./gradlew assembleRelease
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - app/build/outputs/
+
+releasePlayStoreAlpha:
+  stage: release
+  only:
+    - master@tvheadend/android-tvheadend
+  environment:
+    name: alpha
+    url: https://play.google.com/store/apps/details?id=ie.macinnes.tvheadend
+  dependencies:
+    - build
+    - assemble
+  script:
+    - ./gradlew publishApkRelease -PplayStoreTrack=alpha
+
+releasePlayStoreBeta:
+  stage: release
+  only:
+    - tags@tvheadend/android-tvheadend
+  environment:
+    name: beta
+    url: https://play.google.com/store/apps/details?id=ie.macinnes.tvheadend
+  dependencies:
+    - build
+    - assemble
+  script:
+    - ./gradlew publishApkRelease -PplayStoreTrack=beta
+
+releasePlayStoreProduction:
+  stage: release
+  when: manual
+  only:
+    - tags@tvheadend/android-tvheadend
+  environment:
+    name: production
+    url: https://play.google.com/store/apps/details?id=ie.macinnes.tvheadend
+  dependencies:
+    - build
+    - assemble
+  script:
+    - ./gradlew publishRelease -PplayStoreTrack=production
+
+releaseGitlab:
+  stage: release
+  only:
+    - tags@tvheadend/android-tvheadend
+  environment:
+    name: gitlab
+    url: https://gitlab.macinnes.ie/tvheadend/android-tvheadend/tags
+  dependencies:
+    - assemble
+  script:
+    - ./tools/gitlab-upload-release

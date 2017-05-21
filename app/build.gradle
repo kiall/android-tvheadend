@@ -1,34 +1,46 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.github.triplet.play'
+
+apply from: '../common-functions.gradle'
 
 android {
     compileSdkVersion project.ext.compileSdkVersion
     buildToolsVersion project.ext.buildToolsVersion
+
+    signingConfigs {
+        if (hasLocalProperty("ie.macinnes.keystore")) {
+            release {
+                storeFile rootProject.file(getLocalProperty("ie.macinnes.keystore"))
+                storePassword getLocalProperty("ie.macinnes.keystorePassword")
+                keyAlias getLocalProperty('ie.macinnes.keyAlias')
+                keyPassword getLocalProperty('ie.macinnes.keyPassword')
+            }
+        }
+    }
+
+    playAccountConfigs {
+        if (hasLocalProperty("ie.macinnes.playServiceAccount")) {
+            defaultplayAccountConfig {
+                jsonFile = rootProject.file(getLocalProperty("ie.macinnes.playServiceAccount"))
+            }
+        }
+    }
 
     defaultConfig {
         applicationId "ie.macinnes.tvheadend"
         minSdkVersion project.ext.minSdkVersion
         targetSdkVersion project.ext.targetSdkVersion
 
-        versionCode System.getenv("APP_VERSION_CODE") as Integer ?: 0
-        versionName project.ext.gitVersionName
+        versionCode computeVersionCode()
+        versionName computeVersionName()
 
         setProperty("archivesBaseName", applicationId)
 
         buildConfigField "boolean", "ACRA_ENABLED", "false"
         buildConfigField "String", "ACRA_REPORT_URI", "\"\""
-    }
 
-    signingConfigs {
-        if (rootProject.file("keystore.properties").exists()) {
-            def keystoreProperties = new Properties()
-            keystoreProperties.load(new FileInputStream(rootProject.file("keystore.properties")))
-
-            release {
-                storeFile new File(keystoreProperties['storeFile'])
-                storePassword keystoreProperties['storePassword']
-                keyAlias keystoreProperties['keyAlias']
-                keyPassword keystoreProperties['keyPassword']
-            }
+        if (playAccountConfigs.hasProperty("defaultplayAccountConfig")) {
+            playAccountConfig = playAccountConfigs.defaultplayAccountConfig
         }
     }
 
@@ -44,11 +56,9 @@ android {
                 signingConfig signingConfigs.release
             }
 
-            if (rootProject.file("acra.properties").exists()) {
+            if (hasLocalProperty("ie.macinnes.acraReportUri")) {
                 buildConfigField "boolean", "ACRA_ENABLED", "true"
-                def acraProperties = new Properties()
-                acraProperties.load(new FileInputStream(rootProject.file("acra.properties")))
-                buildConfigField "String", "ACRA_REPORT_URI", "\"" + acraProperties.report_uri + "\""
+                buildConfigField "String", "ACRA_REPORT_URI", "\"" + getLocalProperty("ie.macinnes.acraReportUri") + "\""
             }
         }
     }
@@ -59,6 +69,18 @@ android {
     lintOptions {
         disable 'GoogleAppIndexingWarning'
     }
+}
+
+play {
+    if (hasProperty('playStoreTrack')) {
+        track = property('playStoreTrack')
+    } else {
+        track = 'alpha'
+    }
+
+    untrackOld = true
+    errorOnSizeLimit = true
+    uploadImages = true
 }
 
 repositories {

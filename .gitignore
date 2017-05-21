@@ -1,6 +1,7 @@
 google-services.json
 acra.properties
 keystore.properties
+playServiceAccount.json
 /projectFilesBackup/
 */libs/*.aar
 

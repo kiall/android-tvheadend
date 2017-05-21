@@ -1,0 +1,32 @@
+ext.hasLocalProperty = { name ->
+    if (rootProject.file("local.properties").exists()) {
+        def localProperties = new Properties()
+        localProperties.load(rootProject.file("local.properties").newDataInputStream())
+
+        return localProperties.containsKey(name)
+    } else {
+        return false
+    }
+}
+
+ext.getLocalProperty = { name ->
+    if (rootProject.file("local.properties").exists()) {
+        def localProperties = new Properties()
+        localProperties.load(rootProject.file("local.properties").newDataInputStream())
+
+        return localProperties.get(name)
+    } else {
+        return null
+    }
+}
+
+ext.computeVersionName = {
+    return "${git.describe()}"
+}
+
+ext.computeVersionCode = {
+    // TODO: Something like... Max version code is 2100000000
+    // return (versionMajor * 100_000) + (versionMinor * 10_000) +
+    //        (versionPatch * 1_000) + gitlabPipelineId
+    return 500 + Integer.valueOf(System.env.CI_PIPELINE_ID ?: 0)
+}
