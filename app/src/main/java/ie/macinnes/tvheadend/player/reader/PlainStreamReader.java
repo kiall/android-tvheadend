@@ -18,6 +18,7 @@ package ie.macinnes.tvheadend.player.reader;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
@@ -32,16 +33,22 @@ import ie.macinnes.tvheadend.Application;
  * A PlainStreamReader simply copies the raw bytes from muxpkt's over onto the track output
  */
 abstract class PlainStreamReader implements StreamReader {
+    private static final String TAG = PlainStreamReader.class.getName();
+
     private final Context mContext;
+    private final int mTrackType;
+    private String mStreamType;
     protected TrackOutput mTrackOutput;
 
-    public PlainStreamReader(Context context) {
+    public PlainStreamReader(Context context, int trackType) {
         mContext = context;
+        mTrackType = trackType;
     }
 
     @Override
     public final void createTracks(@NonNull HtspMessage stream, @NonNull ExtractorOutput output) {
         final int streamIndex = stream.getInteger("index");
+        mStreamType = stream.getString("type");
         mTrackOutput = output.track(streamIndex, getTrackType());
         mTrackOutput.format(buildFormat(streamIndex, stream));
     }
@@ -49,14 +56,29 @@ abstract class PlainStreamReader implements StreamReader {
     @Override
     public final void consume(@NonNull final HtspMessage message) {
         final long pts = message.getLong("pts");
+        final int frameType = message.getInteger("frametype");
         final byte[] payload = message.getByteArray("payload");
 
         final ParsableByteArray pba = new ParsableByteArray(payload);
 
-        // TODO: Set Buffer Flag key frame based on frametype
-        // frametype   u32   required   Type of frame as ASCII value: 'I', 'P', 'B'
+        int bufferFlags = 0;
+
+        if (mTrackType == C.TRACK_TYPE_VIDEO) {
+            // We're looking at a Video stream, be picky about what frames are called keyframes
+
+            // Type 73 = I - Intra-coded picture - Full Picture
+            // Type 66 = B - Predicted picture - Depends on previous frames
+            // Type 80 = P - Bidirectional predicted picture - Depends on previous+future frames
+            if (frameType == 73) {
+                bufferFlags |= C.BUFFER_FLAG_KEY_FRAME;
+            }
+        } else {
+            // We're looking at a Audio / Text etc stream, consider everything a key frame
+            bufferFlags |= C.BUFFER_FLAG_KEY_FRAME;
+        }
+
         mTrackOutput.sampleData(pba, payload.length);
-        mTrackOutput.sampleMetadata(pts, C.BUFFER_FLAG_KEY_FRAME, payload.length, 0, null);
+        mTrackOutput.sampleMetadata(pts, bufferFlags, payload.length, 0, null);
     }
 
     @Override

@@ -36,7 +36,7 @@ public class VorbisStreamReader extends PlainStreamReader {
     private static final String TAG = VorbisStreamReader.class.getName();
 
     public VorbisStreamReader(Context context) {
-        super(context);
+        super(context, C.TRACK_TYPE_AUDIO);
     }
 
     @NonNull

@@ -29,7 +29,7 @@ import ie.macinnes.tvheadend.TvhMappings;
 public class Eac3StreamReader extends PlainStreamReader {
 
     public Eac3StreamReader(Context context) {
-        super(context);
+        super(context, C.TRACK_TYPE_AUDIO);
     }
 
     @NonNull

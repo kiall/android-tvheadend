@@ -33,7 +33,7 @@ public class DvbsubStreamReader extends PlainStreamReader {
     private static final String TAG = DvbsubStreamReader.class.getName();
 
     public DvbsubStreamReader(Context context) {
-        super(context);
+        super(context, C.TRACK_TYPE_TEXT);
     }
 
     @NonNull

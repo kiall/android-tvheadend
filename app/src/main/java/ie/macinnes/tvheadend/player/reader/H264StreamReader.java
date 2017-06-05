@@ -35,7 +35,7 @@ public class H264StreamReader extends PlainStreamReader {
     private static final String TAG = H264StreamReader.class.getName();
 
     public H264StreamReader(Context context) {
-        super(context);
+        super(context, C.TRACK_TYPE_VIDEO);
     }
 
     @NonNull

@@ -28,7 +28,7 @@ import ie.macinnes.htsp.HtspMessage;
 public class Mpeg2VideoStreamReader extends PlainStreamReader {
 
     public Mpeg2VideoStreamReader(Context context) {
-        super(context);
+        super(context, C.TRACK_TYPE_VIDEO);
     }
 
     @NonNull

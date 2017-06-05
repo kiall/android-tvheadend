@@ -29,7 +29,7 @@ import ie.macinnes.tvheadend.TvhMappings;
 public class Mpeg2AudioStreamReader extends PlainStreamReader {
 
     public Mpeg2AudioStreamReader(Context context) {
-        super(context);
+        super(context, C.TRACK_TYPE_AUDIO);
     }
 
     @NonNull
