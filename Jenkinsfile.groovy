@@ -1,13 +1,7 @@
 import jenkins.model.*
 
-def getAppVersionCode() {
-    def appVersionCode = jenkins.model.Jenkins.instance.getItem("android-tvheadend-version-code").nextBuildNumber
-    build job: 'android-tvheadend-version-code', wait: false
-    return appVersionCode
-}
-
 def assemble() {
-    sh './gradlew assemble'
+    sh './gradlew assemble -PbuildNumber=' + env.BUILD_NUMBER
 }
 
 def archive() {
@@ -16,7 +10,7 @@ def archive() {
 }
 
 def lint() {
-    sh './gradlew lint'
+    sh './gradlew lint -PbuildNumber=' + env.BUILD_NUMBER
     androidLint canComputeNew: false, canRunOnFailed: true, defaultEncoding: '', healthy: '', pattern: '**/lint-results*.xml', unHealthy: ''
 }
 

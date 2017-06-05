@@ -1,5 +1,7 @@
 apply plugin: 'com.android.application'
 
+apply from: '../release.gradle'
+
 android {
     compileSdkVersion project.ext.compileSdkVersion
     buildToolsVersion project.ext.buildToolsVersion
@@ -9,8 +11,8 @@ android {
         minSdkVersion project.ext.minSdkVersion
         targetSdkVersion project.ext.targetSdkVersion
 
-        versionCode System.getenv("APP_VERSION_CODE") as Integer ?: 0
-        versionName project.ext.gitVersionName
+        versionCode project.ext.versionCode
+        versionName project.ext.versionName
 
         setProperty("archivesBaseName", applicationId)
 

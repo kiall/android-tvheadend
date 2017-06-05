@@ -1,0 +1,32 @@
+import groovy.json.JsonSlurper
+
+// Max accepted version code by Google Play = 2100000000
+
+def versionFile = rootProject.file("version.json")
+def versionJSON = getJSON(versionFile)
+
+// If we hit 10k builds, that'll screw us over as we'll wrap.
+// TODO: Validate build number is less than or equal to 9999?
+def buildNumber = rootProject.hasProperty("buildNumber") ? Integer.parseInt(rootProject.property("buildNumber")) : 0
+def versionName = "v${versionJSON.major}.${versionJSON.minor}.${versionJSON.patch} (Build: ${buildNumber})"
+def versionCode = String.format("%02d", versionJSON.major) + \
+                  String.format("%02d", versionJSON.minor) + \
+                  String.format("%02d", versionJSON.patch) + \
+                  String.format("%04d", buildNumber)
+
+// Expose as a properties to the project
+ext.versionName = versionName
+ext.versionCode = Integer.parseInt(versionCode)
+
+// Methods
+def getJSON(file) {
+    return new JsonSlurper().parseText(file.text)
+}
+
+// Tasks
+task showVersionInfo {
+    doLast {
+        logger.lifecycle('Version Name: ' + versionName)
+        logger.lifecycle('Version Code: ' + versionCode)
+    }
+}
