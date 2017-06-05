@@ -1,7 +1,7 @@
 # Android TV + TVHeadend Live Channel
 
-
-[![Build Status](https://jenkins.macinnes.ie/buildStatus/icon?job=android-tvheadend/master)](https://jenkins.macinnes.ie/job/android-tvheadend/job/master/)
+* Master [![Build Status](https://jenkins.macinnes.ie/buildStatus/icon?job=android-tvheadend/master)](https://jenkins.macinnes.ie/job/android-tvheadend/job/master/)
+* Develop [![Build Status](https://jenkins.macinnes.ie/buildStatus/icon?job=android-tvheadend/develop)](https://jenkins.macinnes.ie/job/android-tvheadend/job/develop/)
 
 Available on Google Play:
 
