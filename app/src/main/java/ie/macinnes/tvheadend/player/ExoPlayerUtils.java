@@ -31,6 +31,10 @@ import java.util.Locale;
 public class ExoPlayerUtils {
     private static final String TAG = ExoPlayerUtils.class.getName();
 
+    private ExoPlayerUtils() {
+        throw new IllegalAccessError("Utility class");
+    }
+
     public static TvTrackInfo buildTvTrackInfo(Format format) {
         String trackName = ExoPlayerUtils.buildTrackName(format);
         Log.d(TAG, "Processing track: " + trackName);

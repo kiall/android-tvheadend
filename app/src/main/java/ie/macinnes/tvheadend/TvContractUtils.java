@@ -29,6 +29,10 @@ public class TvContractUtils {
 
     public static final long INVALID_CHANNEL_ID = -1;
 
+    private TvContractUtils() {
+        throw new IllegalAccessError("Utility class");
+    }
+
     public static String getInputId() {
         ComponentName componentName = new ComponentName(
                 "ie.macinnes.tvheadend",

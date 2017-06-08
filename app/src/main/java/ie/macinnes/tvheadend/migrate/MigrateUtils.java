@@ -31,6 +31,10 @@ public class MigrateUtils {
     private static final int VERSION_80 = 80;
     private static final int VERSION_81 = 81;
 
+    private MigrateUtils() {
+        throw new IllegalAccessError("Utility class");
+    }
+
     public static void doMigrate(Context context) {
         Log.d(TAG, "doMigrate()");
 

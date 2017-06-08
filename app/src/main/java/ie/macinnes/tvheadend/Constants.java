@@ -18,6 +18,10 @@ package ie.macinnes.tvheadend;
 import android.media.tv.TvContract;
 
 public class Constants {
+    private Constants() {
+        throw new IllegalAccessError("Utility class");
+    }
+    
     // Use sparingly, i.e. for wrapping log messages that would otherwise spam during normal
     // operation. Even Log.v/Log.v logs will slow things down if called enough.
     public static final boolean DEBUG = false;
