@@ -593,16 +593,16 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
             }
         }
 
-        // TODO: Looking this up for every event we process, we don't need to.
-        final boolean defaultPosterArtEnabled = mSharedPreferences.getBoolean(
-                Constants.KEY_EPG_DEFAULT_POSTER_ART_ENABLED,
-                mContext.getResources().getBoolean(R.bool.pref_default_epg_default_poster_art_enabled)
-        );
-
         if (message.containsKey(PROGRAM_IMAGE)) {
             values.put(TvContract.Programs.COLUMN_POSTER_ART_URI, message.getString(PROGRAM_IMAGE));
-        } else if(defaultPosterArtEnabled) {
-            values.put(TvContract.Programs.COLUMN_POSTER_ART_URI, "android.resource://" + BuildConfig.APPLICATION_ID + "/" + R.drawable.default_event_icon);
+        } else {
+            final boolean defaultPosterArtEnabled = mSharedPreferences.getBoolean(
+                    Constants.KEY_EPG_DEFAULT_POSTER_ART_ENABLED,
+                    mContext.getResources().getBoolean(R.bool.pref_default_epg_default_poster_art_enabled)
+            );
+            if(defaultPosterArtEnabled) {
+                values.put(TvContract.Programs.COLUMN_POSTER_ART_URI, "android.resource://" + BuildConfig.APPLICATION_ID + "/" + R.drawable.default_event_icon);
+            }
         }
 
         return values;
