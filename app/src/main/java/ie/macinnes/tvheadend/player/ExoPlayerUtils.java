@@ -136,6 +136,12 @@ public class ExoPlayerUtils {
     }
 
     private static String joinWithSeparator(String first, String second) {
-        return first.length() == 0 ? second : (second.length() == 0 ? first : first + ", " + second);
+        if (first.length() == 0) {
+            return second;
+        } else if(second.length() == 0) {
+            return first;
+        } else {
+            return first + ", " + second;
+        }
     }
 }
