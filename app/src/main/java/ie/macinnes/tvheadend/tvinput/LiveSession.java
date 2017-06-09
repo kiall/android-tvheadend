@@ -82,25 +82,6 @@ public class LiveSession extends TvInputService.Session implements Player.Listen
         mPlayer.release();
     }
 
-    private boolean tune(int tvhChannelId) {
-        // TODO This should take in the Android Channel URI, and convert to tvhChannelId here
-        Log.i(TAG, "Start playback of channel");
-        Uri channelUri = Uri.parse("htsp://" + tvhChannelId);
-
-        mPlayer.open(channelUri);
-        mPlayer.play();
-
-        boolean timeshiftEnabled = mSharedPreferences.getBoolean(
-                Constants.KEY_TIMESHIFT_ENABLED,
-                mContext.getResources().getBoolean(R.bool.pref_default_timeshift_enabled));
-
-        if (timeshiftEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            notifyTimeShiftStatusChanged(TvInputManager.TIME_SHIFT_STATUS_AVAILABLE);
-        }
-
-        return true;
-    }
-
     // TvInputService.Session Methods
     @Override
     public boolean onTune(Uri channelUri) {
@@ -228,6 +209,25 @@ public class LiveSession extends TvInputService.Session implements Player.Listen
 
         public PlayChannelRunnable(Uri channelUri) {
             mChannelUri = channelUri;
+        }
+
+        private boolean tune(int tvhChannelId) {
+            // TODO This should take in the Android Channel URI, and convert to tvhChannelId here
+            Log.i(TAG, "Start playback of channel");
+            Uri channelUri = Uri.parse("htsp://" + tvhChannelId);
+
+            mPlayer.open(channelUri);
+            mPlayer.play();
+
+            boolean timeshiftEnabled = mSharedPreferences.getBoolean(
+                    Constants.KEY_TIMESHIFT_ENABLED,
+                    mContext.getResources().getBoolean(R.bool.pref_default_timeshift_enabled));
+
+            if (timeshiftEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                notifyTimeShiftStatusChanged(TvInputManager.TIME_SHIFT_STATUS_AVAILABLE);
+            }
+
+            return true;
         }
 
         @Override
