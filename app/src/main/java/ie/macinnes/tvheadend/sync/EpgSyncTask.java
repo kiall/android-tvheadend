@@ -585,10 +585,12 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
             }
         } else {
             if (message.containsKey(PROGRAM_SEASON_NUMBER_KEY)) {
+                //noinspection deprecation
                 values.put(TvContract.Programs.COLUMN_SEASON_NUMBER, message.getInteger(PROGRAM_SEASON_NUMBER_KEY));
             }
 
             if (message.containsKey(PROGRAM_EPISODE_NUMBER_KEY)) {
+                //noinspection deprecation
                 values.put(TvContract.Programs.COLUMN_EPISODE_NUMBER, message.getInteger(PROGRAM_EPISODE_NUMBER_KEY));
             }
         }
