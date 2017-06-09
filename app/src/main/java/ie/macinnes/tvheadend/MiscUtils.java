@@ -22,6 +22,10 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
 public class MiscUtils {
+    private MiscUtils() {
+        throw new IllegalAccessError("Utility class");
+    }
+
     private static final String TAG = MiscUtils.class.getName();
 
     public static boolean isNetworkAvailable(Context context) {
