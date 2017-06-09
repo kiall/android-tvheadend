@@ -24,7 +24,7 @@ public class StreamReaderUtils {
 
         if (frameDuration != Format.NO_VALUE) {
             // 1000000 = 1 second, in microseconds.
-            frameRate = 1000000 / frameDuration;
+            frameRate = 1000000 / (float) frameDuration;
         }
 
         return frameRate;
