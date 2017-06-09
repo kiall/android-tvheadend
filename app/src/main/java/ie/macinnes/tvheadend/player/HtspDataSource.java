@@ -229,6 +229,7 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
                     Log.v(TAG, "Blocking for more data ("+mDataSourceNumber+")");
                 Thread.sleep(250);
             } catch (InterruptedException e) {
+                //TODO: Clean up and re-throw, or java will do it anway
                 // Ignore.
                 Log.w(TAG, "Caught InterruptedException ("+mDataSourceNumber+")");
                 return 0;
