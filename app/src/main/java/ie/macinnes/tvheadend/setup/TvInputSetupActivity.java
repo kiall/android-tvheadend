@@ -119,13 +119,12 @@ public class TvInputSetupActivity extends Activity {
         @NonNull
         @Override
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
-            GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
+
+            return new GuidanceStylist.Guidance(
                     getString(R.string.setup_intro_title),
                     getString(R.string.setup_intro_body),
                     getString(R.string.account_label),
                     null);
-
-            return guidance;
         }
 
         @Override
@@ -156,13 +155,12 @@ public class TvInputSetupActivity extends Activity {
         @NonNull
         @Override
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
-            GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
+
+            return new GuidanceStylist.Guidance(
                     getString(R.string.setup_account_title),
                     getString(R.string.setup_account_body),
                     getString(R.string.account_label),
                     null);
-
-            return guidance;
         }
 
         @Override
@@ -326,14 +324,13 @@ public class TvInputSetupActivity extends Activity {
 
         @Override
         public GuidedActionsStylist onCreateActionsStylist() {
-            GuidedActionsStylist stylist = new GuidedActionsStylist() {
+            return new GuidedActionsStylist() {
                 @Override
                 public int onProvideItemLayoutId() {
                     return R.layout.setup_progress;
                 }
 
             };
-            return stylist;
         }
 
         @Override
@@ -344,13 +341,12 @@ public class TvInputSetupActivity extends Activity {
         @NonNull
         @Override
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
-            GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
+
+            return new GuidanceStylist.Guidance(
                     getString(R.string.setup_sync_title),
                     getString(R.string.setup_sync_body),
                     getString(R.string.account_label),
                     null);
-
-            return guidance;
         }
 
         @Override
@@ -370,13 +366,12 @@ public class TvInputSetupActivity extends Activity {
         @NonNull
         @Override
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
-            GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
+
+            return new GuidanceStylist.Guidance(
                     getString(R.string.setup_complete_title),
                     getString(R.string.setup_complete_body),
                     getString(R.string.account_label),
                     null);
-
-            return guidance;
         }
 
         @Override
