@@ -370,7 +370,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
     }
 
     private void flushPendingChannelOps() {
-        if (mPendingChannelOps.size() == 0) {
+        if (mPendingChannelOps.isEmpty()) {
             return;
         }
 
@@ -435,7 +435,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
     }
 
     private void flushPendingChannelLogoFetches() {
-        if (mPendingChannelLogoFetches.size() == 0) {
+        if (mPendingChannelLogoFetches.isEmpty()) {
             return;
         }
 
@@ -650,7 +650,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
     }
 
     private void flushPendingEventOps() {
-        if (mPendingProgramOps.size() == 0) {
+        if (mPendingProgramOps.isEmpty()) {
             return;
         }
 
