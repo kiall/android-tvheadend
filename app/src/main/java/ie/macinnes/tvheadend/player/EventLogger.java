@@ -471,10 +471,10 @@ import java.util.Locale;
     if (format.width != Format.NO_VALUE && format.height != Format.NO_VALUE) {
       builder.append(", res=").append(format.width).append("x").append(format.height);
     }
-    if (format.pixelWidthHeightRatio != Format.NO_VALUE) {
+    if (((int) format.pixelWidthHeightRatio) != Format.NO_VALUE) {
       builder.append(", par=").append(format.pixelWidthHeightRatio);
     }
-    if (format.frameRate != Format.NO_VALUE) {
+    if (((int) format.frameRate) != Format.NO_VALUE) {
       builder.append(", fps=").append(format.frameRate);
     }
     if (format.channelCount != Format.NO_VALUE) {
