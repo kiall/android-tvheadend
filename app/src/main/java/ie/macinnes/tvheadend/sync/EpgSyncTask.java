@@ -496,7 +496,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
                 }
             }
 
-            mPendingChannelLogoFetches.remove(channelId);
+            mPendingChannelLogoFetches.remove(pendingChannelLogoFetch);
         }
     }
 
