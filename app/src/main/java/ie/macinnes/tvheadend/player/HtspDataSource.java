@@ -280,17 +280,17 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
 
     @Override
     public void onSubscriptionStatus(@NonNull HtspMessage message) {
-
+        // Don't care about this event here
     }
 
     @Override
     public void onSubscriptionSkip(@NonNull HtspMessage message) {
-
+        // Don't care about this event here
     }
 
     @Override
     public void onSubscriptionSpeed(@NonNull HtspMessage message) {
-
+        // Don't care about this event here
     }
 
     @Override
@@ -301,17 +301,17 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
 
     @Override
     public void onQueueStatus(@NonNull HtspMessage message) {
-
+        // Don't care about this event here
     }
 
     @Override
     public void onSignalStatus(@NonNull HtspMessage message) {
-
+        // Don't care about this event here
     }
 
     @Override
     public void onTimeshiftStatus(@NonNull HtspMessage message) {
-
+        // Don't care about this event here
     }
 
     @Override

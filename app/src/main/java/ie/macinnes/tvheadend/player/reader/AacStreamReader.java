@@ -84,7 +84,7 @@ public class AacStreamReader implements StreamReader {
 
     @Override
     public void release() {
-
+        // Nothing to be released
     }
 
     @NonNull

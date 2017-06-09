@@ -182,7 +182,7 @@ public class LiveSession extends TvInputService.Session implements Player.Listen
 
     @Override
     public void onPlayerError(ExoPlaybackException error) {
-
+        // Don't care about this event here
     }
 
     @Override
