@@ -88,10 +88,9 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         @NonNull
         @Override
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
-            GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
+            return new GuidanceStylist.Guidance(
                     getString(R.string.server_name),
                     getString(R.string.server_name_body), null, null);
-            return guidance;
         }
 
         @Override
@@ -171,10 +170,9 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         @NonNull
         @Override
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
-            GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
+            return new GuidanceStylist.Guidance(
                     getString(R.string.account_name),
                     getString(R.string.account_name_body), null, null);
-            return guidance;
         }
 
         @Override
@@ -260,14 +258,13 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
 
         @Override
         public GuidedActionsStylist onCreateActionsStylist() {
-            GuidedActionsStylist stylist = new GuidedActionsStylist() {
+            return new GuidedActionsStylist() {
                 @Override
                 public int onProvideItemLayoutId() {
                     return R.layout.setup_progress;
                 }
 
             };
-            return stylist;
         }
 
         @Override
@@ -278,10 +275,9 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         @NonNull
         @Override
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
-            GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
+            return new GuidanceStylist.Guidance(
                     getString(R.string.account_name),
                     getString(R.string.setup_progress_title), null, null);
-            return guidance;
         }
 
         @Override
@@ -392,13 +388,12 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         @NonNull
         @Override
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
-            GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
+
+            return new GuidanceStylist.Guidance(
                     getString(R.string.account_name),
                     getString(R.string.account_add_successful),
                     null,
                     null);
-
-            return guidance;
         }
 
         @Override
@@ -422,13 +417,12 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         @NonNull
         @Override
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
-            GuidanceStylist.Guidance guidance = new GuidanceStylist.Guidance(
+
+            return new GuidanceStylist.Guidance(
                     getString(R.string.account_name),
                     getString(R.string.setup_complete_failed),
                     null,
                     null);
-
-            return guidance;
         }
 
         @Override
