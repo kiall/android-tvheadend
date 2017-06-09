@@ -509,12 +509,12 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
             existingChannelIds[i] = key;
         }
 
-        for (int i = 0; i < existingChannelIds.length; i++) {
-            if (!mSeenChannels.contains(existingChannelIds[i])) {
+        for (int existingChannelId : existingChannelIds) {
+            if (!mSeenChannels.contains(existingChannelId)) {
                 if (Constants.DEBUG)
-                    Log.d(TAG, "Deleting channel " + existingChannelIds[i]);
-                Uri channelUri = mChannelUriMap.get(existingChannelIds[i]);
-                mChannelUriMap.remove(existingChannelIds[i]);
+                    Log.d(TAG, "Deleting channel " + existingChannelId);
+                Uri channelUri = mChannelUriMap.get(existingChannelId);
+                mChannelUriMap.remove(existingChannelId);
                 mContentResolver.delete(channelUri, null, null);
             }
         }
@@ -703,12 +703,12 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
             existingProgramIds[i] = key;
         }
 
-        for (int i = 0; i < existingProgramIds.length; i++) {
-            if (!mSeenPrograms.contains(existingProgramIds[i])) {
+        for (int existingProgramId : existingProgramIds) {
+            if (!mSeenPrograms.contains(existingProgramId)) {
                 if (Constants.DEBUG)
-                    Log.d(TAG, "Deleting program " + existingProgramIds[i]);
-                Uri programUri = mProgramUriMap.get(existingProgramIds[i]);
-                mProgramUriMap.remove(existingProgramIds[i]);
+                    Log.d(TAG, "Deleting program " + existingProgramId);
+                Uri programUri = mProgramUriMap.get(existingProgramId);
+                mProgramUriMap.remove(existingProgramId);
                 mContentResolver.delete(programUri, null, null);
             }
         }
