@@ -215,29 +215,40 @@ public class Player implements ExoPlayer.EventListener {
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void setPlaybackParams(PlaybackParams params) {
-        float speed = params.getSpeed();
+        float rawSpeed = params.getSpeed();
+        int speed = (int) rawSpeed;
         int translatedSpeed;
 
-        if (speed == 0.0) {
-            translatedSpeed = 100;
-        } else if (speed == -2.0) {
-            translatedSpeed = -200;
-        } else if (speed == -4.0) {
-            translatedSpeed = -300;
-        } else if (speed == -12.0) {
-            translatedSpeed = -400;
-        } else if (speed == -48.0) {
-            translatedSpeed = -500;
-        } else if (speed == 2.0) {
-            translatedSpeed = 200;
-        } else if (speed == 4.0) {
-            translatedSpeed = 300;
-        } else if (speed == 12.0) {
-            translatedSpeed = 400;
-        } else if (speed == 48.0) {
-            translatedSpeed = 500;
-        } else {
-            Log.d(TAG, "Unknown speed??? " + speed);
+        switch(speed) {
+            case 0:
+                translatedSpeed = 100;
+                break;
+            case -2:
+                translatedSpeed = -200;
+                break;
+            case -4:
+                translatedSpeed = -300;
+                break;
+            case -12:
+                translatedSpeed = -400;
+                break;
+            case -48:
+                translatedSpeed = -500;
+                break;
+            case 2:
+                translatedSpeed = 200;
+                break;
+            case 4:
+                translatedSpeed = 300;
+                break;
+            case 12:
+                translatedSpeed = 400;
+                break;
+            case 48:
+                translatedSpeed = 500;
+                break;
+            default:
+                Log.d(TAG, "Unknown speed??? " + rawSpeed);
             return;
         }
 
@@ -245,7 +256,7 @@ public class Player implements ExoPlayer.EventListener {
 
         if (mSubscriber != null) {
             mSubscriber.setSpeed(translatedSpeed);
-            mExoPlayer.setPlaybackParams(new PlaybackParams().setSpeed(speed));
+            mExoPlayer.setPlaybackParameters(new PlaybackParameters(translatedSpeed, 0));
         }
     }
 
