@@ -167,7 +167,7 @@ public class TvInputSetupActivity extends Activity {
 
         @Override
         public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
-            List<GuidedAction> subActions = new ArrayList();
+            List<GuidedAction> subActions = new ArrayList<>();
 
             GuidedAction action = new GuidedAction.Builder(getActivity())
                     .id(ACTION_ID_SELECT_ACCOUNT)
