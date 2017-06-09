@@ -84,7 +84,7 @@ public class MigrateUtils {
         editor.remove("SESSION");
         editor.remove("vlc_deinterlace_enabled");
         editor.remove("vlc_deinterlace_method");
-        editor.commit();
+        editor.apply();
     }
     protected static void migrateExoPlayerHttpRemoval(Context context) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(
@@ -92,7 +92,6 @@ public class MigrateUtils {
 
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.remove("http_stream_profile");
-        editor.commit();
+        editor.apply();
     }
 }
-
