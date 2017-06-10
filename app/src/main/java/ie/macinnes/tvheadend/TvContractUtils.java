@@ -87,22 +87,6 @@ public class TvContractUtils {
         return null;
     }
 
-    public static void removeChannels(Context context) {
-        Uri channelsUri = TvContract.buildChannelsUriForInput(getInputId());
-
-        ContentResolver resolver = context.getContentResolver();
-
-        String[] projection = {Channels._ID, Channels.COLUMN_ORIGINAL_NETWORK_ID};
-
-        try (Cursor cursor = resolver.query(channelsUri, projection, null, null, null)) {
-            while (cursor != null && cursor.moveToNext()) {
-                long rowId = cursor.getLong(0);
-                Log.d(TAG, "Deleting channel: " + rowId);
-                resolver.delete(TvContract.buildChannelUri(rowId), null, null);
-            }
-        }
-    }
-
     public static SparseArray<Uri> buildChannelUriMap(Context context) {
         ContentResolver resolver = context.getContentResolver();
 
@@ -120,6 +104,22 @@ public class TvContractUtils {
         }
 
         return channelMap;
+    }
+
+    public static void removeChannels(Context context) {
+        Uri channelsUri = TvContract.buildChannelsUriForInput(getInputId());
+
+        ContentResolver resolver = context.getContentResolver();
+
+        String[] projection = {Channels._ID, Channels.COLUMN_ORIGINAL_NETWORK_ID};
+
+        try (Cursor cursor = resolver.query(channelsUri, projection, null, null, null)) {
+            while (cursor != null && cursor.moveToNext()) {
+                long rowId = cursor.getLong(0);
+                Log.d(TAG, "Deleting channel: " + rowId);
+                resolver.delete(TvContract.buildChannelUri(rowId), null, null);
+            }
+        }
     }
 
     public static Uri getProgramUri(Context context, int channelId, int eventId) {
@@ -223,6 +223,21 @@ public class TvContractUtils {
         return null;
     }
 
+    public static Integer getTvhDvrEntryIdFromRecordedProgramUri(Context context, Uri recordedProgramUri) {
+        ContentResolver resolver = context.getContentResolver();
+
+        String[] projection = {TvContract.RecordedPrograms._ID, TvContract.RecordedPrograms.COLUMN_INTERNAL_PROVIDER_DATA};
+
+        // TODO: Handle when more than 1, or 0 results come back
+        try (Cursor cursor = resolver.query(recordedProgramUri, projection, null,null, null)) {
+            while (cursor != null && cursor.moveToNext()) {
+                return cursor.getInt(1);
+            }
+        }
+
+        return null;
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.N)
     public static SparseArray<Uri> buildRecordedProgramUriMap(Context context) {
         // Create a map from dvr entry id to program row ID for existing recorded programs.
@@ -242,5 +257,22 @@ public class TvContractUtils {
         }
 
         return recordedProgramMap;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public static void removeRecordedProgram(Context context) {
+        Uri recordedProgramsUri = TvContract.RecordedPrograms.CONTENT_URI;
+
+        ContentResolver resolver = context.getContentResolver();
+
+        String[] projection = {Channels._ID};
+
+        try (Cursor cursor = resolver.query(recordedProgramsUri, projection, null, null, null)) {
+            while (cursor != null && cursor.moveToNext()) {
+                long rowId = cursor.getLong(0);
+                Log.d(TAG, "Deleting recorded program: " + rowId);
+                resolver.delete(TvContract.buildRecordedProgramUri(rowId), null, null);
+            }
+        }
     }
 }

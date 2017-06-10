@@ -16,8 +16,10 @@ package ie.macinnes.tvheadend.tvinput;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.tv.TvInputInfo;
 import android.media.tv.TvInputManager;
 import android.os.Build;
@@ -28,6 +30,7 @@ import ie.macinnes.htsp.SimpleHtspConnection;
 import ie.macinnes.tvheadend.BuildConfig;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.MiscUtils;
+import ie.macinnes.tvheadend.R;
 import ie.macinnes.tvheadend.account.AccountUtils;
 import ie.macinnes.tvheadend.sync.EpgSyncService;
 
@@ -40,14 +43,20 @@ public class TvInputService extends android.media.tv.TvInputService {
     private AccountManager mAccountManager;
     private Account mAccount;
 
+    private SharedPreferences mSharedPreferences;
+
     @Override
     public void onCreate() {
         super.onCreate();
+
+        mSharedPreferences = getSharedPreferences(
+                Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
 
         mAccountManager = AccountManager.get(this);
         mAccount = AccountUtils.getActiveAccount(this);
 
         openConnection();
+        maybeEnableDvr();
 
         // Start the EPG Sync Service
         getApplicationContext().startService(new Intent(getApplicationContext(), EpgSyncService.class));
@@ -65,6 +74,22 @@ public class TvInputService extends android.media.tv.TvInputService {
         Log.d(TAG, "Creating new TvInputService Session for input ID: " + inputId + ".");
 
         return new LiveSession(this, mConnection);
+    }
+
+    protected void maybeEnableDvr() {
+        boolean dvrEnabled = mSharedPreferences.getBoolean(
+                Constants.KEY_DVR_ENABLED,
+                getResources().getBoolean(R.bool.pref_default_dvr_enabled));
+
+        if (dvrEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            TvInputManager tim = (TvInputManager) getSystemService(Context.TV_INPUT_SERVICE);
+            ComponentName componentName = new ComponentName(this, TvInputService.class);
+            TvInputInfo tvInputInfo = new TvInputInfo.Builder(this, componentName)
+                    .setCanRecord(true)
+                    .setTunerCount(10)
+                    .build();
+            tim.updateTvInputInfo(tvInputInfo);
+        }
     }
 
     protected void openConnection() {

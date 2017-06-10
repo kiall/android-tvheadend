@@ -28,39 +28,26 @@ import com.google.android.exoplayer2.extractor.ExtractorOutput;
 import com.google.android.exoplayer2.extractor.ExtractorsFactory;
 import com.google.android.exoplayer2.extractor.PositionHolder;
 import com.google.android.exoplayer2.extractor.SeekMap;
+import com.google.android.exoplayer2.util.ParsableByteArray;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.Arrays;
 
 import ie.macinnes.htsp.HtspMessage;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.player.reader.StreamReader;
 import ie.macinnes.tvheadend.player.reader.StreamReadersFactory;
 
-
+// TODO: Rename HtspSubscriptionExtractor
 public class HtspExtractor implements Extractor {
     private static final String TAG = HtspExtractor.class.getName();
-
-    public static class Factory implements ExtractorsFactory {
-        private static final String TAG = Factory.class.getName();
-
-        private final Context mContext;
-
-        public Factory(Context context) {
-            mContext = context;
-        }
-
-        @Override
-        public Extractor[] createExtractors() {
-            return new Extractor[] { new HtspExtractor(mContext) };
-        }
-    }
 
     private class HtspSeekMap implements SeekMap {
         @Override
         public boolean isSeekable() {
-            return true;
+            return false;
         }
 
         @Override
@@ -88,7 +75,18 @@ public class HtspExtractor implements Extractor {
     // Extractor Methods
     @Override
     public boolean sniff(ExtractorInput input) throws IOException, InterruptedException {
-        return true;
+        long inputLength = input.getLength();
+
+        ParsableByteArray scratch = new ParsableByteArray(HtspChannelDataSource.HEADER.length);
+
+        // Find 8 bytes equal to HEADER at the start of the input.
+        input.peekFully(scratch.data, 0, HtspChannelDataSource.HEADER.length);
+
+        if (Arrays.equals(scratch.data, HtspChannelDataSource.HEADER)) {
+            return true;
+        }
+
+        return false;
     }
 
     @Override
@@ -101,7 +99,6 @@ public class HtspExtractor implements Extractor {
     @Override
     public int read(ExtractorInput input, PositionHolder seekPosition) throws IOException, InterruptedException {
         int bytesRead = input.read(mRawBytes, 0, mRawBytes.length);
-
         if (Constants.DEBUG)
             Log.v(TAG, "Read " + bytesRead + " bytes");
 

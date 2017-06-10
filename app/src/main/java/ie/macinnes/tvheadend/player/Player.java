@@ -65,7 +65,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ie.macinnes.htsp.SimpleHtspConnection;
-import ie.macinnes.htsp.tasks.Subscriber;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.R;
 
@@ -74,7 +73,7 @@ public class Player implements ExoPlayer.EventListener {
 
     private static final float CAPTION_LINE_HEIGHT_RATIO = 0.0533f;
     private static final int TEXT_UNIT_PIXELS = 0;
-    public static final long INVALID_TIMESHIFT_TIME = Subscriber.INVALID_TIMESHIFT_TIME;
+    public static final long INVALID_TIMESHIFT_TIME = HtspDataSource.INVALID_TIMESHIFT_TIME;
 
     public interface Listener {
         /**
@@ -112,7 +111,9 @@ public class Player implements ExoPlayer.EventListener {
     private TvheadendTrackSelector mTrackSelector;
     private LoadControl mLoadControl;
     private EventLogger mEventLogger;
-    private HtspChannelDataSource.Factory mDataSourceFactory;
+    private HtspDataSource.Factory mChannelDataSourceFactory;
+    private HtspDataSource.Factory mRecordingDataSourceFactory;
+    private HtspDataSource mDataSource;
     private ExtractorsFactory mExtractorsFactory;
 
     private View mOverlayView;
@@ -120,7 +121,6 @@ public class Player implements ExoPlayer.EventListener {
     private SubtitleView mSubtitleView;
 
     private MediaSource mMediaSource;
-    private Subscriber mSubscriber;
 
     public Player(Context context, SimpleHtspConnection connection, Listener listener) {
         mContext = context;
@@ -138,7 +138,11 @@ public class Player implements ExoPlayer.EventListener {
         stop();
 
         // Create the media source
-        buildHtspMediaSource(channelUri);
+        if (channelUri.getHost().equals("channel")) {
+            buildHtspChannelMediaSource(channelUri);
+        } else {
+            buildHtspRecordingMediaSource(channelUri);
+        }
 
         // Prepare the media source
         mExoPlayer.prepare(mMediaSource);
@@ -179,38 +183,38 @@ public class Player implements ExoPlayer.EventListener {
     }
 
     public void resume() {
-        if (mSubscriber != null) {
-            Log.d(TAG, "Resuming Subscriber");
+        mExoPlayer.setPlayWhenReady(true);
 
-            mExoPlayer.setPlayWhenReady(true);
-            mSubscriber.resume();
+        if (mDataSource != null) {
+            Log.d(TAG, "Resuming HtspDataSource");
+            mDataSource.resume();
         } else {
-            Log.w(TAG, "Unable to resume, no Subscriber available");
+            Log.w(TAG, "Unable to resume, no HtspDataSource available");
         }
     }
 
     public void pause() {
-        if (mSubscriber != null) {
-            Log.d(TAG, "Pausing Subscriber");
+        mExoPlayer.setPlayWhenReady(false);
 
-            mExoPlayer.setPlayWhenReady(false);
-            mSubscriber.pause();
+        if (mDataSource != null) {
+            Log.d(TAG, "Pausing HtspDataSource");
+            mDataSource.pause();
         } else {
-            Log.w(TAG, "Unable to pause, no Subscriber available");
+            Log.w(TAG, "Unable to pause, no HtspDataSource available");
         }
     }
 
-    public void seek(long timeMs) {
-        if (mSubscriber != null) {
-            Log.d(TAG, "Seeking to time: " + timeMs);
-            long seekPts = (timeMs * 1000) - mSubscriber.getTimeshiftStartTime();
-            seekPts = Math.max(seekPts, mSubscriber.getTimeshiftStartPts());
-
-            mExoPlayer.seekTo(seekPts / 1000);
-        } else {
-            Log.w(TAG, "Unable to seek, no Subscriber available");
-        }
-    }
+//    public void seek(long timeMs) {
+//        if (mDataSource != null) {
+//            Log.d(TAG, "Seeking to time: " + timeMs);
+//            long seekPts = (timeMs * 1000) - mDataSource.getTimeshiftStartTime();
+//            seekPts = Math.max(seekPts, mDataSource.getTimeshiftStartPts());
+//
+//            mExoPlayer.seekTo(seekPts / 1000);
+//        } else {
+//            Log.w(TAG, "Unable to seek, no HtspDataSource available");
+//        }
+//    }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void setPlaybackParams(PlaybackParams params) {
@@ -253,8 +257,8 @@ public class Player implements ExoPlayer.EventListener {
 
         Log.d(TAG, "Speed: " + params.getSpeed() + " / " + translatedSpeed);
 
-        if (mSubscriber != null) {
-            mSubscriber.setSpeed(translatedSpeed);
+        if (mDataSource != null) {
+            mDataSource.setSpeed(translatedSpeed);
             mExoPlayer.setPlaybackParameters(new PlaybackParameters(translatedSpeed, 0));
         }
     }
@@ -262,33 +266,42 @@ public class Player implements ExoPlayer.EventListener {
     public void stop() {
         mExoPlayer.stop();
         mTrackSelector.clearSelectionOverrides();
-        mDataSourceFactory.releaseCurrentDataSource();
+        mChannelDataSourceFactory.releaseCurrentDataSource();
+        mRecordingDataSourceFactory.releaseCurrentDataSource();
 
         if (mMediaSource != null) {
             mMediaSource.releaseSource();
         }
     }
     public long getTimeshiftStartPosition() {
-        if (mSubscriber != null) {
-            long startTime = mSubscriber.getTimeshiftStartTime();
-            if (startTime != Subscriber.INVALID_TIMESHIFT_TIME) {
+        if (mDataSource != null) {
+            long startTime = mDataSource.getTimeshiftStartTime();
+            if (startTime != INVALID_TIMESHIFT_TIME) {
+                // For live content
                 return startTime / 1000;
+            } else {
+                // For recorded content
+                return 0;
             }
         } else {
-            Log.w(TAG, "Unable to getTimeshiftStartPosition, no Subscriber available");
+            Log.w(TAG, "Unable to getTimeshiftStartPosition, no HtspDataSource available");
         }
 
         return INVALID_TIMESHIFT_TIME;
     }
 
     public long getTimeshiftCurrentPosition() {
-        if (mSubscriber != null) {
-            long offset = mSubscriber.getTimeshiftOffsetPts();
-            if (offset != Subscriber.INVALID_TIMESHIFT_TIME) {
+        if (mDataSource != null) {
+            long offset = mDataSource.getTimeshiftOffsetPts();
+            if (offset != INVALID_TIMESHIFT_TIME) {
+                // For live content
                 return System.currentTimeMillis() + (offset / 1000);
+            } else {
+                // For recorded content
+                mExoPlayer.getCurrentPosition();
             }
         } else {
-            Log.w(TAG, "Unable to getTimeshiftCurrentPosition, no Subscriber available");
+            Log.w(TAG, "Unable to getTimeshiftCurrentPosition, no HtspDataSource available");
         }
 
         return INVALID_TIMESHIFT_TIME;
@@ -378,10 +391,11 @@ public class Player implements ExoPlayer.EventListener {
         );
 
         // Produces DataSource instances through which media data is loaded.
-        mDataSourceFactory = new HtspChannelDataSource.Factory(mContext, mConnection, streamProfile);
+        mChannelDataSourceFactory = new HtspChannelDataSource.Factory(mContext, mConnection, streamProfile);
+        mRecordingDataSourceFactory = new HtspRecordingDataSource.Factory(mContext, mConnection);
 
         // Produces Extractor instances for parsing the media data.
-        mExtractorsFactory = new HtspExtractor.Factory(mContext);
+        mExtractorsFactory = new HtspExtractorsFactory(mContext);
     }
 
     private TvheadendTrackSelector buildTrackSelector() {
@@ -411,10 +425,16 @@ public class Player implements ExoPlayer.EventListener {
         );
     }
 
-    private void buildHtspMediaSource(Uri channelUri) {
+    private void buildHtspChannelMediaSource(Uri channelUri) {
         // This is the MediaSource representing the media to be played.
         mMediaSource = new ExtractorMediaSource(channelUri,
-                mDataSourceFactory, mExtractorsFactory, null, mEventLogger);
+                mChannelDataSourceFactory, mExtractorsFactory, null, mEventLogger);
+    }
+
+    private void buildHtspRecordingMediaSource(Uri recordingUri) {
+        // This is the MediaSource representing the media to be played.
+        mMediaSource = new ExtractorMediaSource(recordingUri,
+                mRecordingDataSourceFactory, mExtractorsFactory, null, mEventLogger);
     }
 
     private float getCaptionFontSize() {
@@ -495,12 +515,12 @@ public class Player implements ExoPlayer.EventListener {
     @Override
     public void onLoadingChanged(boolean isLoading) {
         if (isLoading) {
-            // Fetch the Subscriber for later use
-            HtspChannelDataSource dataSource = mDataSourceFactory.getCurrentDataSource();
-
-            if (dataSource != null) {
-                // TODO: Hold a WeakReference to the Subscriber instead...
-                mSubscriber = dataSource.getSubscriber();
+            // Fetch the current DataSource for later use
+            // TODO: Hold a WeakReference to the DataSource instead...
+            // TODO: We should know if we're playing a channel or a recording...
+            mDataSource = mChannelDataSourceFactory.getCurrentDataSource();
+            if (mDataSource == null) {
+                mDataSource = mRecordingDataSourceFactory.getCurrentDataSource();
             }
         }
     }

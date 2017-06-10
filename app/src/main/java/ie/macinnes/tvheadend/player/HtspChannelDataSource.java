@@ -23,16 +23,13 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.google.android.exoplayer2.C;
-import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DataSpec;
 
 import org.acra.ACRA;
 
 import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
@@ -45,19 +42,18 @@ import ie.macinnes.tvheadend.Application;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.R;
 
-public class HtspChannelDataSource implements DataSource, Subscriber.Listener, Closeable {
+public class HtspChannelDataSource extends HtspDataSource implements Subscriber.Listener {
     private static final String TAG = HtspChannelDataSource.class.getName();
-    private static final int BUFFER_SIZE = 10*1024*1024;
     private static final AtomicInteger sDataSourceCount = new AtomicInteger();
+    private static final int BUFFER_SIZE = 10*1024*1024;
+    public static final byte[] HEADER = new byte[] {0,1,0,1,0,1,0,1};
 
-    public static class Factory implements DataSource.Factory {
+    public static class Factory extends HtspDataSource.Factory {
         private static final String TAG = Factory.class.getName();
 
         private final Context mContext;
         private final SimpleHtspConnection mConnection;
         private final String mStreamProfile;
-
-        private WeakReference<HtspChannelDataSource> mCurrentHtspDataSource;
 
         public Factory(Context context, SimpleHtspConnection connection, String streamProfile) {
             mContext = context;
@@ -66,32 +62,12 @@ public class HtspChannelDataSource implements DataSource, Subscriber.Listener, C
         }
 
         @Override
-        public HtspChannelDataSource createDataSource() {
-            releaseCurrentDataSource();
-
-            mCurrentHtspDataSource = new WeakReference<>(new HtspChannelDataSource(mContext, mConnection, mStreamProfile));
-            return mCurrentHtspDataSource.get();
+        public HtspDataSource createDataSourceInternal() {
+            return new HtspChannelDataSource(mContext, mConnection, mStreamProfile);
         }
 
-        public HtspChannelDataSource getCurrentDataSource() {
-            if (mCurrentHtspDataSource != null) {
-                return mCurrentHtspDataSource.get();
-            }
-
-            return null;
-        }
-
-        public void releaseCurrentDataSource() {
-            if (mCurrentHtspDataSource != null) {
-                mCurrentHtspDataSource.get().release();
-                mCurrentHtspDataSource.clear();
-                mCurrentHtspDataSource = null;
-            }
-        }
     }
 
-    private Context mContext;
-    private SimpleHtspConnection mConnection;
     private String mStreamProfile;
 
     private final SharedPreferences mSharedPreferences;
@@ -100,8 +76,6 @@ public class HtspChannelDataSource implements DataSource, Subscriber.Listener, C
     private final int mDataSourceNumber;
     private Subscriber mSubscriber;
 
-    private DataSpec mDataSpec;
-
     private ByteBuffer mBuffer;
     private ReentrantLock mLock = new ReentrantLock();
 
@@ -109,8 +83,8 @@ public class HtspChannelDataSource implements DataSource, Subscriber.Listener, C
     private boolean mIsSubscribed = false;
 
     public HtspChannelDataSource(Context context, SimpleHtspConnection connection, String streamProfile) {
-        mContext = context;
-        mConnection = connection;
+        super(context, connection);
+
         mStreamProfile = streamProfile;
 
         mSharedPreferences = mContext.getSharedPreferences(
@@ -130,8 +104,11 @@ public class HtspChannelDataSource implements DataSource, Subscriber.Listener, C
         Log.d(TAG, "New HtspChannelDataSource instantiated ("+mDataSourceNumber+")");
 
         try {
+            // Create the buffer, and place the HTSPChannelDataSource header in place.
             mBuffer = ByteBuffer.allocate(BUFFER_SIZE);
-            mBuffer.limit(0);
+            mBuffer.limit(HEADER.length);
+            mBuffer.put(HEADER);
+            mBuffer.position(0);
         } catch (OutOfMemoryError e) {
             // Since we're allocating a large buffer here, it's fairly safe to assume we'll have
             // enough memory to catch and throw this exception. We do this, as each OOM exception
@@ -143,26 +120,6 @@ public class HtspChannelDataSource implements DataSource, Subscriber.Listener, C
         mSubscriber = new Subscriber(mConnection);
         mSubscriber.addSubscriptionListener(this);
         mConnection.addAuthenticationListener(mSubscriber);
-    }
-
-    public Subscriber getSubscriber() {
-        return mSubscriber;
-    }
-
-    public void release() {
-        if (mConnection != null) {
-            mConnection.removeAuthenticationListener(mSubscriber);
-            mConnection = null;
-        }
-
-        if (mSubscriber != null) {
-            mSubscriber.removeSubscriptionListener(this);
-            mSubscriber.unsubscribe();
-            mSubscriber = null;
-        }
-
-        // Watch for memory leaks
-        Application.getRefWatcher(mContext).watch(this);
     }
 
     @Override
@@ -189,16 +146,16 @@ public class HtspChannelDataSource implements DataSource, Subscriber.Listener, C
     // DataSource Methods
     @Override
     public long open(DataSpec dataSpec) throws IOException {
-        Log.i(TAG, "Opening HTSP DataSource ("+mDataSourceNumber+")");
+        Log.i(TAG, "Opening HtspChannelDataSource ("+mDataSourceNumber+")");
         mDataSpec = dataSpec;
 
         if (!mIsSubscribed) {
             try {
-                mSubscriber.subscribe(Long.parseLong(
-                        dataSpec.uri.getHost()), mStreamProfile, mTimeshiftPeriod);
+                long channelId = Long.parseLong(dataSpec.uri.getPath().substring(1));
+                mSubscriber.subscribe(channelId, mStreamProfile, mTimeshiftPeriod);
                 mIsSubscribed = true;
             } catch (HtspNotConnectedException e) {
-                throw new IOException("Failed to open DataSource, HTSP not connected (" + mDataSourceNumber + ")", e);
+                throw new IOException("Failed to open HtspChannelDataSource, HTSP not connected (" + mDataSourceNumber + ")", e);
             }
         }
 
@@ -257,15 +214,6 @@ public class HtspChannelDataSource implements DataSource, Subscriber.Listener, C
     }
 
     @Override
-    public Uri getUri() {
-        if (mDataSpec != null) {
-            return mDataSpec.uri;
-        }
-
-        return null;
-    }
-
-    @Override
     public void close() throws IOException {
         Log.i(TAG, "Closing HTSP DataSource ("+mDataSourceNumber+")");
         mIsOpen = false;
@@ -317,6 +265,74 @@ public class HtspChannelDataSource implements DataSource, Subscriber.Listener, C
     @Override
     public void onMuxpkt(@NonNull HtspMessage message) {
         serializeMessageToBuffer(message);
+    }
+
+    // HtspDataSource Methods
+    public void release() {
+        if (mConnection != null) {
+            mConnection.removeAuthenticationListener(mSubscriber);
+            mConnection = null;
+        }
+
+        if (mSubscriber != null) {
+            mSubscriber.removeSubscriptionListener(this);
+            mSubscriber.unsubscribe();
+            mSubscriber = null;
+        }
+
+        // Watch for memory leaks
+        Application.getRefWatcher(mContext).watch(this);
+    }
+
+    @Override
+    public void pause() {
+        if (mSubscriber != null) {
+            mSubscriber.pause();
+        }
+    }
+
+    @Override
+    public void resume() {
+        if (mSubscriber != null) {
+            mSubscriber.resume();
+        }
+    }
+
+//    @Override
+//    public void seek(long timeMs) {
+//        // TODO?
+//    }
+
+    @Override
+    public long getTimeshiftStartTime() {
+        if (mSubscriber != null) {
+            return mSubscriber.getTimeshiftStartTime();
+        }
+
+        return INVALID_TIMESHIFT_TIME;
+    }
+
+    @Override
+    public long getTimeshiftStartPts() {
+        if (mSubscriber != null) {
+            return mSubscriber.getTimeshiftStartPts();
+        }
+
+        return INVALID_TIMESHIFT_TIME;
+    }
+
+    @Override
+    public long getTimeshiftOffsetPts() {
+        if (mSubscriber != null) {
+            return mSubscriber.getTimeshiftOffsetPts();
+        }
+
+        return INVALID_TIMESHIFT_TIME;
+    }
+
+    @Override
+    public void setSpeed(int speed) {
+
     }
 
     // Misc Internal Methods
