@@ -34,6 +34,7 @@ import ie.macinnes.tvheadend.TvhMappings;
 
 public class VorbisStreamReader extends PlainStreamReader {
     private static final String TAG = VorbisStreamReader.class.getName();
+    private static final String VORBIS_CODEC_ERROR_MESSAGE = "Error parsing vorbis codec private: ";
 
     public VorbisStreamReader(Context context) {
         super(context, C.TRACK_TYPE_AUDIO);
@@ -88,7 +89,7 @@ public class VorbisStreamReader extends PlainStreamReader {
             throws ParserException {
         try {
             if (codecPrivate[0] != 0x02) {
-                throw new ParserException("Error parsing vorbis codec private");
+                throw new ParserException(VORBIS_CODEC_ERROR_MESSAGE+"codecPrivate[0] was not 0x02");
             }
             int offset = 1;
             int vorbisInfoLength = 0;
@@ -106,17 +107,17 @@ public class VorbisStreamReader extends PlainStreamReader {
             vorbisSkipLength += codecPrivate[offset++];
 
             if (codecPrivate[offset] != 0x01) {
-                throw new ParserException("Error parsing vorbis codec private");
+                throw new ParserException(VORBIS_CODEC_ERROR_MESSAGE);
             }
             byte[] vorbisInfo = new byte[vorbisInfoLength];
             System.arraycopy(codecPrivate, offset, vorbisInfo, 0, vorbisInfoLength);
             offset += vorbisInfoLength;
             if (codecPrivate[offset] != 0x03) {
-                throw new ParserException("Error parsing vorbis codec private");
+                throw new ParserException(VORBIS_CODEC_ERROR_MESSAGE+"codecPrivate["+offset+"] was not 0x03");
             }
             offset += vorbisSkipLength;
             if (codecPrivate[offset] != 0x05) {
-                throw new ParserException("Error parsing vorbis codec private");
+                throw new ParserException(VORBIS_CODEC_ERROR_MESSAGE+"codecPrivate["+offset+"] was not 0x05");
             }
             byte[] vorbisBooks = new byte[codecPrivate.length - offset];
             System.arraycopy(codecPrivate, offset, vorbisBooks, 0, codecPrivate.length - offset);
@@ -125,8 +126,7 @@ public class VorbisStreamReader extends PlainStreamReader {
             initializationData.add(vorbisBooks);
             return initializationData;
         } catch (ArrayIndexOutOfBoundsException e) {
-            throw new ParserException("Error parsing vorbis codec private");
+            throw new ParserException(VORBIS_CODEC_ERROR_MESSAGE+"Array index out of bounds", e);
         }
     }
-
 }
