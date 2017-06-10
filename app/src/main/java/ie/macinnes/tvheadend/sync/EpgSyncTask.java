@@ -269,7 +269,6 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
                 case "channelAdd":
                 case "channelUpdate":
                     handleChannelAddUpdate(message);
-                    storeLastUpdate();
                     break;
                 case "channelDelete":
                     // Do Something
