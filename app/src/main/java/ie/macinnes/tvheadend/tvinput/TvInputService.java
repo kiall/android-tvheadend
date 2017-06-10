@@ -16,7 +16,11 @@ package ie.macinnes.tvheadend.tvinput;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.content.Context;
 import android.content.Intent;
+import android.media.tv.TvInputInfo;
+import android.media.tv.TvInputManager;
+import android.os.Build;
 import android.util.Log;
 
 import ie.macinnes.htsp.HtspConnection;
