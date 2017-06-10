@@ -16,9 +16,11 @@ def lint() {
 
 def publishApkToStore(String trackName) {
     withCredentials([
+        [$class: 'FileBinding', credentialsId: 'android-keystore-tvheadend', variable: 'ANDROID_KEYSTORE'],
+        [$class: 'StringBinding', credentialsId: 'android-keystore-tvheadend-password', variable: 'ANDROID_KEYSTORE_PASSWORD'],
         [$class: 'FileBinding', credentialsId: 'android-playserviceaccount-tvheadend', variable: 'ANDROID_PLAY_SERVICE_ACCOUNT'],
     ]) {
-        writeFile file: 'local-tvheadend.properties', text: "ie.macinnes.tvheadend.playServiceAccountFile=$ANDROID_PLAY_SERVICE_ACCOUNT\n"
+        writeFile file: 'local-tvheadend.properties', text: "ie.macinnes.tvheadend.keystoreFile=$ANDROID_KEYSTORE\nie.macinnes.tvheadend.keystorePassword=$ANDROID_KEYSTORE_PASSWORD\nie.macinnes.tvheadend.keyAlias=Kiall Mac Innes\nie.macinnes.tvheadend.keyPassword=$ANDROID_KEYSTORE_PASSWORD\nie.macinnes.tvheadend.playServiceAccountFile=$ANDROID_PLAY_SERVICE_ACCOUNT\n"
 
         // Publish everything when doing a production release
         if (trackName == 'production') {
