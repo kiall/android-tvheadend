@@ -1,6 +1,6 @@
 android {
-    if (tvhHasProperty("keystoreFile")) {
-        signingConfigs {
+    signingConfigs {
+        if (tvhHasProperty("keystoreFile")) {
             release {
                 // TODO: Also support relative paths to the storeFile?
                 storeFile file(tvhProperty("keystoreFile"))
@@ -10,10 +10,23 @@ android {
             }
         }
 
-        buildTypes {
+        debug {
+            storeFile rootProject.file("debug-keystore.jks")
+            storePassword "password"
+            keyAlias "debug key"
+            keyPassword "password"
+        }
+    }
+
+    buildTypes {
+        if (tvhHasProperty("keystoreFile")) {
             release {
                 signingConfig signingConfigs.release
             }
+        }
+
+        debug {
+            signingConfig signingConfigs.debug
         }
     }
 }
