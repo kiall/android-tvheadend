@@ -17,8 +17,7 @@ node ('android-slave') {
                 [$class: 'StringBinding', credentialsId: 'android-keystore-tvheadend-password', variable: 'ANDROID_KEYSTORE_PASSWORD'],
                 [$class: 'StringBinding', credentialsId: 'acra-report-uri-tvheadend', variable: 'ACRA_REPORT_URI'],
             ]) {
-                writeFile file: 'keystore.properties', text: "storeFile=$ANDROID_KEYSTORE\nstorePassword=$ANDROID_KEYSTORE_PASSWORD\nkeyAlias=Kiall Mac Innes\nkeyPassword=$ANDROID_KEYSTORE_PASSWORD\n"
-                writeFile file: 'acra.properties', text: "report_uri=$ACRA_REPORT_URI\n"
+                writeFile file: 'local-tvheadend.properties', text: "ie.macinnes.tvheadend.acraReportUri=$ACRA_REPORT_URI\nie.macinnes.tvheadend.keystoreFile=$ANDROID_KEYSTORE\nie.macinnes.tvheadend.keystorePassword=$ANDROID_KEYSTORE_PASSWORD\nie.macinnes.tvheadend.keyAlias=Kiall Mac Innes\nie.macinnes.tvheadend.keyPassword=$ANDROID_KEYSTORE_PASSWORD\n"
 
                 common.assemble()
             }
@@ -35,7 +34,11 @@ node ('android-slave') {
 
     if (!env.JOB_NAME.contains("PR-")) {
         stage('Publish') {
-            common.publishApkToStore('alpha')
+            if (env.JOB_NAME.contains("master")) {
+                common.publishApkToStore('beta')
+            } else if (env.JOB_NAME.contains("develop")) {
+                common.publishApkToStore('alpha')
+            }
         }
     }
 }

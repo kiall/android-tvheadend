@@ -1,0 +1,38 @@
+def tvhProperties = new Properties()
+
+if (rootProject.file("local-tvheadend.properties").exists()) {
+    tvhProperties.load(new FileInputStream(rootProject.file("local-tvheadend.properties")))
+}
+
+static def completeName(name) {
+    return "ie.macinnes.tvheadend." + name
+}
+
+ext.tvhHasProperty = { name ->
+    if (tvhProperties.containsKey(completeName(name))) {
+        return true;
+    } else if (rootProject.hasProperty(completeName(name))) {
+        return true;
+    } else {
+        return rootProject.hasProperty(name)
+    }
+
+}
+
+ext.tvhProperty = { name ->
+    if (tvhProperties.containsKey(completeName(name))) {
+        return tvhProperties[completeName(name)];
+    } else if (rootProject.hasProperty(completeName(name))) {
+        return rootProject.property(completeName(name));
+    } else {
+        return rootProject.property(name)
+    }
+}
+
+ext.tvhPropertyFallback = { name, fallback ->
+    if (tvhHasProperty(name)) {
+        return tvhProperty(name)
+    } else {
+        return fallback
+    }
+}

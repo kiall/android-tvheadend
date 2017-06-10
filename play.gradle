@@ -1,0 +1,27 @@
+apply plugin: 'com.github.triplet.play'
+
+if (tvhHasProperty("playServiceAccountFile")) {
+    android {
+        playAccountConfigs {
+            defaultplayAccountConfig {
+                jsonFile = file(tvhProperty("playServiceAccountFile"))
+            }
+        }
+
+        defaultConfig {
+            playAccountConfig = playAccountConfigs.defaultplayAccountConfig
+        }
+    }
+
+    play {
+        if (tvhHasProperty('playStoreTrack')) {
+            track = tvhProperty('playStoreTrack')
+        } else {
+            track = 'alpha'
+        }
+
+        untrackOld = false
+        errorOnSizeLimit = true
+        uploadImages = true
+    }
+}

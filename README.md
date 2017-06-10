@@ -19,3 +19,13 @@ Join #android-tvheadend on Freenode - not a general support channel, used for ch
 
 ![Screenshot 1](screenshots/TVH-1.png)
 ![Screenshot 2](screenshots/TVH-2.png)
+
+# Build Properties
+
+Build customization can be performed via a `local-tvheadend.properties` file, for example:
+
+	ie.macinnes.tvheadend.acraReportUri=https://crashreport.com/report/tvheadend
+	ie.macinnes.tvheadend.keystoreFile=keystore.jks
+	ie.macinnes.tvheadend.keystorePassword=MySecretPassword
+	ie.macinnes.tvheadend.keyAlias=My TVHeadend Key
+	ie.macinnes.tvheadend.keyPassword=MySecretPassword

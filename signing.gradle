@@ -1,0 +1,19 @@
+android {
+    if (tvhHasProperty("keystoreFile")) {
+        signingConfigs {
+            release {
+                // TODO: Also support relative paths to the storeFile?
+                storeFile file(tvhProperty("keystoreFile"))
+                storePassword tvhProperty("keystorePassword")
+                keyAlias tvhProperty("keyAlias")
+                keyPassword tvhProperty("keyPassword")
+            }
+        }
+
+        buildTypes {
+            release {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+}
