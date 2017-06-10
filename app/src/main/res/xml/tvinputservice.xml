@@ -15,5 +15,4 @@ under the License.
 -->
 <tv-input xmlns:android="http://schemas.android.com/apk/res/android"
     android:setupActivity="ie.macinnes.tvheadend.setup.TvInputSetupActivity"
-    android:canRecord="true"
     android:icon="@mipmap/ic_tv_service"/>

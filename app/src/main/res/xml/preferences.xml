@@ -88,6 +88,12 @@
             android:summary="DO NOT ENABLE THIS"
             android:defaultValue="@bool/pref_default_timeshift_enabled"/>
 
+        <CheckBoxPreference
+            android:key="dvr_enabled"
+            android:title="Enable DVR support"
+            android:summary="DO NOT ENABLE THIS"
+            android:defaultValue="@bool/pref_default_dvr_enabled"/>
+
         <!-- TODO: This needs to be made into a list, based on fetching the list of available profiles -->
         <EditTextPreference
             android:key="htsp_stream_profile"

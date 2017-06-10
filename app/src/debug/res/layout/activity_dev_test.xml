@@ -58,6 +58,14 @@ under the License.
         <Button
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
+            android:text="Delete Recorded Programs"
+            android:nestedScrollingEnabled="true"
+            android:onClick="deleteRecordedPrograms"
+            android:layout_gravity="center_horizontal"/>
+
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
             android:text="Show Preferences"
             android:nestedScrollingEnabled="true"
             android:onClick="showPreferences"

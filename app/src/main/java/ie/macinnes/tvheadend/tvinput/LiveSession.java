@@ -56,7 +56,7 @@ public class LiveSession extends TvInputService.Session implements Player.Listen
 
     private Player mPlayer;
 
-    protected PlayChannelRunnable mPlayChannelRunnable;
+    protected Runnable mPlayChannelRunnable;
 
     public LiveSession(Context context, SimpleHtspConnection connection) {
         super(context);
@@ -105,6 +105,10 @@ public class LiveSession extends TvInputService.Session implements Player.Listen
 
         // Notify we are busy tuning
         notifyVideoUnavailable(TvInputManager.VIDEO_UNAVAILABLE_REASON_TUNING);
+
+        mHandler.removeCallbacks(mPlayChannelRunnable);
+        mPlayChannelRunnable = new PlayRecordedProgramRunnable(recordedProgramUri);
+        mHandler.post(mPlayChannelRunnable);
     }
 
     @Override
@@ -222,9 +226,8 @@ public class LiveSession extends TvInputService.Session implements Player.Listen
         }
 
         private boolean tune(int tvhChannelId) {
-            // TODO This should take in the Android Channel URI, and convert to tvhChannelId here
             Log.i(TAG, "Start playback of channel");
-            Uri channelUri = Uri.parse("htsp://" + tvhChannelId);
+            Uri channelUri = Uri.parse("htsp://channel/" + tvhChannelId);
 
             mPlayer.open(channelUri);
             mPlayer.play();
@@ -248,6 +251,39 @@ public class LiveSession extends TvInputService.Session implements Player.Listen
                 tune(tvhChannelId);
             } else {
                 Log.w(TAG, "Failed to get channel info for " + mChannelUri);
+            }
+        }
+    }
+
+    private class PlayRecordedProgramRunnable implements Runnable {
+        private final Uri mRecordedProgramUri;
+
+        public PlayRecordedProgramRunnable(Uri recordedProgramUri) {
+            mRecordedProgramUri = recordedProgramUri;
+        }
+
+        private boolean tune(int dvrEntryId) {
+            Log.i(TAG, "Start playback of DVR entry");
+            Uri recordedProgramUri = Uri.parse("htsp://dvrfile/" + dvrEntryId);
+
+            mPlayer.open(recordedProgramUri);
+            mPlayer.play();
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                notifyTimeShiftStatusChanged(TvInputManager.TIME_SHIFT_STATUS_AVAILABLE);
+            }
+
+            return true;
+        }
+
+        @Override
+        public void run() {
+            Integer tvhDvrEntryId = TvContractUtils.getTvhDvrEntryIdFromRecordedProgramUri(mContext, mRecordedProgramUri);
+
+            if (tvhDvrEntryId != null) {
+                tune(tvhDvrEntryId);
+            } else {
+                Log.w(TAG, "Failed to get recorded program info for " + mRecordedProgramUri);
             }
         }
     }

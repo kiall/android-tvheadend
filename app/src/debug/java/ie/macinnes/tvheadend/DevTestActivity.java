@@ -19,6 +19,7 @@ import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
@@ -114,6 +115,22 @@ public class DevTestActivity extends Activity {
         context.stopService(i);
 
         TvContractUtils.removeChannels(getBaseContext());
+        setOk();
+    }
+
+    public void deleteRecordedPrograms(View view) {
+        setRunning();
+
+        Context context = getBaseContext();
+        Intent i = new Intent(context, EpgSyncService.class);
+        context.stopService(i);
+
+        i = new Intent(context, TvInputService.class);
+        context.stopService(i);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            TvContractUtils.removeRecordedProgram(getBaseContext());
+        }
         setOk();
     }
 

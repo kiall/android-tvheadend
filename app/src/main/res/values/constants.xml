@@ -31,6 +31,7 @@
     <bool name="pref_default_shield_workaround_enabled">true</bool>
     <bool name="pref_default_debug_text_view_enabled">false</bool>
     <bool name="pref_default_timeshift_enabled">false</bool>
+    <bool name="pref_default_dvr_enabled">false</bool>
     <string name="pref_default_htsp_stream_profile">htsp</string>
 
 </resources>

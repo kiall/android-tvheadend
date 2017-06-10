@@ -70,6 +70,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
     }));
     private static final boolean IS_BRAVIA = Build.MODEL.contains("BRAVIA");
 
+    // TODO: Move all these HTSP Lib, Modeled after TvContract.Programs.COLUMN_CHANNEL_ID etc?
     private static final String CHANNEL_ID_KEY = "channelId";
     private static final String CHANNEL_NUMBER_KEY = "channelNumber";
     private static final String CHANNEL_NUMBER_MINOR_KEY = "channelNumberMinor";
@@ -96,6 +97,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
     private static final String DVR_ENTRY_TITLE_KEY = "title";
     private static final String DVR_ENTRY_SUBTITLE_KEY = "subtitle";
     private static final String DVR_ENTRY_CONTENT_TYPE_KEY = "contentType";
+    private static final String DVR_ENTRY_STATE_KEY = "state";
 
     private static final String EVENT_ID_KEY = "eventId";
 
@@ -308,6 +310,11 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
                 case "dvrEntryUpdate":
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                         handleDvrEntryAddUpdate(message);
+                    }
+                    break;
+                case "dvrEntryDelete":
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        handleDvrEntryDelete(message);
                     }
                     break;
                 case "eventAdd":
@@ -609,14 +616,20 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
         flushPendingChannelOps();
 
         final int dvrEntryId = message.getInteger(DVR_ENTRY_ID_KEY);
-        final int channelId = message.getInteger(DVR_ENTRY_CHANNEL_KEY);
+        final String state = message.getString(DVR_ENTRY_STATE_KEY, "unknown");
+
+        if (!state.equals("completed")) {
+            // Skip anything that's not completed for now
+            return;
+        }
+
         final ContentValues values = dvrEntryToContentValues(message);
         final Uri dvrEntryUri = TvContractUtils.getRecordedProgramUri(mContext, dvrEntryId);
 
         if (dvrEntryUri == null) {
             // Insert the DVR Entry
             if (Constants.DEBUG)
-                Log.v(TAG, "Insert dvrEntry " + dvrEntryId + " on channel " + channelId);
+                Log.v(TAG, "Insert dvrEntry " + dvrEntryId);
             mPendingRecordedProgramsOps.add(new PendingDvrEntryAddUpdate(
                     dvrEntryId,
                     ContentProviderOperation.newInsert(TvContract.RecordedPrograms.CONTENT_URI)
@@ -626,7 +639,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
         } else {
             // Update the DVR entry
             if (Constants.DEBUG)
-                Log.v(TAG, "Update dvrEntry " + dvrEntryId + " on channel " + channelId + " (URI: " + dvrEntryUri + ")");
+                Log.v(TAG, "Update dvrEntry " + dvrEntryId + " (URI: " + dvrEntryUri + ")");
             mPendingRecordedProgramsOps.add(new PendingDvrEntryAddUpdate(
                     dvrEntryId,
                     ContentProviderOperation.newUpdate(dvrEntryUri)
@@ -638,10 +651,18 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
         // Throttle the batch operation not to cause TransactionTooLargeException. If the initial
         // sync has already completed, flush for every message.
         if (mInitialSyncCompleted || mPendingProgramOps.size() >= 100) {
-            flushPendingEventOps();
+            flushPendingDvrEntryOps();
         }
 
         mSeenRecordedPrograms.add(dvrEntryId);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    private void handleDvrEntryDelete(@NonNull HtspMessage message) {
+        final int dvrEntryId = message.getInteger(DVR_ENTRY_ID_KEY);
+        Uri recordedProgramUri = TvContractUtils.getRecordedProgramUri(mContext, dvrEntryId);
+
+        mContentResolver.delete(recordedProgramUri, null, null);
     }
 
     private void flushPendingDvrEntryOps() {
@@ -692,8 +713,6 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
         // Dirty
         int[] existingRecordedProgramIds = new int[mRecordedProgramUriMap.size()];
 
-        Log.d(TAG, "existingRecordedProgramIds size: " + mRecordedProgramUriMap.size());
-
         for (int i = 0; i < mRecordedProgramUriMap.size(); i++) {
             int key = mRecordedProgramUriMap.keyAt(i);
             existingRecordedProgramIds[i] = key;
@@ -702,7 +721,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
         for (int existingRecordedProgramId : existingRecordedProgramIds) {
             if (!mSeenRecordedPrograms.contains(existingRecordedProgramId)) {
                 if (Constants.DEBUG)
-                    Log.d(TAG, "Deleting recorded program " + existingRecordedProgramId);
+                    Log.d(TAG, "DVR Deleting recorded program " + existingRecordedProgramId);
                 Uri recordedProgramUri = mRecordedProgramUriMap.get(existingRecordedProgramId);
                 mRecordedProgramUriMap.remove(existingRecordedProgramId);
                 mContentResolver.delete(recordedProgramUri, null, null);
