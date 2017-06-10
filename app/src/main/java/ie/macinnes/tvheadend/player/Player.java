@@ -56,7 +56,6 @@ import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
-import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.ui.DebugTextViewHelper;
 import com.google.android.exoplayer2.ui.SubtitleView;
 import com.google.android.exoplayer2.upstream.DefaultAllocator;
@@ -113,7 +112,7 @@ public class Player implements ExoPlayer.EventListener {
     private TvheadendTrackSelector mTrackSelector;
     private LoadControl mLoadControl;
     private EventLogger mEventLogger;
-    private HtspDataSource.Factory mDataSourceFactory;
+    private HtspChannelDataSource.Factory mDataSourceFactory;
     private ExtractorsFactory mExtractorsFactory;
 
     private View mOverlayView;
@@ -379,7 +378,7 @@ public class Player implements ExoPlayer.EventListener {
         );
 
         // Produces DataSource instances through which media data is loaded.
-        mDataSourceFactory = new HtspDataSource.Factory(mContext, mConnection, streamProfile);
+        mDataSourceFactory = new HtspChannelDataSource.Factory(mContext, mConnection, streamProfile);
 
         // Produces Extractor instances for parsing the media data.
         mExtractorsFactory = new HtspExtractor.Factory(mContext);
@@ -497,7 +496,7 @@ public class Player implements ExoPlayer.EventListener {
     public void onLoadingChanged(boolean isLoading) {
         if (isLoading) {
             // Fetch the Subscriber for later use
-            HtspDataSource dataSource = mDataSourceFactory.getCurrentDataSource();
+            HtspChannelDataSource dataSource = mDataSourceFactory.getCurrentDataSource();
 
             if (dataSource != null) {
                 // TODO: Hold a WeakReference to the Subscriber instead...

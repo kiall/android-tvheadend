@@ -45,8 +45,8 @@ import ie.macinnes.tvheadend.Application;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.R;
 
-public class HtspDataSource implements DataSource, Subscriber.Listener, Closeable {
-    private static final String TAG = HtspDataSource.class.getName();
+public class HtspChannelDataSource implements DataSource, Subscriber.Listener, Closeable {
+    private static final String TAG = HtspChannelDataSource.class.getName();
     private static final int BUFFER_SIZE = 10*1024*1024;
     private static final AtomicInteger sDataSourceCount = new AtomicInteger();
 
@@ -57,7 +57,7 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
         private final SimpleHtspConnection mConnection;
         private final String mStreamProfile;
 
-        private WeakReference<HtspDataSource> mCurrentHtspDataSource;
+        private WeakReference<HtspChannelDataSource> mCurrentHtspDataSource;
 
         public Factory(Context context, SimpleHtspConnection connection, String streamProfile) {
             mContext = context;
@@ -66,14 +66,14 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
         }
 
         @Override
-        public HtspDataSource createDataSource() {
+        public HtspChannelDataSource createDataSource() {
             releaseCurrentDataSource();
 
-            mCurrentHtspDataSource = new WeakReference<>(new HtspDataSource(mContext, mConnection, mStreamProfile));
+            mCurrentHtspDataSource = new WeakReference<>(new HtspChannelDataSource(mContext, mConnection, mStreamProfile));
             return mCurrentHtspDataSource.get();
         }
 
-        public HtspDataSource getCurrentDataSource() {
+        public HtspChannelDataSource getCurrentDataSource() {
             if (mCurrentHtspDataSource != null) {
                 return mCurrentHtspDataSource.get();
             }
@@ -108,7 +108,7 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
     private boolean mIsOpen = false;
     private boolean mIsSubscribed = false;
 
-    public HtspDataSource(Context context, SimpleHtspConnection connection, String streamProfile) {
+    public HtspChannelDataSource(Context context, SimpleHtspConnection connection, String streamProfile) {
         mContext = context;
         mConnection = connection;
         mStreamProfile = streamProfile;
@@ -127,7 +127,7 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
 
         mDataSourceNumber = sDataSourceCount.incrementAndGet();
 
-        Log.d(TAG, "New HtspDataSource instantiated ("+mDataSourceNumber+")");
+        Log.d(TAG, "New HtspChannelDataSource instantiated ("+mDataSourceNumber+")");
 
         try {
             mBuffer = ByteBuffer.allocate(BUFFER_SIZE);
@@ -137,7 +137,7 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
             // enough memory to catch and throw this exception. We do this, as each OOM exception
             // message is unique (lots of #'s of bytes available/used/etc) and means crash reporting
             // doesn't group things nicely.
-            throw new RuntimeException("OutOfMemoryError when allocating HtspDataSource buffer ("+mDataSourceNumber+")", e);
+            throw new RuntimeException("OutOfMemoryError when allocating HtspChannelDataSource buffer ("+mDataSourceNumber+")", e);
         }
 
         mSubscriber = new Subscriber(mConnection);
