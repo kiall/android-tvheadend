@@ -1,0 +1,87 @@
+apply plugin: 'org.ajoberstar.grgit'
+
+// Max accepted version code by Google Play = 2100000000
+
+import groovy.json.JsonSlurper
+
+def versionFile = rootProject.file("version.json")
+def versionJSON = getJSON(versionFile)
+def buildNumber = tvhHasProperty("buildNumber") ? Integer.parseInt(tvhProperty("buildNumber")) : 0
+def version = "${versionJSON.major}.${versionJSON.minor}.${versionJSON.patch}"
+def versionName = "v${version} (Build: ${buildNumber})"
+def versionCode = String.format("%02d", versionJSON.major) + \
+                  String.format("%02d", versionJSON.minor) + \
+                  String.format("%02d", versionJSON.patch) + \
+                  String.format("%04d", buildNumber)
+def gitVersion = "${grgit.describe()}".drop(1)
+
+// Expose as a properties to the project
+ext.versionName = versionName
+ext.versionCode = Integer.parseInt(versionCode)
+
+// Methods
+def Object getJSON(File file) {
+    return new JsonSlurper().parseText(file.text)
+}
+
+def String mostRecentVersion(List versions ) {
+  versions.sort( false ) { a, b ->
+    [a,b]*.tokenize('.')*.collect { it as int }.with { u, v ->
+      [u,v].transpose().findResult{ x,y-> x<=>y ?: null } ?: u.size() <=> v.size()
+    }
+  }[-1]
+}
+
+def String cleanGitVersion(String version) {
+    if (version.contains("-")) {
+        return version.substring(0, version.indexOf("-"))
+    } else {
+        return version
+    }
+}
+
+// Tasks
+task showVersionInfo {
+    doLast {
+        logger.lifecycle('Version: ' + version)
+        logger.lifecycle('Version Name: ' + versionName)
+        logger.lifecycle('Version Code: ' + versionCode)
+        logger.lifecycle('Build Number: ' + buildNumber)
+        logger.lifecycle('Git Tag Version: ' + gitVersion)
+    }
+}
+
+task validateVersionInfo {
+    doLast {
+        // We need to validate the version.json is "newer"
+        // than the most recent tag
+        def mrv = mostRecentVersion([
+            version, cleanGitVersion(gitVersion),
+        ])
+
+        if (mrv != version) {
+            logger.error('Version: ' + version)
+            logger.error('Git Tag Version: ' + gitVersion)
+            throw new GradleException("version.json is out of date")
+        }
+
+        // We need to check the version number components or build number
+        // don't cause us to "wrap" the versionCode, or exceed it's max
+        // value
+        if (versionJSON.major > 20) {
+            throw new GradleException("The major version number may not exceed 20")
+        }
+        if (versionJSON.minor > 99) {
+            throw new GradleException("The minor version number may not exceed 99")
+        }
+        if (versionJSON.patch > 99) {
+            throw new GradleException("The patch version number may not exceed 99")
+        }
+        if (buildNumber > 9999) {
+            throw new GradleException("Build Number causes versionCode to wrap, must be less than 5 digits")
+        }
+    }
+}
+
+tasks.assemble.dependsOn("showVersionInfo")
+tasks.assemble.dependsOn("validateVersionInfo")
