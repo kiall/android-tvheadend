@@ -85,6 +85,7 @@ public class LiveSession extends TvInputService.Session implements Player.Listen
     // TvInputService.Session Methods
     @Override
     public boolean onTune(Uri channelUri) {
+        // Start Playback of a Live Channel
         Log.d(TAG, "Session onTune (" + mSessionNumber + "): " + channelUri.toString());
 
         // Notify we are busy tuning
@@ -95,6 +96,15 @@ public class LiveSession extends TvInputService.Session implements Player.Listen
         mHandler.post(mPlayChannelRunnable);
 
         return true;
+    }
+
+    @Override
+    public void onTimeShiftPlay(Uri recordedProgramUri) {
+        // Start Playback of a Recorded Program
+        Log.d(TAG, "Session onTimeShiftPlay (" + mSessionNumber + "): " + recordedProgramUri.toString());
+
+        // Notify we are busy tuning
+        notifyVideoUnavailable(TvInputManager.VIDEO_UNAVAILABLE_REASON_TUNING);
     }
 
     @Override

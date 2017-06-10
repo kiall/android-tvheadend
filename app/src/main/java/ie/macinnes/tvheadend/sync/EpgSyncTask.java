@@ -32,6 +32,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.RemoteException;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.util.SparseArray;
 
@@ -63,6 +64,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
     private static final String TAG = EpgSyncTask.class.getSimpleName();
     private static final Set<String> HANDLED_METHODS = new HashSet<>(Arrays.asList(new String[]{
             "channelAdd", "channelUpdate", "channelDelete",
+            "dvrEntryAdd", "dvrEntryUpdate", "dvrEntryDelete",
             "eventAdd", "eventUpdate", "eventDelete",
             "initialSyncCompleted",
     }));
@@ -85,6 +87,15 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
     private static final String PROGRAM_SEASON_NUMBER_KEY = "seasonNumber";
     private static final String PROGRAM_EPISODE_NUMBER_KEY = "episodeNumber";
     private static final String PROGRAM_IMAGE = "image";
+
+    private static final String DVR_ENTRY_ID_KEY = "id";
+    private static final String DVR_ENTRY_CHANNEL_KEY = "channel";
+    private static final String DVR_ENTRY_START_KEY = "start";
+    private static final String DVR_ENTRY_STOP_KEY = "stop";
+    private static final String DVR_ENTRY_EVENT_ID_KEY = "eventId";
+    private static final String DVR_ENTRY_TITLE_KEY = "title";
+    private static final String DVR_ENTRY_SUBTITLE_KEY = "subtitle";
+    private static final String DVR_ENTRY_CONTENT_TYPE_KEY = "contentType";
 
     private static final String EVENT_ID_KEY = "eventId";
 
@@ -122,15 +133,18 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
     private boolean mInitialSyncCompleted = false;
 
     private final SparseArray<Uri> mChannelUriMap;
+    private final SparseArray<Uri> mRecordedProgramUriMap;
     private final SparseArray<Uri> mProgramUriMap;
 
     private final ArrayList<PendingChannelAddUpdate> mPendingChannelOps = new ArrayList<>();
+    private final ArrayList<PendingDvrEntryAddUpdate> mPendingRecordedProgramsOps = new ArrayList<>();
     private final ArrayList<PendingEventAddUpdate> mPendingProgramOps = new ArrayList<>();
 
     private final Queue<PendingChannelLogoFetch> mPendingChannelLogoFetches = new ConcurrentLinkedQueue<>();
     private final byte[] mImageBytes = new byte[102400];
 
     private Set<Integer> mSeenChannels = new HashSet<>();
+    private Set<Integer> mSeenRecordedPrograms = new HashSet<>();
     private Set<Integer> mSeenPrograms = new HashSet<>();
 
     private final class PendingChannelAddUpdate {
@@ -155,6 +169,16 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
         }
     }
 
+    private final class PendingDvrEntryAddUpdate {
+        public int dvrEntryId;
+        public ContentProviderOperation operation;
+
+        public PendingDvrEntryAddUpdate(int dvrEntryId, ContentProviderOperation operation) {
+            this.dvrEntryId = dvrEntryId;
+            this.operation = operation;
+        }
+    }
+
     private final class PendingEventAddUpdate {
         public int eventId;
         public ContentProviderOperation operation;
@@ -163,6 +187,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
             this.eventId = eventId;
             this.operation = operation;
         }
+
     }
 
     public EpgSyncTask(Context context, @NonNull HtspMessage.Dispatcher dispatcher, boolean quickSync) {
@@ -185,6 +210,12 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
         mHandler = new Handler(mHandlerThread.getLooper());
 
         mChannelUriMap = TvContractUtils.buildChannelUriMap(context);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            mRecordedProgramUriMap = TvContractUtils.buildRecordedProgramUriMap(context);
+            Log.d(TAG, "DVR mRecordedProgramUriMap size: " + mRecordedProgramUriMap.size());
+        } else {
+            mRecordedProgramUriMap = new SparseArray<>();
+        }
         mProgramUriMap = TvContractUtils.buildProgramUriMap(context);
     }
 
@@ -273,6 +304,12 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
                 case "channelDelete":
                     // Do Something
                     break;
+                case "dvrEntryAdd":
+                case "dvrEntryUpdate":
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        handleDvrEntryAddUpdate(message);
+                    }
+                    break;
                 case "eventAdd":
                 case "eventUpdate":
                     handleEventAddUpdate(message);
@@ -342,7 +379,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
         } else {
             // Update the channel
             if (Constants.DEBUG)
-                Log.v(TAG, "Update channel " + channelId);
+                Log.v(TAG, "Update channel " + channelId + " (URI: " + channelUri + ")");
             mPendingChannelOps.add(new PendingChannelAddUpdate(
                     channelId, -1,
                     ContentProviderOperation.newUpdate(channelUri)
@@ -445,7 +482,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
             final long androidChannelId = TvContractUtils.getChannelId(mContext, channelId);
 
             if (androidChannelId == TvContractUtils.INVALID_CHANNEL_ID) {
-                Log.e(TAG, "Failed to final channel in android DB, channel ID: " + channelId);
+                Log.e(TAG, "Failed to find channel in android DB, channel ID: " + channelId);
                 continue;
             }
 
@@ -515,6 +552,160 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
                 Uri channelUri = mChannelUriMap.get(existingChannelId);
                 mChannelUriMap.remove(existingChannelId);
                 mContentResolver.delete(channelUri, null, null);
+            }
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    private ContentValues dvrEntryToContentValues(@NonNull HtspMessage message) {
+        ContentValues values = new ContentValues();
+
+        values.put(TvContract.RecordedPrograms.COLUMN_INPUT_ID, TvContractUtils.getInputId());
+        values.put(TvContract.RecordedPrograms.COLUMN_INTERNAL_PROVIDER_DATA, String.valueOf(message.getInteger(DVR_ENTRY_ID_KEY)));
+
+        values.put(TvContract.RecordedPrograms.COLUMN_CHANNEL_ID, TvContractUtils.getChannelId(mContext, message.getInteger(DVR_ENTRY_CHANNEL_KEY)));
+
+        // COLUMN_TITLE, COLUMN_EPISODE_TITLE, and COLUMN_SHORT_DESCRIPTION are used in the
+        // Live Channels app EPG Grid. COLUMN_LONG_DESCRIPTION appears unused.
+        // On Sony TVs, COLUMN_LONG_DESCRIPTION is used for the "more info" display.
+
+        if (message.containsKey(PROGRAM_TITLE_KEY)) {
+            // The title of this TV program.
+            values.put(TvContract.RecordedPrograms.COLUMN_TITLE, message.getString(DVR_ENTRY_TITLE_KEY));
+        }
+
+        if (message.containsKey(PROGRAM_EPISODE_TITLE_KEY)) {
+            // The episode title of this TV program for episodic TV shows.
+            values.put(TvContract.RecordedPrograms.COLUMN_EPISODE_TITLE, message.getString(DVR_ENTRY_SUBTITLE_KEY));
+        }
+
+        if (message.containsKey(PROGRAM_START_TIME_KEY)) {
+            values.put(TvContract.RecordedPrograms.COLUMN_START_TIME_UTC_MILLIS, message.getLong(DVR_ENTRY_START_KEY) * 1000);
+        }
+
+        if (message.containsKey(PROGRAM_FINISH_TIME_KEY)) {
+            values.put(TvContract.RecordedPrograms.COLUMN_END_TIME_UTC_MILLIS, message.getLong(DVR_ENTRY_STOP_KEY) * 1000);
+        }
+
+        if (message.containsKey(PROGRAM_START_TIME_KEY) && message.containsKey(PROGRAM_FINISH_TIME_KEY)) {
+            // TODO: Duration is meant to be an int...
+            // TODO: Handle startExtra and stopExtra
+            long duration = message.getLong(DVR_ENTRY_STOP_KEY) - message.getLong(DVR_ENTRY_START_KEY);
+            values.put(TvContract.RecordedPrograms.COLUMN_RECORDING_DURATION_MILLIS, duration * 1000);
+        }
+
+        if (message.containsKey(PROGRAM_CONTENT_TYPE_KEY)) {
+            values.put(TvContract.RecordedPrograms.COLUMN_CANONICAL_GENRE,
+                    DvbMappings.ProgramGenre.get(message.getInteger(DVR_ENTRY_CONTENT_TYPE_KEY)));
+        }
+
+        return values;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    private void handleDvrEntryAddUpdate(@NonNull HtspMessage message) {
+        // Ensure we wrap up any pending channel operations. This is no-op once there are no pending
+        // operations.
+        flushPendingChannelOps();
+
+        final int dvrEntryId = message.getInteger(DVR_ENTRY_ID_KEY);
+        final int channelId = message.getInteger(DVR_ENTRY_CHANNEL_KEY);
+        final ContentValues values = dvrEntryToContentValues(message);
+        final Uri dvrEntryUri = TvContractUtils.getRecordedProgramUri(mContext, dvrEntryId);
+
+        if (dvrEntryUri == null) {
+            // Insert the DVR Entry
+            if (Constants.DEBUG)
+                Log.v(TAG, "Insert dvrEntry " + dvrEntryId + " on channel " + channelId);
+            mPendingRecordedProgramsOps.add(new PendingDvrEntryAddUpdate(
+                    dvrEntryId,
+                    ContentProviderOperation.newInsert(TvContract.RecordedPrograms.CONTENT_URI)
+                            .withValues(values)
+                            .build()
+            ));
+        } else {
+            // Update the DVR entry
+            if (Constants.DEBUG)
+                Log.v(TAG, "Update dvrEntry " + dvrEntryId + " on channel " + channelId + " (URI: " + dvrEntryUri + ")");
+            mPendingRecordedProgramsOps.add(new PendingDvrEntryAddUpdate(
+                    dvrEntryId,
+                    ContentProviderOperation.newUpdate(dvrEntryUri)
+                            .withValues(values)
+                            .build()
+            ));
+        }
+
+        // Throttle the batch operation not to cause TransactionTooLargeException. If the initial
+        // sync has already completed, flush for every message.
+        if (mInitialSyncCompleted || mPendingProgramOps.size() >= 100) {
+            flushPendingEventOps();
+        }
+
+        mSeenRecordedPrograms.add(dvrEntryId);
+    }
+
+    private void flushPendingDvrEntryOps() {
+        if (mPendingRecordedProgramsOps.isEmpty()) {
+            return;
+        }
+
+        Log.d(TAG, "Flushing " + mPendingRecordedProgramsOps.size() + " dvrEntry operations");
+
+        // Build out an ArrayList of Operations needed for applyBatch()
+        ArrayList<ContentProviderOperation> operations = new ArrayList<>(mPendingRecordedProgramsOps.size());
+        for (PendingDvrEntryAddUpdate prpau : mPendingRecordedProgramsOps) {
+            operations.add(prpau.operation);
+        }
+
+        // Apply the batch of Operations
+        ContentProviderResult[] results;
+        try {
+            results = mContext.getContentResolver().applyBatch(
+                    Constants.CONTENT_AUTHORITY, operations);
+        } catch (RemoteException | OperationApplicationException | SQLiteFullException e) {
+            Log.e(TAG, "Failed to flush pending dvrEntry operations", e);
+            return;
+        }
+
+        if (operations.size() != results.length) {
+            Log.e(TAG, "Failed to flush pending dvrEntrys, discarding and moving on, batch size " +
+                    "does not match resultset size");
+
+            // Reset the pending operations list
+            mPendingRecordedProgramsOps.clear();
+            return;
+        }
+
+        // Update the Channel Uri Map based on the results
+        for (int i = 0; i < mPendingRecordedProgramsOps.size(); i++) {
+            final int dvrEntryId = mPendingRecordedProgramsOps.get(i).dvrEntryId;
+            final ContentProviderResult result = results[i];
+
+            mRecordedProgramUriMap.put(dvrEntryId, result.uri);
+        }
+
+        // Finally, reset the pending operations list
+        mPendingRecordedProgramsOps.clear();
+    }
+
+    private void deleteRecordedPrograms() {
+        // Dirty
+        int[] existingRecordedProgramIds = new int[mRecordedProgramUriMap.size()];
+
+        Log.d(TAG, "existingRecordedProgramIds size: " + mRecordedProgramUriMap.size());
+
+        for (int i = 0; i < mRecordedProgramUriMap.size(); i++) {
+            int key = mRecordedProgramUriMap.keyAt(i);
+            existingRecordedProgramIds[i] = key;
+        }
+
+        for (int existingRecordedProgramId : existingRecordedProgramIds) {
+            if (!mSeenRecordedPrograms.contains(existingRecordedProgramId)) {
+                if (Constants.DEBUG)
+                    Log.d(TAG, "Deleting recorded program " + existingRecordedProgramId);
+                Uri recordedProgramUri = mRecordedProgramUriMap.get(existingRecordedProgramId);
+                mRecordedProgramUriMap.remove(existingRecordedProgramId);
+                mContentResolver.delete(recordedProgramUri, null, null);
             }
         }
     }
@@ -610,9 +801,13 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
     }
 
     private void handleEventAddUpdate(@NonNull HtspMessage message) {
-        // Ensure we wrap up any pending channel operations before moving onto events. This is no-op
-        // once there are no pending operations
+        // Ensure we wrap up any pending channel operations. This is no-op once there are no pending
+        // operations. This should only be needed when there were no DVR entries provided at all.
         flushPendingChannelOps();
+
+        // Ensure we wrap up any pending dvr entry operations. This is no-op once there are no pending
+        // operations.
+        flushPendingDvrEntryOps();
 
         final int channelId = message.getInteger(CHANNEL_ID_KEY);
         final int eventId = message.getInteger(EVENT_ID_KEY);
@@ -632,7 +827,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
         } else {
             // Update the event
             if (Constants.DEBUG)
-                Log.v(TAG, "Update event " + eventId + " on channel " + channelId);
+                Log.v(TAG, "Update event " + eventId + " on channel " + channelId + " (URI: " + eventUri + ")");
             mPendingProgramOps.add(new PendingEventAddUpdate(
                     eventId,
                     ContentProviderOperation.newUpdate(eventUri)
@@ -720,12 +915,17 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
         // operations. This should only be needed when there were no events provided at all.
         flushPendingChannelOps();
 
+        // Ensure we wrap up any pending dvr entry operations. This is no-op once there are no
+        // pending operations.  This should only be needed when there were no dvr entries provided at all.
+        flushPendingDvrEntryOps();
+
         // Ensure we wrap up any pending event operations. This is no-op once there are no pending
-        // operations
+        // operations.
         flushPendingEventOps();
 
         // Clear out any stale date
         deleteChannels();
+        deleteRecordedPrograms();
         deletePrograms();
 
         // Fetch all the channel logos

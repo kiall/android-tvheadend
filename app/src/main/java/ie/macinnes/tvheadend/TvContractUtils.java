@@ -21,6 +21,8 @@ import android.database.Cursor;
 import android.media.tv.TvContract;
 import android.media.tv.TvContract.Channels;
 import android.net.Uri;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.util.SparseArray;
 
@@ -28,6 +30,7 @@ public class TvContractUtils {
     private static final String TAG = TvContractUtils.class.getName();
 
     public static final long INVALID_CHANNEL_ID = -1;
+    public static final long INVALID_RECORDED_PROGRAM_ID = -1;
 
     private TvContractUtils() {
         throw new IllegalAccessError("Utility class");
@@ -188,5 +191,56 @@ public class TvContractUtils {
         }
 
         return programMap;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public static long getRecordedProgramId(Context context, int dvrEntryId) {
+        ContentResolver resolver = context.getContentResolver();
+
+        Uri recordedProgramsUri = TvContract.RecordedPrograms.CONTENT_URI;
+
+        String[] projection = {TvContract.RecordedPrograms._ID, TvContract.RecordedPrograms.COLUMN_INTERNAL_PROVIDER_DATA};
+
+        try (Cursor cursor = resolver.query(recordedProgramsUri, projection, null, null, null)) {
+            while (cursor != null && cursor.moveToNext()) {
+                if (cursor.getInt(1) == dvrEntryId) {
+                    return cursor.getLong(0);
+                }
+            }
+        }
+
+        return INVALID_CHANNEL_ID;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public static Uri getRecordedProgramUri(Context context, int dvrEntryId) {
+        long androidRecordedProgramId = getRecordedProgramId(context, dvrEntryId);
+
+        if (androidRecordedProgramId != INVALID_RECORDED_PROGRAM_ID) {
+            return TvContract.buildRecordedProgramUri(androidRecordedProgramId);
+        }
+
+        return null;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public static SparseArray<Uri> buildRecordedProgramUriMap(Context context) {
+        // Create a map from dvr entry id to program row ID for existing recorded programs.
+        ContentResolver resolver = context.getContentResolver();
+
+        // Create a map from original network ID to channel row ID for existing channels.
+        SparseArray<Uri> recordedProgramMap = new SparseArray<>();
+        Uri recordedProgramsUri = TvContract.RecordedPrograms.CONTENT_URI;
+        String[] projection = {TvContract.RecordedPrograms._ID, TvContract.RecordedPrograms.COLUMN_INTERNAL_PROVIDER_DATA};
+
+        try (Cursor cursor = resolver.query(recordedProgramsUri, projection, null, null, null)) {
+            while (cursor != null && cursor.moveToNext()) {
+                long rowId = cursor.getLong(0);
+                int internalProviderData = cursor.getInt(1);
+                recordedProgramMap.put(internalProviderData, TvContract.buildRecordedProgramUri(rowId));
+            }
+        }
+
+        return recordedProgramMap;
     }
 }
