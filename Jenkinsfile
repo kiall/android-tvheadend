@@ -34,7 +34,11 @@ node ('android-slave') {
 
     if (!env.JOB_NAME.contains("PR-")) {
         stage('Publish') {
-            common.publishApkToStore('alpha')
+            if (env.JOB_NAME.contains("master")) {
+                common.publishApkToStore('beta')
+            } else if (env.JOB_NAME.contains("develop")) {
+                common.publishApkToStore('alpha')
+            }
         }
     }
 }

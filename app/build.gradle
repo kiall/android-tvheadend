@@ -3,6 +3,7 @@ apply plugin: 'com.android.application'
 apply from: '../release.gradle'
 apply from: '../signing.gradle'
 apply from: '../acra.gradle'
+apply from: '../play.gradle'
 
 android {
     compileSdkVersion project.ext.compileSdkVersion

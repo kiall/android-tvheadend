@@ -28,12 +28,15 @@ node ('android-slave') {
             common.assemble()
         }
     }
+
     stage('Lint') {
         common.lint()
     }
+
     stage('Archive APK') {
         common.archive()
     }
+
     stage('Publish') {
         parallel (
             playStore: {
