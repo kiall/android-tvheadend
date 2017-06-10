@@ -1,6 +1,8 @@
 apply plugin: 'com.android.application'
 
 apply from: '../release.gradle'
+apply from: '../signing.gradle'
+apply from: '../acra.gradle'
 
 android {
     compileSdkVersion project.ext.compileSdkVersion
@@ -8,54 +10,24 @@ android {
 
     defaultConfig {
         applicationId "ie.macinnes.tvheadend"
+        setProperty("archivesBaseName", applicationId)
+
         minSdkVersion project.ext.minSdkVersion
         targetSdkVersion project.ext.targetSdkVersion
 
         versionCode project.ext.versionCode
         versionName project.ext.versionName
-
-        setProperty("archivesBaseName", applicationId)
-
-        buildConfigField "boolean", "ACRA_ENABLED", "false"
-        buildConfigField "String", "ACRA_REPORT_URI", "\"\""
-    }
-
-    signingConfigs {
-        if (rootProject.file("keystore.properties").exists()) {
-            def keystoreProperties = new Properties()
-            keystoreProperties.load(new FileInputStream(rootProject.file("keystore.properties")))
-
-            release {
-                storeFile new File(keystoreProperties['storeFile'])
-                storePassword keystoreProperties['storePassword']
-                keyAlias keystoreProperties['keyAlias']
-                keyPassword keystoreProperties['keyPassword']
-            }
-        }
     }
 
     buildTypes {
         debug {
             versionNameSuffix "-SNAPSHOT"
         }
+
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-
-            if (signingConfigs.hasProperty("release")) {
-                signingConfig signingConfigs.release
-            }
-
-            if (rootProject.file("acra.properties").exists()) {
-                buildConfigField "boolean", "ACRA_ENABLED", "true"
-                def acraProperties = new Properties()
-                acraProperties.load(new FileInputStream(rootProject.file("acra.properties")))
-                buildConfigField "String", "ACRA_REPORT_URI", "\"" + acraProperties.report_uri + "\""
-            }
         }
-    }
-
-    productFlavors {
     }
 
     lintOptions {
