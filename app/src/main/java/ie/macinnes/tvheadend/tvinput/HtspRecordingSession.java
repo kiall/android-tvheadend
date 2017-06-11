@@ -18,6 +18,7 @@ package ie.macinnes.tvheadend.tvinput;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.media.tv.TvInputManager;
 import android.media.tv.TvInputService;
 import android.net.Uri;
 import android.os.Build;
@@ -105,11 +106,20 @@ public class HtspRecordingSession extends TvInputService.RecordingSession {
             addDvrEntryResponse = mConnection.sendMessage(addDvrEntry, 5000);
         } catch (HtspNotConnectedException e) {
             Log.e(TAG, "Failed to start recording, HTSP not connected", e);
+            notifyError(TvInputManager.RECORDING_ERROR_UNKNOWN);
             return;
         }
 
-        mDvrEntryId = addDvrEntryResponse.getInteger("id");
-        Log.i(TAG, "DVR Entry created with ID: " + mDvrEntryId);
+        boolean success = addDvrEntryResponse.getBoolean("success");
+
+        if (success) {
+            mDvrEntryId = addDvrEntryResponse.getInteger("id");
+            Log.i(TAG, "DVR Entry created with ID: " + mDvrEntryId);
+        } else {
+            String error = addDvrEntryResponse.getString("error", "Unknown error");
+            Log.e(TAG, "Failed to create DVR Entry: " + error);
+            notifyError(TvInputManager.RECORDING_ERROR_UNKNOWN);
+        }
     }
 
     @Override
