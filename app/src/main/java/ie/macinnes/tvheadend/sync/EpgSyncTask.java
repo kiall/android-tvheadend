@@ -594,11 +594,31 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
             values.put(TvContract.RecordedPrograms.COLUMN_END_TIME_UTC_MILLIS, message.getLong(DVR_ENTRY_STOP_KEY) * 1000);
         }
 
-        if (message.containsKey(PROGRAM_START_TIME_KEY) && message.containsKey(PROGRAM_FINISH_TIME_KEY)) {
-            // TODO: Duration is meant to be an int...
-            // TODO: Handle startExtra and stopExtra
-            long duration = message.getLong(DVR_ENTRY_STOP_KEY) - message.getLong(DVR_ENTRY_START_KEY);
-            values.put(TvContract.RecordedPrograms.COLUMN_RECORDING_DURATION_MILLIS, duration * 1000);
+        HtspMessage[] files = message.getHtspMessageArray("files", null);
+        if (files != null) {
+            // Key: files / Value: [{start=1497123818, stop=1497124024, filename=/Archive on 4.ts, size=5714636, info=[{audio_type=0, type=MPEG2AUDIO, language=eng}], fsid=17113954249355398951}]
+            long recordingStart = -1;
+            long recordingStop = -1;
+
+            for (HtspMessage file : files) {
+                long fileStart = file.getLong("start", -1);
+                long fileStop = file.getLong("stop", -1);
+
+                if (fileStart > 0 && fileStop > 0) {
+                    if (recordingStart == -1 || fileStart < recordingStart) {
+                        recordingStart = fileStart;
+                    }
+                    if (recordingStop == -1 || fileStop < recordingStop) {
+                        recordingStop = fileStop;
+                    }
+                }
+            }
+
+            if (recordingStart > 0 && recordingStop > 0) {
+                // TODO: Duration is meant to be an int...
+                long duration = recordingStop - recordingStart;
+                values.put(TvContract.RecordedPrograms.COLUMN_RECORDING_DURATION_MILLIS, duration * 1000);
+            }
         }
 
         if (message.containsKey(PROGRAM_CONTENT_TYPE_KEY)) {
