@@ -130,6 +130,8 @@ public class HtspRecordingSession extends TvInputService.RecordingSession {
         } catch (HtspNotConnectedException e) {
             Log.e(TAG, "Failed to stop recording, HTSP not connected", e);
         }
+
+        notifyRecordingStopped(null);
     }
 
     @Override
