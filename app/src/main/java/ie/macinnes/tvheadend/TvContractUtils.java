@@ -150,6 +150,21 @@ public class TvContractUtils {
         return null;
     }
 
+    public static Integer getTvhEventIdFromProgramUri(Context context, Uri programUri) {
+        ContentResolver resolver = context.getContentResolver();
+
+        String[] projection = {TvContract.Programs._ID, TvContract.Programs.COLUMN_INTERNAL_PROVIDER_DATA};
+
+        // TODO: Handle when more than 1, or 0 results come back
+        try (Cursor cursor = resolver.query(programUri, projection, null,null, null)) {
+            while (cursor != null && cursor.moveToNext()) {
+                return cursor.getInt(1);
+            }
+        }
+
+        return null;
+    }
+
     public static SparseArray<Uri> buildProgramUriMap(Context context) {
         ContentResolver resolver = context.getContentResolver();
 

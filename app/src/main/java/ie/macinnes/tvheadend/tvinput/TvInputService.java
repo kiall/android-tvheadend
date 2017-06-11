@@ -23,6 +23,8 @@ import android.content.SharedPreferences;
 import android.media.tv.TvInputInfo;
 import android.media.tv.TvInputManager;
 import android.os.Build;
+import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.util.Log;
 
 import ie.macinnes.htsp.HtspConnection;
@@ -69,11 +71,21 @@ public class TvInputService extends android.media.tv.TvInputService {
         closeConnection();
     }
 
+    @Nullable
     @Override
-    public final Session onCreateSession(String inputId) {
-        Log.d(TAG, "Creating new TvInputService Session for input ID: " + inputId + ".");
+    public Session onCreateSession(String inputId) {
+        Log.d(TAG, "Creating new TvInputService LiveSession for input ID: " + inputId + ".");
 
         return new LiveSession(this, mConnection);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    @Nullable
+    @Override
+    public RecordingSession onCreateRecordingSession(String inputId) {
+        Log.d(TAG, "Creating new TvInputService HtspRecordingSession for input ID: " + inputId + ".");
+
+        return new HtspRecordingSession(this, mConnection);
     }
 
     protected void maybeEnableDvr() {

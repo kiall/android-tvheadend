@@ -662,7 +662,9 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
         final int dvrEntryId = message.getInteger(DVR_ENTRY_ID_KEY);
         Uri recordedProgramUri = TvContractUtils.getRecordedProgramUri(mContext, dvrEntryId);
 
-        mContentResolver.delete(recordedProgramUri, null, null);
+        if (recordedProgramUri != null) {
+            mContentResolver.delete(recordedProgramUri, null, null);
+        }
     }
 
     private void flushPendingDvrEntryOps() {
