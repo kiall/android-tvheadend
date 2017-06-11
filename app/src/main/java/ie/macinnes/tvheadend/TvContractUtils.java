@@ -238,6 +238,7 @@ public class TvContractUtils {
         return null;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     public static Integer getTvhDvrEntryIdFromRecordedProgramUri(Context context, Uri recordedProgramUri) {
         ContentResolver resolver = context.getContentResolver();
 

@@ -279,6 +279,10 @@ public class LiveSession extends TvInputService.Session implements Player.Listen
 
         @Override
         public void run() {
+            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.N) {
+                return;
+            }
+
             Integer tvhDvrEntryId = TvContractUtils.getTvhDvrEntryIdFromRecordedProgramUri(mContext, mRecordedProgramUri);
 
             if (tvhDvrEntryId != null) {

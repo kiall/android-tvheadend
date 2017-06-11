@@ -207,7 +207,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
 
         mContentResolver = context.getContentResolver();
 
-        mHandlerThread = new HandlerThread("EpgSyncService Handler Thread");
+        mHandlerThread = new HandlerThread("EpgSyncTask Handler Thread");
         mHandlerThread.start();
         mHandler = new Handler(mHandlerThread.getLooper());
 
