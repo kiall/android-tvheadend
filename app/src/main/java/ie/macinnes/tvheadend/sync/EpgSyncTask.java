@@ -386,13 +386,8 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
                         // One of the events is a channelUpdate, no need (or ability) to sort it
                         return 0;
                     }
-                    if (o1.channelNumber > o2.channelNumber) {
-                        return 1;
-                    } else if (o1.channelNumber == o2.channelNumber) {
-                        return 0;
-                    }
 
-                    return -1;
+                    return Integer.compare(o1.channelNumber, o2.channelNumber);
                 }
             });
         }
