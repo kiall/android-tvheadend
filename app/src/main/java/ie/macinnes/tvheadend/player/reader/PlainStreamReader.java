@@ -56,7 +56,7 @@ abstract class PlainStreamReader implements StreamReader {
     @Override
     public final void consume(@NonNull final HtspMessage message) {
         final long pts = message.getLong("pts");
-        final int frameType = message.getInteger("frametype");
+        final int frameType = message.getInteger("frametype", -1);
         final byte[] payload = message.getByteArray("payload");
 
         final ParsableByteArray pba = new ParsableByteArray(payload);
@@ -66,10 +66,11 @@ abstract class PlainStreamReader implements StreamReader {
         if (mTrackType == C.TRACK_TYPE_VIDEO) {
             // We're looking at a Video stream, be picky about what frames are called keyframes
 
+            // Type -1 = TVHeadend has not provided us a frame type, so everything "is a keyframe"
             // Type 73 = I - Intra-coded picture - Full Picture
             // Type 66 = B - Predicted picture - Depends on previous frames
             // Type 80 = P - Bidirectional predicted picture - Depends on previous+future frames
-            if (frameType == 73) {
+            if (frameType == -1 || frameType == 73) {
                 bufferFlags |= C.BUFFER_FLAG_KEY_FRAME;
             }
         } else {
