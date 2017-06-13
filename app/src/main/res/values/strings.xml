@@ -77,4 +77,5 @@ under the License.
     <string name="error_unsupported_text">Unsupported Text Track Selected</string>
 
     <string name="settings_require_restart">IMPORTANT: Most settings require a device restart to take effect</string>
+    <string name="channel_logo">Channel Logo</string>
 </resources>
