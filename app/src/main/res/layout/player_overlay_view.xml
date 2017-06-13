@@ -35,4 +35,31 @@
     <com.google.android.exoplayer2.ui.SubtitleView android:id="@+id/subtitle_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
+
+    <LinearLayout
+        android:id="@+id/radio_info_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:paddingTop="150dp"
+        android:orientation="vertical">
+        <ImageView
+            android:contentDescription="@string/channel_logo"
+            android:id="@+id/radio_channel_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="100dp"
+            android:maxHeight="200dp"
+            android:scaleType="centerInside"
+            android:layout_gravity="center"
+            android:adjustViewBounds="true"/>
+        <TextView
+            android:layout_marginTop="25dp"
+            android:id="@+id/radio_channel_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:textColor="@color/lb_tv_white"
+            android:textSize="50sp"/>
+    </LinearLayout>
 </FrameLayout>

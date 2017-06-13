@@ -19,7 +19,9 @@ package ie.macinnes.tvheadend.player;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Point;
+import android.graphics.drawable.BitmapDrawable;
 import android.media.PlaybackParams;
+import android.media.tv.TvContract;
 import android.media.tv.TvTrackInfo;
 import android.net.Uri;
 import android.os.Build;
@@ -32,6 +34,8 @@ import android.view.Surface;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.accessibility.CaptioningManager;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.android.exoplayer2.C;
@@ -61,12 +65,17 @@ import com.google.android.exoplayer2.ui.SubtitleView;
 import com.google.android.exoplayer2.upstream.DefaultAllocator;
 import com.google.android.exoplayer2.util.MimeTypes;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import ie.macinnes.htsp.HtspMessage;
+import ie.macinnes.htsp.HtspNotConnectedException;
 import ie.macinnes.htsp.SimpleHtspConnection;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.R;
+import ie.macinnes.tvheadend.TvContractUtils;
 
 public class Player implements ExoPlayer.EventListener {
     private static final String TAG = Player.class.getName();
@@ -119,8 +128,11 @@ public class Player implements ExoPlayer.EventListener {
     private View mOverlayView;
     private DebugTextViewHelper mDebugViewHelper;
     private SubtitleView mSubtitleView;
+    private LinearLayout mRadioInfoView;
 
     private MediaSource mMediaSource;
+
+    private Uri currentChannelUri;
 
     public Player(Context context, SimpleHtspConnection connection, Listener listener) {
         mContext = context;
@@ -136,6 +148,8 @@ public class Player implements ExoPlayer.EventListener {
     public void open(Uri channelUri) {
         // Stop any existing playback
         stop();
+
+        currentChannelUri = channelUri;
 
         // Create the media source
         if (channelUri.getHost().equals("channel")) {
@@ -330,6 +344,10 @@ public class Player implements ExoPlayer.EventListener {
             }
         }
 
+        if (mRadioInfoView == null) {
+            mRadioInfoView = (LinearLayout) mOverlayView.findViewById(R.id.radio_info_view);
+        }
+
         return mOverlayView;
     }
 
@@ -477,6 +495,9 @@ public class Player implements ExoPlayer.EventListener {
         List<TvTrackInfo> tracks = new ArrayList<>();
         SparseArray<String> selectedTracks = new SparseArray<>();
 
+        // Keep track of weather we have a video track available
+        boolean hasVideoTrack = false;
+
         for (int rendererIndex = 0; rendererIndex < mappedTrackInfo.length; rendererIndex++) {
             TrackGroupArray rendererTrackGroups = mappedTrackInfo.getTrackGroups(rendererIndex);
             TrackSelection trackSelection = trackSelections.get(rendererIndex);
@@ -500,6 +521,7 @@ public class Player implements ExoPlayer.EventListener {
 
                                     switch (trackType) {
                                         case C.TRACK_TYPE_VIDEO:
+                                            hasVideoTrack = true;
                                             selectedTracks.put(TvTrackInfo.TYPE_VIDEO, format.id);
                                             break;
                                         case C.TRACK_TYPE_AUDIO:
@@ -517,7 +539,43 @@ public class Player implements ExoPlayer.EventListener {
             }
         }
 
+        if(hasVideoTrack) {
+            disableRadioInfoScreen();
+        } else {
+            enableRadioInfoScreen();
+        }
+
         mListener.onTracksChanged(tracks, selectedTracks);
+    }
+
+    private void enableRadioInfoScreen() {
+        // No video track available, use the channel logo as a substitute
+        Log.i(TAG, "No video track available");
+
+        try {
+            String channelName = TvContractUtils.getChannelName(mContext, Integer.parseInt(currentChannelUri.getHost()));
+            TextView radioChannelName = (TextView) mRadioInfoView.findViewById(R.id.radio_channel_name);
+            radioChannelName.setText(channelName);
+
+            ImageView radioChannelIcon = (ImageView) mRadioInfoView.findViewById(R.id.radio_channel_icon);
+
+            long androidChannelId = TvContractUtils.getChannelId(mContext, Integer.parseInt(currentChannelUri.getHost()));
+            Uri channelIconUri = TvContract.buildChannelLogoUri(androidChannelId);
+
+            InputStream is = mContext.getContentResolver().openInputStream(channelIconUri);
+
+            BitmapDrawable iconImage = new BitmapDrawable(mContext.getResources(), is);
+            radioChannelIcon.setImageDrawable(iconImage);
+
+            mRadioInfoView.setVisibility(View.VISIBLE);
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to fetch logo", e);
+        }
+    }
+
+    private void disableRadioInfoScreen() {
+        Log.d(TAG, "Video track is available");
+        mRadioInfoView.setVisibility(View.INVISIBLE);
     }
 
     @Override
