@@ -40,6 +40,7 @@ public class Constants {
     // Audio and Video Preferences Keys and Values
     public static final String KEY_BUFFER_PLAYBACK_MS = "buffer_playback_ms";
     public static final String KEY_AUDIO_PASSTHROUGH_DECODER_ENABLED = "audio_passthrough_decodeder_enabled";
+    public static final String KEY_AUDIO_TUNNELING_ENABLED = "audio_tunneling_enabled";
     public static final String KEY_FFMPEG_AUDIO_ENABLED = "ffmpeg_audio_enabled";
     public static final String KEY_CAPTIONS_APPLY_EMBEDDED_STYLES = "captions_apply_embedded_styles";
 

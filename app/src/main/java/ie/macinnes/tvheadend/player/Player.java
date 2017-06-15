@@ -405,7 +405,7 @@ public class Player implements ExoPlayer.EventListener {
         TvheadendTrackSelector trackSelector = new TvheadendTrackSelector(trackSelectionFactory);
 
         final boolean enableAudioTunneling = mSharedPreferences.getBoolean(
-            Constants.KEY_BUFFER_PLAYBACK_MS,
+            Constants.KEY_AUDIO_TUNNELING_ENABLED,
             mContext.getResources().getBoolean(R.bool.pref_default_audio_tunneling_enabled)
         );
 
