@@ -36,6 +36,12 @@
             android:summary="You must also ensure the system audio settings allows passthrough"/>
 
         <CheckBoxPreference
+            android:key="audio_tunneling_enabled"
+            android:title="Enable Audio Tunneling"
+            android:defaultValue="@bool/pref_default_audio_tunneling_enabled"
+            android:summary="Enable support for DSP audio tunneling"/>
+
+        <CheckBoxPreference
             android:key="ffmpeg_audio_enabled"
             android:title="Enable FFMpeg Audio Codecs"
             android:defaultValue="@bool/pref_default_audio_ffmpeg_audio_enabled"/>
