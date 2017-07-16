@@ -1,1 +1,2 @@
 * Add timeshift support (Play/Pause only)
+* Display the channel icon & name when no video track is available (e.g. for radio stations)
