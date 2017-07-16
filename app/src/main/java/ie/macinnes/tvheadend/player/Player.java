@@ -411,7 +411,7 @@ public class Player implements ExoPlayer.EventListener {
         mRecordingDataSourceFactory = new HtspRecordingDataSource.Factory(mContext, mConnection);
 
         // Produces Extractor instances for parsing the media data.
-        mExtractorsFactory = new HtspExtractorsFactory(mContext);
+        mExtractorsFactory = new TvheadendExtractorsFactory(mContext);
     }
 
     private TvheadendTrackSelector buildTrackSelector() {

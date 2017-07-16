@@ -32,12 +32,12 @@ import com.google.android.exoplayer2.extractor.ts.PsExtractor;
 import com.google.android.exoplayer2.extractor.ts.TsExtractor;
 import com.google.android.exoplayer2.extractor.wav.WavExtractor;
 
-public class HtspExtractorsFactory implements ExtractorsFactory {
-    private static final String TAG = HtspExtractorsFactory.class.getName();
+public class TvheadendExtractorsFactory implements ExtractorsFactory {
+    private static final String TAG = TvheadendExtractorsFactory.class.getName();
 
     private final Context mContext;
 
-    public HtspExtractorsFactory(Context context) {
+    public TvheadendExtractorsFactory(Context context) {
         mContext = context;
     }
 
