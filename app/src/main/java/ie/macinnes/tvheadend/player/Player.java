@@ -70,8 +70,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import ie.macinnes.htsp.HtspMessage;
-import ie.macinnes.htsp.HtspNotConnectedException;
 import ie.macinnes.htsp.SimpleHtspConnection;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.R;
@@ -132,7 +130,7 @@ public class Player implements ExoPlayer.EventListener {
 
     private MediaSource mMediaSource;
 
-    private Uri currentChannelUri;
+    private Uri mCurrentChannelUri;
 
     public Player(Context context, SimpleHtspConnection connection, Listener listener) {
         mContext = context;
@@ -149,7 +147,7 @@ public class Player implements ExoPlayer.EventListener {
         // Stop any existing playback
         stop();
 
-        currentChannelUri = channelUri;
+        mCurrentChannelUri = channelUri;
 
         // Create the media source
         if (channelUri.getHost().equals("channel")) {
@@ -553,13 +551,13 @@ public class Player implements ExoPlayer.EventListener {
         Log.i(TAG, "No video track available");
 
         try {
-            String channelName = TvContractUtils.getChannelName(mContext, Integer.parseInt(currentChannelUri.getHost()));
+            String channelName = TvContractUtils.getChannelName(mContext, Integer.parseInt(mCurrentChannelUri.getPath().substring(1)));
             TextView radioChannelName = (TextView) mRadioInfoView.findViewById(R.id.radio_channel_name);
             radioChannelName.setText(channelName);
 
             ImageView radioChannelIcon = (ImageView) mRadioInfoView.findViewById(R.id.radio_channel_icon);
 
-            long androidChannelId = TvContractUtils.getChannelId(mContext, Integer.parseInt(currentChannelUri.getHost()));
+            long androidChannelId = TvContractUtils.getChannelId(mContext, Integer.parseInt(mCurrentChannelUri.getPath().substring(1)));
             Uri channelIconUri = TvContract.buildChannelLogoUri(androidChannelId);
 
             InputStream is = mContext.getContentResolver().openInputStream(channelIconUri);
