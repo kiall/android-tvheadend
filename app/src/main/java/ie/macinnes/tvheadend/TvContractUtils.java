@@ -62,6 +62,24 @@ public class TvContractUtils {
         return INVALID_CHANNEL_ID;
     }
 
+    public static String getChannelName(Context context, int channelId) {
+        ContentResolver resolver = context.getContentResolver();
+
+        Uri channelsUri = TvContract.buildChannelsUriForInput(TvContractUtils.getInputId());
+
+        String[] projection = {TvContract.Channels.COLUMN_ORIGINAL_NETWORK_ID, TvContract.Channels.COLUMN_DISPLAY_NAME};
+
+        try (Cursor cursor = resolver.query(channelsUri, projection, null, null, null)) {
+            while (cursor != null && cursor.moveToNext()) {
+                if (cursor.getInt(0) == channelId) {
+                    return cursor.getString(1);
+                }
+            }
+        }
+
+        return null;
+    }
+
     public static Uri getChannelUri(Context context, int channelId) {
         long androidChannelId = getChannelId(context, channelId);
 
