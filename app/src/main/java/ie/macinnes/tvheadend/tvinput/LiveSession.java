@@ -169,7 +169,6 @@ public class LiveSession extends TvInputService.Session implements Player.Listen
             case ExoPlayer.STATE_BUFFERING:
                 notifyVideoUnavailable(TvInputManager.VIDEO_UNAVAILABLE_REASON_BUFFERING);
                 break;
-            case ExoPlayer.STATE_IDLE:
             case ExoPlayer.STATE_ENDED:
                 notifyVideoUnavailable(TvInputManager.VIDEO_UNAVAILABLE_REASON_UNKNOWN);
                 break;
