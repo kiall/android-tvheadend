@@ -147,6 +147,7 @@ public class LiveSession extends TvInputService.Session implements Player.Listen
     public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
         Log.d(TAG, "Session onPlayerStateChanged: " + playbackState + " (" + mSessionNumber + ")");
 
+        //TODO: Add a default case
         switch (playbackState) {
             case ExoPlayer.STATE_READY:
                 notifyVideoAvailable();

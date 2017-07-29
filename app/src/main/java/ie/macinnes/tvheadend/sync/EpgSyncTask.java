@@ -134,6 +134,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
     private Set<Integer> mSeenPrograms = new HashSet<>();
 
     private final class PendingChannelAddUpdate {
+        //TODO: Should probably make these private with accessors if necessary
         public int channelId;
         public int channelNumber;
         public ContentProviderOperation operation;
@@ -352,6 +353,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
             ));
         }
 
+        //TODO: Why do these both do the same thing?
         if (mInitialSyncCompleted) {
             flushPendingChannelOps();
         } else if (!IS_BRAVIA && mPendingChannelOps.size() >= 100) {
@@ -429,6 +431,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
         mPendingChannelOps.clear();
     }
 
+    //TODO: Should probably simplify this a bit
     private void flushPendingChannelLogoFetches() {
         if (mPendingChannelLogoFetches.isEmpty()) {
             return;
@@ -515,6 +518,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
         }
     }
 
+    //TODO: Should probably simplify this
     private ContentValues eventToContentValues(@NonNull HtspMessage message) {
         ContentValues values = new ContentValues();
 

@@ -201,6 +201,7 @@ public class Player implements ExoPlayer.EventListener {
         }
     }
 
+    //TODO: Never used, check if this is still needed
     public void seek(long timeMs) {
         if (mSubscriber != null) {
             Log.d(TAG, "Seeking to time: " + timeMs);
@@ -213,6 +214,7 @@ public class Player implements ExoPlayer.EventListener {
         }
     }
 
+    //TODO: Never used, check if this is still needed
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void setPlaybackParams(PlaybackParams params) {
         float rawSpeed = params.getSpeed();
@@ -447,6 +449,7 @@ public class Player implements ExoPlayer.EventListener {
         // Don't care about this event here
     }
 
+    //TODO: This should probably be simplified
     @Override
     public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
         MappingTrackSelector.MappedTrackInfo mappedTrackInfo = mTrackSelector.getCurrentMappedTrackInfo();
@@ -479,6 +482,7 @@ public class Player implements ExoPlayer.EventListener {
                                 if (selected) {
                                     int trackType = MimeTypes.getTrackType(format.sampleMimeType);
 
+                                    //TODO: Default case
                                     switch (trackType) {
                                         case C.TRACK_TYPE_VIDEO:
                                             selectedTracks.put(TvTrackInfo.TYPE_VIDEO, format.id);

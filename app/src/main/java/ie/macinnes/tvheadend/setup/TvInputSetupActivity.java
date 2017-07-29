@@ -291,7 +291,7 @@ public class TvInputSetupActivity extends Activity {
 
             final String hostname = mAccountManager.getUserData(account, Constants.KEY_HOSTNAME);
             final int port = Integer.parseInt(mAccountManager.getUserData(account, Constants.KEY_HTSP_PORT));
-            final String username = account.name;
+            final String username = account.name; //TODO: Check if account is null
             final String password = mAccountManager.getPassword(account);
 
             HtspConnection.ConnectionDetails connectionDetails = new HtspConnection.ConnectionDetails(
