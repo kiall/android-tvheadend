@@ -22,8 +22,8 @@ def publishApkToStore(String trackName) {
     ]) {
         writeFile file: 'local-tvheadend.properties', text: "ie.macinnes.tvheadend.keystoreFile=$ANDROID_KEYSTORE\nie.macinnes.tvheadend.keystorePassword=$ANDROID_KEYSTORE_PASSWORD\nie.macinnes.tvheadend.keyAlias=Kiall Mac Innes\nie.macinnes.tvheadend.keyPassword=$ANDROID_KEYSTORE_PASSWORD\nie.macinnes.tvheadend.playServiceAccountFile=$ANDROID_PLAY_SERVICE_ACCOUNT\n"
 
-        // Publish everything when doing a production release
-        if (trackName == 'production') {
+        // Publish everything when doing a production or beta release
+        if (trackName == 'production' || trackName == 'beta') {
           sh './gradlew publishRelease -PbuildNumber=' + env.BUILD_NUMBER + ' -PplayStoreTrack=' + trackName
         } else {
           sh './gradlew publishApkRelease -PbuildNumber=' + env.BUILD_NUMBER + ' -PplayStoreTrack=' + trackName
