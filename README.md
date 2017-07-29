@@ -17,8 +17,11 @@ IRC Channel:
 
 Join #android-tvheadend on Freenode - not a general support channel, used for chatting with developers around specific bugs etc
 
-![Screenshot 1](screenshots/TVH-1.png)
-![Screenshot 2](screenshots/TVH-2.png)
+![Guide](app/src/main/play/en-GB/listing/tvScreenshots/01-guide.png)
+![Playback Overlay](app/src/main/play/en-GB/listing/tvScreenshots/02-playback-overlay.png)
+![Guide](app/src/main/play/en-GB/listing/tvScreenshots/03-guide.png)
+![Playback](app/src/main/play/en-GB/listing/tvScreenshots/04-playback.png)
+![Genres](app/src/main/play/en-GB/listing/tvScreenshots/05-genres.png)
 
 # Build Properties
 
