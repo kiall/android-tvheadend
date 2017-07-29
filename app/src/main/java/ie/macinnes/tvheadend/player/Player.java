@@ -113,7 +113,7 @@ public class Player implements ExoPlayer.EventListener {
     private TvheadendTrackSelector mTrackSelector;
     private LoadControl mLoadControl;
     private EventLogger mEventLogger;
-    private HtspDataSource.Factory mDataSourceFactory;
+    private HtspDataSource.HtspFactory mDataSourceHtspFactory;
     private ExtractorsFactory mExtractorsFactory;
 
     private View mOverlayView;
@@ -263,7 +263,7 @@ public class Player implements ExoPlayer.EventListener {
     public void stop() {
         mExoPlayer.stop();
         mTrackSelector.clearSelectionOverrides();
-        mDataSourceFactory.releaseCurrentDataSource();
+        mDataSourceHtspFactory.releaseCurrentDataSource();
 
         if (mMediaSource != null) {
             mMediaSource.releaseSource();
@@ -379,7 +379,7 @@ public class Player implements ExoPlayer.EventListener {
         );
 
         // Produces DataSource instances through which media data is loaded.
-        mDataSourceFactory = new HtspDataSource.Factory(mContext, mConnection, streamProfile);
+        mDataSourceHtspFactory = new HtspDataSource.HtspFactory(mContext, mConnection, streamProfile);
 
         // Produces Extractor instances for parsing the media data.
         mExtractorsFactory = new HtspExtractor.Factory(mContext);
@@ -423,7 +423,7 @@ public class Player implements ExoPlayer.EventListener {
     private void buildHtspMediaSource(Uri channelUri) {
         // This is the MediaSource representing the media to be played.
         mMediaSource = new ExtractorMediaSource(channelUri,
-                mDataSourceFactory, mExtractorsFactory, null, mEventLogger);
+                mDataSourceHtspFactory, mExtractorsFactory, null, mEventLogger);
     }
 
     private float getCaptionFontSize() {
@@ -505,7 +505,7 @@ public class Player implements ExoPlayer.EventListener {
     public void onLoadingChanged(boolean isLoading) {
         if (isLoading) {
             // Fetch the Subscriber for later use
-            HtspDataSource dataSource = mDataSourceFactory.getCurrentDataSource();
+            HtspDataSource dataSource = mDataSourceHtspFactory.getCurrentDataSource();
 
             if (dataSource != null) {
                 // TODO: Hold a WeakReference to the Subscriber instead...

@@ -50,8 +50,8 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
     private static final int BUFFER_SIZE = 10*1024*1024;
     private static final AtomicInteger sDataSourceCount = new AtomicInteger();
 
-    public static class Factory implements DataSource.Factory {
-        private static final String TAG = Factory.class.getName();
+    public static class HtspFactory implements DataSource.Factory {
+        private static final String TAG = HtspFactory.class.getName();
 
         private final Context mContext;
         private final SimpleHtspConnection mConnection;
@@ -59,7 +59,7 @@ public class HtspDataSource implements DataSource, Subscriber.Listener, Closeabl
 
         private WeakReference<HtspDataSource> mCurrentHtspDataSource;
 
-        public Factory(Context context, SimpleHtspConnection connection, String streamProfile) {
+        public HtspFactory(Context context, SimpleHtspConnection connection, String streamProfile) {
             mContext = context;
             mConnection = connection;
             mStreamProfile = streamProfile;
