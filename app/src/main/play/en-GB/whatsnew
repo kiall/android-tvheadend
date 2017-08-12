@@ -1,2 +1,3 @@
 * Add basic DVR support
 * Display the channel icon & name when no video track is available (e.g. for radio stations)
+* Upgrade to ExoPlayer 2.5.1
