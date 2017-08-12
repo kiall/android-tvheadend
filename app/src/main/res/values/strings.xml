@@ -38,7 +38,7 @@ under the License.
     <string name="account_password_invalid">Invalid Password</string>
     <string name="account_username">Username</string>
     <string name="account_username_invalid">Invalid Username</string>
-    
+
     <string name="server_htsp_port">HTSP Port Number</string>
     <string name="server_htsp_port_invalid">Invalid HTSP Port</string>
     <string name="server_ip">Hostname/IP</string>
