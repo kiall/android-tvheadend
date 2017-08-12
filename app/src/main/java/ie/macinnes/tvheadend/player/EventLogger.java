@@ -206,6 +206,11 @@ import java.util.Locale;
     Log.d(TAG, "]");
   }
 
+  @Override
+  public void onRepeatModeChanged(int i) {
+    Log.d(TAG, "repeatModeChanged [" + getSessionTimeString() + "]");
+  }
+
   // MetadataRenderer.Output
 
   @Override

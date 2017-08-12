@@ -483,6 +483,11 @@ public class Player implements ExoPlayer.EventListener {
     }
 
     @Override
+    public void onRepeatModeChanged(int i) {
+        // Don't care about this event here
+    }
+
+    @Override
     public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
         MappingTrackSelector.MappedTrackInfo mappedTrackInfo = mTrackSelector.getCurrentMappedTrackInfo();
         if (mappedTrackInfo == null) {

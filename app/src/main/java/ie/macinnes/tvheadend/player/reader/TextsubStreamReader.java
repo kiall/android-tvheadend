@@ -111,8 +111,6 @@ public class TextsubStreamReader implements StreamReader {
         return Format.createTextSampleFormat(
                 Integer.toString(streamIndex),
                 MimeTypes.APPLICATION_SUBRIP,
-                null,
-                Format.NO_VALUE,
                 C.SELECTION_FLAG_AUTOSELECT,
                 stream.getString("language", "und"),
                 null
