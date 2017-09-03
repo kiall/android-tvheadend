@@ -119,7 +119,7 @@ public class Player implements ExoPlayer.EventListener {
     private LoadControl mLoadControl;
     private EventLogger mEventLogger;
     private HtspDataSource.Factory mHtspSubscriptionDataSourceFactory;
-    private HtspDataSource.Factory mRecordingDataSourceFactory;
+    private HtspDataSource.Factory mHtspFileInputStreamDataSourceFactory;
     private HtspDataSource mDataSource;
     private ExtractorsFactory mExtractorsFactory;
 
@@ -281,7 +281,7 @@ public class Player implements ExoPlayer.EventListener {
         mExoPlayer.stop();
         mTrackSelector.clearSelectionOverrides();
         mHtspSubscriptionDataSourceFactory.releaseCurrentDataSource();
-        mRecordingDataSourceFactory.releaseCurrentDataSource();
+        mHtspFileInputStreamDataSourceFactory.releaseCurrentDataSource();
 
         if (mMediaSource != null) {
             mMediaSource.releaseSource();
@@ -410,7 +410,7 @@ public class Player implements ExoPlayer.EventListener {
 
         // Produces DataSource instances through which media data is loaded.
         mHtspSubscriptionDataSourceFactory = new HtspSubscriptionDataSource.Factory(mContext, mConnection, streamProfile);
-        mRecordingDataSourceFactory = new HtspRecordingDataSource.Factory(mContext, mConnection);
+        mHtspFileInputStreamDataSourceFactory = new HtspFileInputStreamDataSource.Factory(mContext, mConnection);
 
         // Produces Extractor instances for parsing the media data.
         mExtractorsFactory = new TvheadendExtractorsFactory(mContext);
@@ -460,7 +460,7 @@ public class Player implements ExoPlayer.EventListener {
     private void buildHtspRecordingMediaSource(Uri recordingUri) {
         // This is the MediaSource representing the media to be played.
         mMediaSource = new ExtractorMediaSource(recordingUri,
-                mRecordingDataSourceFactory, mExtractorsFactory, null, mEventLogger);
+                mHtspFileInputStreamDataSourceFactory, mExtractorsFactory, null, mEventLogger);
     }
 
     private float getCaptionFontSize() {
@@ -591,7 +591,7 @@ public class Player implements ExoPlayer.EventListener {
             // TODO: We should know if we're playing a channel or a recording...
             mDataSource = mHtspSubscriptionDataSourceFactory.getCurrentDataSource();
             if (mDataSource == null) {
-                mDataSource = mRecordingDataSourceFactory.getCurrentDataSource();
+                mDataSource = mHtspFileInputStreamDataSourceFactory.getCurrentDataSource();
             }
         }
     }

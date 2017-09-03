@@ -30,8 +30,8 @@ import ie.macinnes.htsp.HtspFileInputStream;
 import ie.macinnes.htsp.SimpleHtspConnection;
 import ie.macinnes.tvheadend.Application;
 
-public class HtspRecordingDataSource extends HtspDataSource {
-    private static final String TAG = HtspRecordingDataSource.class.getName();
+public class HtspFileInputStreamDataSource extends HtspDataSource {
+    private static final String TAG = HtspFileInputStreamDataSource.class.getName();
     private static final int BUFFER_SIZE = 10*1024*1024;
     private static final AtomicInteger sDataSourceCount = new AtomicInteger();
 
@@ -48,7 +48,7 @@ public class HtspRecordingDataSource extends HtspDataSource {
 
         @Override
         public HtspDataSource createDataSourceInternal() {
-            return new HtspRecordingDataSource(mContext, mConnection);
+            return new HtspFileInputStreamDataSource(mContext, mConnection);
         }
 
     }
@@ -56,7 +56,7 @@ public class HtspRecordingDataSource extends HtspDataSource {
     private final int mDataSourceNumber;
     private HtspFileInputStream mHtspFileInputStream;
 
-    public HtspRecordingDataSource(Context context, SimpleHtspConnection connection) {
+    public HtspFileInputStreamDataSource(Context context, SimpleHtspConnection connection) {
         super(context, connection);
 
         mDataSourceNumber = sDataSourceCount.incrementAndGet();
