@@ -335,7 +335,7 @@ public class HtspSubscriptionDataSource extends HtspDataSource implements Subscr
 
         mLock.lock();
         try (
-                ObjectOutputStream objectOutput = new ObjectOutputStream(outputStream);
+                ObjectOutputStream objectOutput = new ObjectOutputStream(outputStream)
         ) {
             objectOutput.writeUnshared(message);
             objectOutput.flush();

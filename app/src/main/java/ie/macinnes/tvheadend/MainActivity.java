@@ -20,7 +20,6 @@ import android.content.Intent;
 import android.media.tv.TvContract;
 import android.media.tv.TvInputManager;
 import android.os.Build;
-import android.util.Log;
 
 import ie.macinnes.tvheadend.settings.SettingsActivity;
 

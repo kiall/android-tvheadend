@@ -47,33 +47,33 @@ public class DevTestActivity extends Activity {
     }
 
     private void setRunning() {
-        TextView v = (TextView) findViewById(R.id.statusOutput);
+        TextView v = findViewById(R.id.statusOutput);
         v.setText("RUNNING");
         clearDebugOutput();
     }
 
     private void setOk() {
-        TextView v = (TextView) findViewById(R.id.statusOutput);
+        TextView v = findViewById(R.id.statusOutput);
         v.setText("OK");
     }
 
     private void setFail() {
-        TextView v = (TextView) findViewById(R.id.statusOutput);
+        TextView v = findViewById(R.id.statusOutput);
         v.setText("FAIL");
     }
 
     private void clearDebugOutput() {
-        TextView v = (TextView) findViewById(R.id.debugOutput);
+        TextView v = findViewById(R.id.debugOutput);
         v.setText(null);
     }
 
     private void setDebugOutput(String string) {
-        TextView v = (TextView) findViewById(R.id.debugOutput);
+        TextView v = findViewById(R.id.debugOutput);
         v.setText(string);
     }
 
     private void appendDebugOutput(String string) {
-        TextView v = (TextView) findViewById(R.id.debugOutput);
+        TextView v = findViewById(R.id.debugOutput);
         v.append(string + NEWLINE);
     }
 

@@ -345,7 +345,7 @@ public class Player implements ExoPlayer.EventListener {
         }
 
         if (mRadioInfoView == null) {
-            mRadioInfoView = (LinearLayout) mOverlayView.findViewById(R.id.radio_info_view);
+            mRadioInfoView = mOverlayView.findViewById(R.id.radio_info_view);
         }
 
         return mOverlayView;
@@ -358,7 +358,7 @@ public class Player implements ExoPlayer.EventListener {
         );
 
         if (enableDebugTextView) {
-            TextView textView = (TextView) mOverlayView.findViewById(R.id.debug_text_view);
+            TextView textView = mOverlayView.findViewById(R.id.debug_text_view);
             textView.setVisibility(View.VISIBLE);
             return new DebugTextViewHelper(
                     mExoPlayer, textView);
@@ -368,7 +368,7 @@ public class Player implements ExoPlayer.EventListener {
     }
 
     private SubtitleView getSubtitleView(CaptioningManager.CaptionStyle captionStyle, float fontScale) {
-        SubtitleView view = (SubtitleView) mOverlayView.findViewById(R.id.subtitle_view);
+        SubtitleView view = mOverlayView.findViewById(R.id.subtitle_view);
 
         CaptionStyleCompat captionStyleCompat = CaptionStyleCompat.createFromCaptionStyle(captionStyle);
 
@@ -559,10 +559,10 @@ public class Player implements ExoPlayer.EventListener {
 
         try {
             String channelName = TvContractUtils.getChannelName(mContext, Integer.parseInt(mCurrentChannelUri.getPath().substring(1)));
-            TextView radioChannelName = (TextView) mRadioInfoView.findViewById(R.id.radio_channel_name);
+            TextView radioChannelName = mRadioInfoView.findViewById(R.id.radio_channel_name);
             radioChannelName.setText(channelName);
 
-            ImageView radioChannelIcon = (ImageView) mRadioInfoView.findViewById(R.id.radio_channel_icon);
+            ImageView radioChannelIcon = mRadioInfoView.findViewById(R.id.radio_channel_icon);
 
             long androidChannelId = TvContractUtils.getChannelId(mContext, Integer.parseInt(mCurrentChannelUri.getPath().substring(1)));
             Uri channelIconUri = TvContract.buildChannelLogoUri(androidChannelId);

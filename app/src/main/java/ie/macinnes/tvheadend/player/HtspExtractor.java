@@ -81,11 +81,8 @@ public class HtspExtractor implements Extractor {
         // Find 8 bytes equal to HEADER at the start of the input.
         input.peekFully(scratch.data, 0, HtspSubscriptionDataSource.HEADER.length);
 
-        if (Arrays.equals(scratch.data, HtspSubscriptionDataSource.HEADER)) {
-            return true;
-        }
+        return Arrays.equals(scratch.data, HtspSubscriptionDataSource.HEADER);
 
-        return false;
     }
 
     @Override
@@ -105,7 +102,7 @@ public class HtspExtractor implements Extractor {
 
         try (
                 // N.B. Don't add the objectInput to this bit, it breaks stuff
-                ByteArrayInputStream inputStream = new ByteArrayInputStream(mRawBytes, 0, bytesRead);
+                ByteArrayInputStream inputStream = new ByteArrayInputStream(mRawBytes, 0, bytesRead)
         ) {
             while (inputStream.available() > 0) {
                 objectInput = new ObjectInputStream(inputStream);

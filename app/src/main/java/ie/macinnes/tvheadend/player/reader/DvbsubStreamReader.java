@@ -23,7 +23,6 @@ import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.util.MimeTypes;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
