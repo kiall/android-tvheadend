@@ -30,14 +30,14 @@ import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.util.MimeTypes;
 
 
-public class TvheadendTrackSelector extends DefaultTrackSelector {
+class TvheadendTrackSelector extends DefaultTrackSelector {
     private static final String TAG = TvheadendTrackSelector.class.getName();
 
     private String mVideoTrackId;
     private String mAudioTrackId;
     private String mSubtitleTrackId;
 
-    public TvheadendTrackSelector() {
+    private TvheadendTrackSelector() {
     }
 
     public TvheadendTrackSelector(TrackSelection.Factory adaptiveVideoTrackSelectionFactory) {

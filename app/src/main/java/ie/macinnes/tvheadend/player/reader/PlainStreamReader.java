@@ -37,9 +37,9 @@ abstract class PlainStreamReader implements StreamReader {
     private final Context mContext;
     private final int mTrackType;
     private String mStreamType;
-    protected TrackOutput mTrackOutput;
+    private TrackOutput mTrackOutput;
 
-    public PlainStreamReader(Context context, int trackType) {
+    PlainStreamReader(Context context, int trackType) {
         mContext = context;
         mTrackType = trackType;
     }

@@ -33,7 +33,7 @@ import android.view.accessibility.CaptioningManager;
 import android.widget.Toast;
 
 import com.google.android.exoplayer2.ExoPlaybackException;
-import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.Player;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -55,9 +55,9 @@ public class HtspSession extends TvInputService.Session implements TvheadendPlay
     private final CaptioningManager mCaptioningManager;
     private final SharedPreferences mSharedPreferences;
 
-    private TvheadendPlayer mTvheadendPlayer;
+    private final TvheadendPlayer mTvheadendPlayer;
 
-    protected Runnable mPlayChannelRunnable;
+    private Runnable mPlayChannelRunnable;
 
     public HtspSession(Context context, SimpleHtspConnection connection) {
         super(context);
@@ -163,13 +163,13 @@ public class HtspSession extends TvInputService.Session implements TvheadendPlay
         Log.d(TAG, "Session onPlayerStateChanged: " + playbackState + " (" + mSessionNumber + ")");
 
         switch (playbackState) {
-            case ExoPlayer.STATE_READY:
+            case Player.STATE_READY:
                 notifyVideoAvailable();
                 break;
-            case ExoPlayer.STATE_BUFFERING:
+            case Player.STATE_BUFFERING:
                 notifyVideoUnavailable(TvInputManager.VIDEO_UNAVAILABLE_REASON_BUFFERING);
                 break;
-            case ExoPlayer.STATE_ENDED:
+            case Player.STATE_ENDED:
                 notifyVideoUnavailable(TvInputManager.VIDEO_UNAVAILABLE_REASON_UNKNOWN);
                 break;
         }

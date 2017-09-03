@@ -35,7 +35,7 @@ import java.util.Locale;
 import ie.macinnes.htsp.HtspMessage;
 import ie.macinnes.tvheadend.Application;
 
-public class TextsubStreamReader implements StreamReader {
+class TextsubStreamReader implements StreamReader {
     private static final String TAG = TextsubStreamReader.class.getName();
 
     /**
@@ -68,9 +68,9 @@ public class TextsubStreamReader implements StreamReader {
     private static final Charset UTF_8 = Charset.defaultCharset();
 
     private final Context mContext;
-    protected TrackOutput mTrackOutput;
+    private TrackOutput mTrackOutput;
 
-    public TextsubStreamReader(Context context) {
+    TextsubStreamReader(Context context) {
         mContext = context;
     }
 
@@ -107,7 +107,7 @@ public class TextsubStreamReader implements StreamReader {
     }
 
     @NonNull
-    protected Format buildFormat(int streamIndex, @NonNull HtspMessage stream) {
+    private Format buildFormat(int streamIndex, @NonNull HtspMessage stream) {
         return Format.createTextSampleFormat(
                 Integer.toString(streamIndex),
                 MimeTypes.APPLICATION_SUBRIP,

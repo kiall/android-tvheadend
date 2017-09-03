@@ -30,7 +30,7 @@ public class TvContractUtils {
     private static final String TAG = TvContractUtils.class.getName();
 
     public static final long INVALID_CHANNEL_ID = -1;
-    public static final long INVALID_RECORDED_PROGRAM_ID = -1;
+    private static final long INVALID_RECORDED_PROGRAM_ID = -1;
 
     private TvContractUtils() {
         throw new IllegalAccessError("Utility class");
@@ -206,7 +206,7 @@ public class TvContractUtils {
         return programMap;
     }
 
-    public static SparseArray<Uri> buildProgramUriMap(Context context, Uri channelUri) {
+    private static SparseArray<Uri> buildProgramUriMap(Context context, Uri channelUri) {
         ContentResolver resolver = context.getContentResolver();
 
         // Create a map from event id to program row ID for existing programs.
@@ -227,7 +227,7 @@ public class TvContractUtils {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
-    public static long getRecordedProgramId(Context context, int dvrEntryId) {
+    private static long getRecordedProgramId(Context context, int dvrEntryId) {
         ContentResolver resolver = context.getContentResolver();
 
         Uri recordedProgramsUri = TvContract.RecordedPrograms.CONTENT_URI;

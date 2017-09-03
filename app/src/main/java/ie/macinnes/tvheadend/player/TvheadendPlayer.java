@@ -46,6 +46,7 @@ import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.PlaybackParameters;
+import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.RendererCapabilities;
 import com.google.android.exoplayer2.RenderersFactory;
 import com.google.android.exoplayer2.SimpleExoPlayer;
@@ -75,12 +76,12 @@ import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.R;
 import ie.macinnes.tvheadend.TvContractUtils;
 
-public class TvheadendPlayer implements ExoPlayer.EventListener {
+public class TvheadendPlayer implements Player.EventListener {
     private static final String TAG = TvheadendPlayer.class.getName();
 
     private static final float CAPTION_LINE_HEIGHT_RATIO = 0.0533f;
     private static final int TEXT_UNIT_PIXELS = 0;
-    public static final long INVALID_TIMESHIFT_TIME = HtspDataSource.INVALID_TIMESHIFT_TIME;
+    private static final long INVALID_TIMESHIFT_TIME = HtspDataSource.INVALID_TIMESHIFT_TIME;
 
     public interface Listener {
         /**
@@ -277,7 +278,7 @@ public class TvheadendPlayer implements ExoPlayer.EventListener {
         }
     }
 
-    public void stop() {
+    private void stop() {
         mExoPlayer.stop();
         mTrackSelector.clearSelectionOverrides();
         mHtspSubscriptionDataSourceFactory.releaseCurrentDataSource();

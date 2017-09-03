@@ -21,9 +21,9 @@ import android.view.Surface;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlaybackException;
-import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.PlaybackParameters;
+import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.RendererCapabilities;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.audio.AudioRendererEventListener;
@@ -57,7 +57,7 @@ import java.util.Locale;
 /**
  * Logs player events using {@link Log}.
  */
-/* package */ public final class EventLogger implements ExoPlayer.EventListener,
+/* package */ final class EventLogger implements Player.EventListener,
     AudioRendererEventListener, VideoRendererEventListener, AdaptiveMediaSourceEventListener,
     ExtractorMediaSource.EventListener, DefaultDrmSessionManager.EventListener,
     MetadataRenderer.Output {
@@ -419,13 +419,13 @@ import java.util.Locale;
 
   private static String getStateString(int state) {
     switch (state) {
-      case ExoPlayer.STATE_BUFFERING:
+      case Player.STATE_BUFFERING:
         return "B";
-      case ExoPlayer.STATE_ENDED:
+      case Player.STATE_ENDED:
         return "E";
-      case ExoPlayer.STATE_IDLE:
+      case Player.STATE_IDLE:
         return "I";
-      case ExoPlayer.STATE_READY:
+      case Player.STATE_READY:
         return "R";
       default:
         return "?";

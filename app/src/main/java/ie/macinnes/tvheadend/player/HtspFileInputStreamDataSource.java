@@ -56,7 +56,7 @@ public class HtspFileInputStreamDataSource extends HtspDataSource {
     private final int mDataSourceNumber;
     private HtspFileInputStream mHtspFileInputStream;
 
-    public HtspFileInputStreamDataSource(Context context, SimpleHtspConnection connection) {
+    private HtspFileInputStreamDataSource(Context context, SimpleHtspConnection connection) {
         super(context, connection);
 
         mDataSourceNumber = sDataSourceCount.incrementAndGet();
@@ -83,6 +83,8 @@ public class HtspFileInputStreamDataSource extends HtspDataSource {
                 // Ignore, ACRA is not available.
             }
         }
+
+        super.finalize();
     }
 
     // DataSource Methods

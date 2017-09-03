@@ -149,14 +149,14 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
     private final Queue<PendingChannelLogoFetch> mPendingChannelLogoFetches = new ConcurrentLinkedQueue<>();
     private final byte[] mImageBytes = new byte[102400];
 
-    private Set<Integer> mSeenChannels = new HashSet<>();
-    private Set<Integer> mSeenRecordedPrograms = new HashSet<>();
-    private Set<Integer> mSeenPrograms = new HashSet<>();
+    private final Set<Integer> mSeenChannels = new HashSet<>();
+    private final Set<Integer> mSeenRecordedPrograms = new HashSet<>();
+    private final Set<Integer> mSeenPrograms = new HashSet<>();
 
     private final class PendingChannelAddUpdate {
-        public int channelId;
-        public int channelNumber;
-        public ContentProviderOperation operation;
+        public final int channelId;
+        public final int channelNumber;
+        public final ContentProviderOperation operation;
 
         public PendingChannelAddUpdate(int channelId, int channelNumber, ContentProviderOperation operation) {
             this.channelId = channelId;
@@ -166,8 +166,8 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
     }
 
     private final class PendingChannelLogoFetch {
-        public int channelId;
-        public Uri logoUri;
+        public final int channelId;
+        public final Uri logoUri;
 
         public PendingChannelLogoFetch(int channelId, Uri logoUri) {
             this.channelId = channelId;
@@ -176,8 +176,8 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
     }
 
     private final class PendingDvrEntryAddUpdate {
-        public int dvrEntryId;
-        public ContentProviderOperation operation;
+        public final int dvrEntryId;
+        public final ContentProviderOperation operation;
 
         public PendingDvrEntryAddUpdate(int dvrEntryId, ContentProviderOperation operation) {
             this.dvrEntryId = dvrEntryId;
@@ -186,8 +186,8 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
     }
 
     private final class PendingEventAddUpdate {
-        public int eventId;
-        public ContentProviderOperation operation;
+        public final int eventId;
+        public final ContentProviderOperation operation;
 
         public PendingEventAddUpdate(int eventId, ContentProviderOperation operation) {
             this.eventId = eventId;
@@ -286,7 +286,6 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
                 mDispatcher.sendMessage(enableAsyncMetadataRequest);
             } catch (HtspNotConnectedException e) {
                 Log.d(TAG, "Failed to enable async metadata, HTSP not connected", e);
-                return;
             }
         }
     }
@@ -544,7 +543,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
         }
     }
 
-    protected void deleteChannels() {
+    private void deleteChannels() {
         // Dirty
         int[] existingChannelIds = new int[mChannelUriMap.size()];
 
@@ -936,7 +935,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
         mPendingProgramOps.clear();
     }
 
-    protected void deletePrograms() {
+    private void deletePrograms() {
         // Dirty
         int[] existingProgramIds = new int[mProgramUriMap.size()];
 

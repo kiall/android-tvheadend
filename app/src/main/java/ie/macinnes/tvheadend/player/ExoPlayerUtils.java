@@ -28,7 +28,7 @@ import com.google.android.exoplayer2.util.MimeTypes;
 
 import java.util.Locale;
 
-public class ExoPlayerUtils {
+class ExoPlayerUtils {
     private static final String TAG = ExoPlayerUtils.class.getName();
 
     private ExoPlayerUtils() {

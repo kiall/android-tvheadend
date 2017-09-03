@@ -67,7 +67,7 @@ public class HtspSubscriptionDataSource extends HtspDataSource implements Subscr
 
     }
 
-    private String mStreamProfile;
+    private final String mStreamProfile;
 
     private final SharedPreferences mSharedPreferences;
     private int mTimeshiftPeriod = 0;
@@ -76,12 +76,12 @@ public class HtspSubscriptionDataSource extends HtspDataSource implements Subscr
     private Subscriber mSubscriber;
 
     private ByteBuffer mBuffer;
-    private ReentrantLock mLock = new ReentrantLock();
+    private final ReentrantLock mLock = new ReentrantLock();
 
     private boolean mIsOpen = false;
     private boolean mIsSubscribed = false;
 
-    public HtspSubscriptionDataSource(Context context, SimpleHtspConnection connection, String streamProfile) {
+    private HtspSubscriptionDataSource(Context context, SimpleHtspConnection connection, String streamProfile) {
         super(context, connection);
 
         mStreamProfile = streamProfile;
@@ -140,6 +140,8 @@ public class HtspSubscriptionDataSource extends HtspDataSource implements Subscr
                 // Ignore, ACRA is not available.
             }
         }
+
+        super.finalize();
     }
 
     // DataSource Methods

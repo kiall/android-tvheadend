@@ -59,9 +59,9 @@ public class TvInputSetupActivity extends Activity {
     }
 
     public static abstract class BaseGuidedStepFragment extends GuidedStepFragment {
-        protected AccountManager mAccountManager;
+        AccountManager mAccountManager;
 
-        protected static Account sAccount;
+        static Account sAccount;
 
         @Override
         public int onProvideTheme() {
@@ -83,7 +83,7 @@ public class TvInputSetupActivity extends Activity {
             mAccountManager = AccountManager.get(getActivity());
         }
 
-        protected Account getAccountByName(String name) {
+        Account getAccountByName(String name) {
             Log.d(TAG, "getAccountByName(" + name + ")");
 
             Account[] accounts = AccountUtils.getAllAccounts(getActivity());
@@ -265,8 +265,8 @@ public class TvInputSetupActivity extends Activity {
     }
 
     public static class SyncingFragment extends BaseGuidedStepFragment implements EpgSyncTask.Listener {
-        protected SimpleHtspConnection mConnection;
-        protected EpgSyncTask mEpgSyncTask;
+        SimpleHtspConnection mConnection;
+        EpgSyncTask mEpgSyncTask;
 
         @Override
         public Handler getHandler() {

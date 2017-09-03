@@ -36,9 +36,9 @@ public class AuthenticatorService extends Service {
     private AccountManager mAccountManager;
     private Account[] mCurrentAccounts;
 
-    protected SharedPreferences mSharedPreferences;
+    private SharedPreferences mSharedPreferences;
 
-    private OnAccountsUpdateListener mAccountsUpdateListener = new OnAccountsUpdateListener() {
+    private final OnAccountsUpdateListener mAccountsUpdateListener = new OnAccountsUpdateListener() {
         @Override
         public void onAccountsUpdated(Account[] accounts) {
             for (Account currentAccount : mCurrentAccounts) {

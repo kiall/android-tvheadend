@@ -65,16 +65,16 @@ public abstract class HtspDataSource implements DataSource, Closeable {
         protected abstract HtspDataSource createDataSourceInternal();
     }
 
-    protected final Context mContext;
-    protected SimpleHtspConnection mConnection;
-    protected DataSpec mDataSpec;
+    final Context mContext;
+    SimpleHtspConnection mConnection;
+    DataSpec mDataSpec;
 
-    public HtspDataSource(Context context, SimpleHtspConnection connection) {
+    HtspDataSource(Context context, SimpleHtspConnection connection) {
         mContext = context;
         mConnection = connection;
     }
 
-    public abstract void release();
+    protected abstract void release();
 
     // Methods used by the player, which need to be passed to the Subscriber
     public abstract void pause();

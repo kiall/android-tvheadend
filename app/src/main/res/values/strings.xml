@@ -72,10 +72,6 @@ under the License.
     <string name="setup_sync_body">Just a few seconds please :)</string>
     <string name="setup_sync_title">Syncing Channels and Program data</string>
 
-    <string name="video_unsupported_error">Unsupported Video Track Selected</string>
-    <string name="error_unsupported_audio">Unsupported Audio Track Selected</string>
-    <string name="error_unsupported_text">Unsupported Text Track Selected</string>
-
     <string name="settings_require_restart">IMPORTANT: Most settings require a device restart to take effect</string>
     <string name="channel_logo">Channel Logo</string>
 </resources>

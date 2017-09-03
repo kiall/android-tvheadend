@@ -40,7 +40,7 @@ import ie.macinnes.tvheadend.player.reader.StreamReader;
 import ie.macinnes.tvheadend.player.reader.StreamReadersFactory;
 
 // TODO: Rename HtspSubscriptionExtractor
-public class HtspExtractor implements Extractor {
+class HtspExtractor implements Extractor {
     private static final String TAG = HtspExtractor.class.getName();
 
     private class HtspSeekMap implements SeekMap {
@@ -60,9 +60,9 @@ public class HtspExtractor implements Extractor {
         }
     }
 
-    private Context mContext;
+    private final Context mContext;
     private ExtractorOutput mOutput;
-    private SparseArray<StreamReader> mStreamReaders = new SparseArray<>();
+    private final SparseArray<StreamReader> mStreamReaders = new SparseArray<>();
 
     private final byte[] mRawBytes = new byte[1024 * 1024];
 
@@ -74,8 +74,6 @@ public class HtspExtractor implements Extractor {
     // Extractor Methods
     @Override
     public boolean sniff(ExtractorInput input) throws IOException, InterruptedException {
-        long inputLength = input.getLength();
-
         ParsableByteArray scratch = new ParsableByteArray(HtspSubscriptionDataSource.HEADER.length);
 
         // Find 8 bytes equal to HEADER at the start of the input.

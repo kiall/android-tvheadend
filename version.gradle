@@ -20,11 +20,11 @@ ext.versionName = versionName
 ext.versionCode = Integer.parseInt(versionCode)
 
 // Methods
-def Object getJSON(File file) {
+static def Object getJSON(File file) {
     return new JsonSlurper().parseText(file.text)
 }
 
-def String mostRecentVersion(List versions ) {
+static def String mostRecentVersion(List versions ) {
   versions.sort( false ) { a, b ->
     [a,b]*.tokenize('.')*.collect { it as int }.with { u, v ->
       [u,v].transpose().findResult{ x,y-> x<=>y ?: null } ?: u.size() <=> v.size()
@@ -32,7 +32,7 @@ def String mostRecentVersion(List versions ) {
   }[-1]
 }
 
-def String cleanGitVersion(String version) {
+static def String cleanGitVersion(String version) {
     if (version.contains("-")) {
         return version.substring(0, version.indexOf("-"))
     } else {

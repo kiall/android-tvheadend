@@ -28,6 +28,7 @@ public class MiscUtils {
 
     private static final String TAG = MiscUtils.class.getName();
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public static boolean isNetworkAvailable(Context context) {
         ConnectivityManager connectivityManager
                 = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);

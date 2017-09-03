@@ -31,10 +31,10 @@ import java.util.List;
 
 import ie.macinnes.htsp.HtspMessage;
 
-public class H265StreamReader extends PlainStreamReader {
+class H265StreamReader extends PlainStreamReader {
     private static final String TAG = H265StreamReader.class.getName();
 
-    public H265StreamReader(Context context) {
+    H265StreamReader(Context context) {
         super(context, C.TRACK_TYPE_VIDEO);
     }
 

@@ -32,7 +32,7 @@ import com.google.android.exoplayer2.mediacodec.MediaCodecUtil;
 import com.google.android.exoplayer2.video.MediaCodecVideoRenderer;
 import com.google.android.exoplayer2.video.VideoRendererEventListener;
 
-public class ShieldVideoRenderer extends MediaCodecVideoRenderer {
+class ShieldVideoRenderer extends MediaCodecVideoRenderer {
     private static final String TAG = ShieldVideoRenderer.class.getName();
     private static final int THIRTEEN_MINUTES = 13 * 60 * 1000;
 

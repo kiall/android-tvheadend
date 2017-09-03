@@ -42,7 +42,7 @@ import java.util.ArrayList;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.R;
 
-public class TvheadendRenderersFactory extends DefaultRenderersFactory {
+class TvheadendRenderersFactory extends DefaultRenderersFactory {
     private static final String TAG = TvheadendRenderersFactory.class.getName();
 
     public TvheadendRenderersFactory(Context context) {

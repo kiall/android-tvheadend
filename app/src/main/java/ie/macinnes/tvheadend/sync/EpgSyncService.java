@@ -37,17 +37,17 @@ import ie.macinnes.tvheadend.account.AccountUtils;
 public class EpgSyncService extends Service {
     private static final String TAG = EpgSyncService.class.getName();
 
-    protected HandlerThread mHandlerThread;
-    protected Handler mHandler;
+    private HandlerThread mHandlerThread;
+    private Handler mHandler;
 
-    protected SharedPreferences mSharedPreferences;
+    private SharedPreferences mSharedPreferences;
 
-    protected AccountManager mAccountManager;
-    protected Account mAccount;
+    private AccountManager mAccountManager;
+    private Account mAccount;
 
-    protected SimpleHtspConnection mConnection;
-    protected EpgSyncTask mEpgSyncTask;
-    protected DvrDeleteTask mDvrDeleteTask;
+    private SimpleHtspConnection mConnection;
+    private EpgSyncTask mEpgSyncTask;
+    private DvrDeleteTask mDvrDeleteTask;
 
     public EpgSyncService() {
     }
@@ -111,7 +111,7 @@ public class EpgSyncService extends Service {
         }
     }
 
-    protected void openConnection() {
+    private void openConnection() {
         if (!MiscUtils.isNetworkAvailable(this)) {
             Log.i(TAG, "No network available, shutting down EPG Sync Service");
             stopSelf();
@@ -127,7 +127,7 @@ public class EpgSyncService extends Service {
         initHtspConnection();
     }
 
-    protected void initHtspConnection() {
+    private void initHtspConnection() {
         final String hostname = mAccountManager.getUserData(mAccount, Constants.KEY_HOSTNAME);
         final int port = Integer.parseInt(mAccountManager.getUserData(mAccount, Constants.KEY_HTSP_PORT));
         final String username = mAccount.name;
@@ -149,7 +149,7 @@ public class EpgSyncService extends Service {
         mConnection.start();
     }
 
-    protected void closeConnection() {
+    private void closeConnection() {
         if (mDvrDeleteTask != null) {
             mConnection.removeMessageListener(mDvrDeleteTask);
             mDvrDeleteTask.stop();
@@ -171,7 +171,7 @@ public class EpgSyncService extends Service {
         cleanupConnection();
     }
 
-    protected void cleanupConnection() {
+    private void cleanupConnection() {
         mConnection = null;
     }
 }

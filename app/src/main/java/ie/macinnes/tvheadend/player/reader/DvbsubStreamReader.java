@@ -28,10 +28,10 @@ import java.util.List;
 
 import ie.macinnes.htsp.HtspMessage;
 
-public class DvbsubStreamReader extends PlainStreamReader {
+class DvbsubStreamReader extends PlainStreamReader {
     private static final String TAG = DvbsubStreamReader.class.getName();
 
-    public DvbsubStreamReader(Context context) {
+    DvbsubStreamReader(Context context) {
         super(context, C.TRACK_TYPE_TEXT);
     }
 

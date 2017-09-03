@@ -26,9 +26,9 @@ import com.google.android.exoplayer2.util.MimeTypes;
 import ie.macinnes.htsp.HtspMessage;
 import ie.macinnes.tvheadend.TvhMappings;
 
-public class Eac3StreamReader extends PlainStreamReader {
+class Eac3StreamReader extends PlainStreamReader {
 
-    public Eac3StreamReader(Context context) {
+    Eac3StreamReader(Context context) {
         super(context, C.TRACK_TYPE_AUDIO);
     }
 

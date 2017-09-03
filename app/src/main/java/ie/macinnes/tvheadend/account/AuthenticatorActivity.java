@@ -66,7 +66,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
     }
 
     public static abstract class BaseGuidedStepFragment extends GuidedStepFragment {
-        protected AccountManager mAccountManager;
+        AccountManager mAccountManager;
 
         @Override
         public int onProvideTheme() {
@@ -250,11 +250,11 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
 
         private SimpleHtspConnection mConnection;
 
-        protected String mAccountType;
-        protected String mAccountName;
-        protected String mAccountPassword;
-        protected String mAccountHostname;
-        protected String mAccountHtspPort;
+        String mAccountType;
+        String mAccountName;
+        String mAccountPassword;
+        String mAccountHostname;
+        String mAccountHtspPort;
 
         @Override
         public GuidedActionsStylist onCreateActionsStylist() {

@@ -32,10 +32,10 @@ import java.util.List;
 import ie.macinnes.htsp.HtspMessage;
 import ie.macinnes.tvheadend.TvhMappings;
 
-public class VorbisStreamReader extends PlainStreamReader {
+class VorbisStreamReader extends PlainStreamReader {
     private static final String TAG = VorbisStreamReader.class.getName();
 
-    public VorbisStreamReader(Context context) {
+    VorbisStreamReader(Context context) {
         super(context, C.TRACK_TYPE_AUDIO);
     }
 

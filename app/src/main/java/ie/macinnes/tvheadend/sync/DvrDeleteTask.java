@@ -51,8 +51,8 @@ public class DvrDeleteTask implements HtspMessage.Listener {
     }));
 
     private final Handler mMainThreadHandler = new Handler(Looper.getMainLooper());
-    protected HandlerThread mHandlerThread;
-    protected Handler mHandler;
+    private final HandlerThread mHandlerThread;
+    private final Handler mHandler;
 
     private final Context mContext;
     private final HtspMessage.Dispatcher mDispatcher;

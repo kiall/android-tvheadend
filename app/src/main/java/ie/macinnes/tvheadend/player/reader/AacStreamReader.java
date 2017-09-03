@@ -35,18 +35,15 @@ import ie.macinnes.tvheadend.TvhMappings;
 
 // See https://wiki.multimedia.cx/index.php?title=ADTS
 
-public class AacStreamReader implements StreamReader {
+class AacStreamReader implements StreamReader {
     private static final String TAG = AacStreamReader.class.getName();
 
     private static final int ADTS_HEADER_SIZE = 7;
     private static final int ADTS_CRC_SIZE = 2;
 
-    private final Context mContext;
-    protected TrackOutput mTrackOutput;
+    private TrackOutput mTrackOutput;
 
-    public AacStreamReader(Context context) {
-        mContext = context;
-    }
+    AacStreamReader(Context context) {}
 
     @Override
     public void createTracks(HtspMessage stream, ExtractorOutput output) {
@@ -88,8 +85,8 @@ public class AacStreamReader implements StreamReader {
     }
 
     @NonNull
-    protected Format buildFormat(int streamIndex, @NonNull HtspMessage stream) {
-        List<byte[]> initializationData = null;
+    private Format buildFormat(int streamIndex, @NonNull HtspMessage stream) {
+        List<byte[]> initializationData;
 
         int rate = Format.NO_VALUE;
         if (stream.containsKey("rate")) {

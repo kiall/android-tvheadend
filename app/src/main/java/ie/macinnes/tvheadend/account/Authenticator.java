@@ -28,11 +28,11 @@ import android.widget.Toast;
 
 import ie.macinnes.tvheadend.R;
 
-public class Authenticator extends AbstractAccountAuthenticator {
+class Authenticator extends AbstractAccountAuthenticator {
     private static final String TAG = Authenticator.class.getName();
 
     private final Context mContext;
-    private Handler mHandler;
+    private final Handler mHandler;
 
     public Authenticator(Context context) {
         super(context);

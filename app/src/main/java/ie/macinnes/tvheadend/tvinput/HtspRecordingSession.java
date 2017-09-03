@@ -37,7 +37,7 @@ import ie.macinnes.tvheadend.TvContractUtils;
 
 
 @RequiresApi(api = Build.VERSION_CODES.N)
-public class HtspRecordingSession extends TvInputService.RecordingSession {
+class HtspRecordingSession extends TvInputService.RecordingSession {
     private static final String TAG = HtspRecordingSession.class.getName();
     private static final int INVALID_DVR_ENTRY_ID = -1;
     private static final AtomicInteger sSessionCounter = new AtomicInteger();

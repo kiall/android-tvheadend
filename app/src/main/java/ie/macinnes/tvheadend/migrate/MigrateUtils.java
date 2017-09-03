@@ -26,7 +26,7 @@ import ie.macinnes.tvheadend.account.AccountUtils;
 
 
 public class MigrateUtils {
-    public static final String TAG = MigrateUtils.class.getName();
+    private static final String TAG = MigrateUtils.class.getName();
     private static final int VERSION_79 = 79;
     private static final int VERSION_80 = 80;
     private static final int VERSION_81 = 81;
@@ -69,7 +69,7 @@ public class MigrateUtils {
         editor.apply();
     }
 
-    protected static void migrateSetupCompleted(Context context) {
+    private static void migrateSetupCompleted(Context context) {
         Log.d(TAG, "migrateSetupCompleted()");
 
         Account account = AccountUtils.getActiveAccount(context);
@@ -80,7 +80,7 @@ public class MigrateUtils {
         }
     }
 
-    protected static void migrateMediaPlayerVlcRemoval(Context context) {
+    private static void migrateMediaPlayerVlcRemoval(Context context) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(
                 Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
 
@@ -90,7 +90,7 @@ public class MigrateUtils {
         editor.remove("vlc_deinterlace_method");
         editor.apply();
     }
-    protected static void migrateExoPlayerHttpRemoval(Context context) {
+    private static void migrateExoPlayerHttpRemoval(Context context) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(
                 Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
 

@@ -88,7 +88,7 @@ public class TvInputService extends android.media.tv.TvInputService {
         return new HtspRecordingSession(this, mConnection);
     }
 
-    protected void maybeEnableDvr() {
+    private void maybeEnableDvr() {
         boolean dvrEnabled = mSharedPreferences.getBoolean(
                 Constants.KEY_DVR_ENABLED,
                 getResources().getBoolean(R.bool.pref_default_dvr_enabled));
@@ -106,7 +106,7 @@ public class TvInputService extends android.media.tv.TvInputService {
         }
     }
 
-    protected void openConnection() {
+    private void openConnection() {
         if (!MiscUtils.isNetworkAvailable(this)) {
             Log.i(TAG, "No network available, shutting down TV Input Service");
             return;
@@ -120,7 +120,7 @@ public class TvInputService extends android.media.tv.TvInputService {
         initHtspConnection();
     }
 
-    protected void initHtspConnection() {
+    private void initHtspConnection() {
         final String hostname = mAccountManager.getUserData(mAccount, Constants.KEY_HOSTNAME);
         final int port = Integer.parseInt(mAccountManager.getUserData(mAccount, Constants.KEY_HTSP_PORT));
         final String username = mAccount.name;
@@ -134,7 +134,7 @@ public class TvInputService extends android.media.tv.TvInputService {
         mConnection.start();
     }
 
-    protected void closeConnection() {
+    private void closeConnection() {
         if (mConnection != null) {
             Log.d(TAG, "Closing HTSP connection");
             mConnection.stop();
@@ -143,7 +143,7 @@ public class TvInputService extends android.media.tv.TvInputService {
         cleanupConnection();
     }
 
-    protected void cleanupConnection() {
+    private void cleanupConnection() {
         mConnection = null;
     }
 }

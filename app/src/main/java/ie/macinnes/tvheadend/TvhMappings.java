@@ -29,7 +29,7 @@ public class TvhMappings {
         7350,     0,     0,     0
     };
 
-    public static final int sriToRate(int sri)
+    public static int sriToRate(int sri)
     {
         return mSampleRates[sri & 0xf];
     }
