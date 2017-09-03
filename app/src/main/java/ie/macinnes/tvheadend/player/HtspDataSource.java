@@ -79,7 +79,6 @@ public abstract class HtspDataSource implements DataSource, Closeable {
     // Methods used by the player, which need to be passed to the Subscriber
     public abstract void pause();
     public abstract void resume();
-//    public abstract void seek(long timeMs);
     public abstract long getTimeshiftStartTime();
     public abstract long getTimeshiftStartPts();
     public abstract long getTimeshiftOffsetPts();

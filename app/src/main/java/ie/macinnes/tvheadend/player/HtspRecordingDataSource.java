@@ -17,31 +17,18 @@
 package ie.macinnes.tvheadend.player;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.net.Uri;
-import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.upstream.DataSpec;
 
 import org.acra.ACRA;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReentrantLock;
 
 import ie.macinnes.htsp.HtspFileInputStream;
-import ie.macinnes.htsp.HtspMessage;
-import ie.macinnes.htsp.HtspNotConnectedException;
 import ie.macinnes.htsp.SimpleHtspConnection;
-import ie.macinnes.htsp.tasks.Subscriber;
 import ie.macinnes.tvheadend.Application;
-import ie.macinnes.tvheadend.Constants;
-import ie.macinnes.tvheadend.R;
 
 public class HtspRecordingDataSource extends HtspDataSource {
     private static final String TAG = HtspRecordingDataSource.class.getName();
@@ -153,11 +140,6 @@ public class HtspRecordingDataSource extends HtspDataSource {
     public void resume() {
         // No action needed
     }
-
-//    @Override
-//    public void seek(long timeMs) {
-//        // No action needed
-//    }
 
     @Override
     public long getTimeshiftStartTime() {

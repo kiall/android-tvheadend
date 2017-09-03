@@ -47,7 +47,7 @@ public class HtspExtractor implements Extractor {
     private class HtspSeekMap implements SeekMap {
         @Override
         public boolean isSeekable() {
-            return false;
+            return true;
         }
 
         @Override

@@ -18,7 +18,6 @@ package ie.macinnes.tvheadend.player;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -161,7 +160,7 @@ public class HtspChannelDataSource extends HtspDataSource implements Subscriber.
 
         long seekPosition = mDataSpec.position;
         if (seekPosition > 0 && mTimeshiftPeriod > 0) {
-            Log.d(TAG, "seek to time PTS: " + seekPosition);
+            Log.d(TAG, "Seek to time PTS: " + seekPosition);
 
             mSubscriber.skip(seekPosition);
             mBuffer.clear();
@@ -297,11 +296,6 @@ public class HtspChannelDataSource extends HtspDataSource implements Subscriber.
             mSubscriber.resume();
         }
     }
-
-//    @Override
-//    public void seek(long timeMs) {
-//        // TODO?
-//    }
 
     @Override
     public long getTimeshiftStartTime() {

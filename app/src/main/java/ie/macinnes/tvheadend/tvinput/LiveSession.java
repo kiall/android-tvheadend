@@ -24,7 +24,6 @@ import android.media.tv.TvTrackInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
-import android.os.Message;
 import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.util.SparseArray;
@@ -182,11 +181,13 @@ public class LiveSession extends TvInputService.Session implements Player.Listen
 
     @Override
     public void onTimeShiftPause() {
+        Log.d(TAG, "onTimeShiftPause");
         mPlayer.pause();
     }
 
     @Override
     public void onTimeShiftResume() {
+        Log.d(TAG, "onTimeShiftResume");
         mPlayer.resume();
     }
 
@@ -194,7 +195,7 @@ public class LiveSession extends TvInputService.Session implements Player.Listen
     public void onTimeShiftSeekTo(long timeMs) {
         Log.d(TAG, "onTimeShiftSeekTo: " + timeMs);
 
-        Toast.makeText(mContext, "Unsupported", Toast.LENGTH_SHORT).show();
+        mPlayer.seek(timeMs);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)

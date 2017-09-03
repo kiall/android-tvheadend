@@ -216,17 +216,19 @@ public class Player implements ExoPlayer.EventListener {
         }
     }
 
-//    public void seek(long timeMs) {
-//        if (mDataSource != null) {
-//            Log.d(TAG, "Seeking to time: " + timeMs);
-//            long seekPts = (timeMs * 1000) - mDataSource.getTimeshiftStartTime();
-//            seekPts = Math.max(seekPts, mDataSource.getTimeshiftStartPts());
-//
-//            mExoPlayer.seekTo(seekPts / 1000);
-//        } else {
-//            Log.w(TAG, "Unable to seek, no HtspDataSource available");
-//        }
-//    }
+    public void seek(long timeMs) {
+        if (mDataSource != null) {
+            Log.d(TAG, "Seeking to time: " + timeMs);
+
+            long seekPts = (timeMs * 1000) - mDataSource.getTimeshiftStartTime();
+            seekPts = Math.max(seekPts, mDataSource.getTimeshiftStartPts()) / 1000;
+            Log.d(TAG, "Seeking to PTS: " + seekPts);
+
+            mExoPlayer.seekTo(seekPts);
+        } else {
+            Log.w(TAG, "Unable to seek, no HtspDataSource available");
+        }
+    }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void setPlaybackParams(PlaybackParams params) {
