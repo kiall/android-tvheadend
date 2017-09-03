@@ -139,8 +139,12 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
     private final SparseArray<Uri> mProgramUriMap;
 
     private final ArrayList<PendingChannelAddUpdate> mPendingChannelOps = new ArrayList<>();
-    private final ArrayList<PendingDvrEntryAddUpdate> mPendingRecordedProgramsOps = new ArrayList<>();
+    private final ArrayList<PendingDvrEntryAddUpdate> mPendingRecordedProgramOps = new ArrayList<>();
     private final ArrayList<PendingEventAddUpdate> mPendingProgramOps = new ArrayList<>();
+
+    private int mCompletedChannelOps = 0;
+    private int mCompletedRecordedProgramOps = 0;
+    private int mCompletedProgramOps = 0;
 
     private final Queue<PendingChannelLogoFetch> mPendingChannelLogoFetches = new ConcurrentLinkedQueue<>();
     private final byte[] mImageBytes = new byte[102400];
@@ -417,7 +421,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
             return;
         }
 
-        Log.d(TAG, "Flushing " + mPendingChannelOps.size() + " channel operations");
+        Log.d(TAG, "Flushing " + mPendingChannelOps.size() + " channel operations (" + mCompletedChannelOps + ")");
 
         if (IS_BRAVIA) {
             // Sort the Pending Add/Updates by their channel numbers as Sony fails to do this in
@@ -456,6 +460,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
                        "does not match resultset size");
 
             // Reset the pending operations list
+            mCompletedChannelOps += mPendingChannelOps.size();
             mPendingChannelOps.clear();
             return;
         }
@@ -469,6 +474,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
         }
 
         // Finally, reset the pending operations list
+        mCompletedChannelOps += mPendingChannelOps.size();
         mPendingChannelOps.clear();
     }
 
@@ -645,7 +651,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
             // Insert the DVR Entry
             if (Constants.DEBUG)
                 Log.v(TAG, "Insert dvrEntry " + dvrEntryId);
-            mPendingRecordedProgramsOps.add(new PendingDvrEntryAddUpdate(
+            mPendingRecordedProgramOps.add(new PendingDvrEntryAddUpdate(
                     dvrEntryId,
                     ContentProviderOperation.newInsert(TvContract.RecordedPrograms.CONTENT_URI)
                             .withValues(values)
@@ -655,7 +661,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
             // Update the DVR entry
             if (Constants.DEBUG)
                 Log.v(TAG, "Update dvrEntry " + dvrEntryId + " (URI: " + dvrEntryUri + ")");
-            mPendingRecordedProgramsOps.add(new PendingDvrEntryAddUpdate(
+            mPendingRecordedProgramOps.add(new PendingDvrEntryAddUpdate(
                     dvrEntryId,
                     ContentProviderOperation.newUpdate(dvrEntryUri)
                             .withValues(values)
@@ -683,15 +689,15 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
     }
 
     private void flushPendingDvrEntryOps() {
-        if (mPendingRecordedProgramsOps.isEmpty()) {
+        if (mPendingRecordedProgramOps.isEmpty()) {
             return;
         }
 
-        Log.d(TAG, "Flushing " + mPendingRecordedProgramsOps.size() + " dvrEntry operations");
+        Log.d(TAG, "Flushing " + mPendingRecordedProgramOps.size() + " dvrEntry operations (" + mCompletedRecordedProgramOps + ")");
 
         // Build out an ArrayList of Operations needed for applyBatch()
-        ArrayList<ContentProviderOperation> operations = new ArrayList<>(mPendingRecordedProgramsOps.size());
-        for (PendingDvrEntryAddUpdate prpau : mPendingRecordedProgramsOps) {
+        ArrayList<ContentProviderOperation> operations = new ArrayList<>(mPendingRecordedProgramOps.size());
+        for (PendingDvrEntryAddUpdate prpau : mPendingRecordedProgramOps) {
             operations.add(prpau.operation);
         }
 
@@ -710,20 +716,22 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
                     "does not match resultset size");
 
             // Reset the pending operations list
-            mPendingRecordedProgramsOps.clear();
+            mCompletedRecordedProgramOps += mPendingRecordedProgramOps.size();
+            mPendingRecordedProgramOps.clear();
             return;
         }
 
         // Update the Channel Uri Map based on the results
-        for (int i = 0; i < mPendingRecordedProgramsOps.size(); i++) {
-            final int dvrEntryId = mPendingRecordedProgramsOps.get(i).dvrEntryId;
+        for (int i = 0; i < mPendingRecordedProgramOps.size(); i++) {
+            final int dvrEntryId = mPendingRecordedProgramOps.get(i).dvrEntryId;
             final ContentProviderResult result = results[i];
 
             mRecordedProgramUriMap.put(dvrEntryId, result.uri);
         }
 
         // Finally, reset the pending operations list
-        mPendingRecordedProgramsOps.clear();
+        mCompletedRecordedProgramOps += mPendingRecordedProgramOps.size();
+        mPendingRecordedProgramOps.clear();
     }
 
     private void deleteRecordedPrograms() {
@@ -886,7 +894,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
             return;
         }
 
-        Log.d(TAG, "Flushing " + mPendingProgramOps.size() + " event operations");
+        Log.d(TAG, "Flushing " + mPendingProgramOps.size() + " event operations (" + mCompletedProgramOps + ")");
 
         // Build out an ArrayList of Operations needed for applyBatch()
         ArrayList<ContentProviderOperation> operations = new ArrayList<>(mPendingProgramOps.size());
@@ -910,6 +918,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
                        "does not match resultset size");
 
             // Reset the pending operations list
+            mCompletedProgramOps += mPendingProgramOps.size();
             mPendingProgramOps.clear();
             return;
         }
@@ -923,6 +932,7 @@ public class EpgSyncTask implements HtspMessage.Listener, Authenticator.Listener
         }
 
         // Finally, reset the pending operations list
+        mCompletedProgramOps += mPendingProgramOps.size();
         mPendingProgramOps.clear();
     }
 
