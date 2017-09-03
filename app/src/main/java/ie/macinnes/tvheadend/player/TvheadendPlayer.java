@@ -75,8 +75,8 @@ import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.R;
 import ie.macinnes.tvheadend.TvContractUtils;
 
-public class Player implements ExoPlayer.EventListener {
-    private static final String TAG = Player.class.getName();
+public class TvheadendPlayer implements ExoPlayer.EventListener {
+    private static final String TAG = TvheadendPlayer.class.getName();
 
     private static final float CAPTION_LINE_HEIGHT_RATIO = 0.0533f;
     private static final int TEXT_UNIT_PIXELS = 0;
@@ -132,7 +132,7 @@ public class Player implements ExoPlayer.EventListener {
 
     private Uri mCurrentChannelUri;
 
-    public Player(Context context, SimpleHtspConnection connection, Listener listener) {
+    public TvheadendPlayer(Context context, SimpleHtspConnection connection, Listener listener) {
         mContext = context;
         mConnection = connection;
         mListener = listener;

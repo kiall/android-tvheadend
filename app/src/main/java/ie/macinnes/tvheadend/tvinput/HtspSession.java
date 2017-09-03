@@ -42,10 +42,10 @@ import ie.macinnes.htsp.SimpleHtspConnection;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.R;
 import ie.macinnes.tvheadend.TvContractUtils;
-import ie.macinnes.tvheadend.player.Player;
+import ie.macinnes.tvheadend.player.TvheadendPlayer;
 
 // TODO: Rename?
-public class HtspSession extends TvInputService.Session implements Player.Listener {
+public class HtspSession extends TvInputService.Session implements TvheadendPlayer.Listener {
     private static final String TAG = HtspSession.class.getName();
     private static final AtomicInteger sSessionCounter = new AtomicInteger();
 
@@ -55,7 +55,7 @@ public class HtspSession extends TvInputService.Session implements Player.Listen
     private final CaptioningManager mCaptioningManager;
     private final SharedPreferences mSharedPreferences;
 
-    private Player mPlayer;
+    private TvheadendPlayer mTvheadendPlayer;
 
     protected Runnable mPlayChannelRunnable;
 
@@ -72,7 +72,7 @@ public class HtspSession extends TvInputService.Session implements Player.Listen
 
         Log.d(TAG, "HtspSession created (" + mSessionNumber + ")");
 
-        mPlayer = new Player(mContext, connection, this);
+        mTvheadendPlayer = new TvheadendPlayer(mContext, connection, this);
 
         setOverlayViewEnabled(true);
     }
@@ -80,7 +80,7 @@ public class HtspSession extends TvInputService.Session implements Player.Listen
     @Override
     public void onRelease() {
         Log.d(TAG, "Session onRelease (" + mSessionNumber + ")");
-        mPlayer.release();
+        mTvheadendPlayer.release();
     }
 
     // TvInputService.Session Methods
@@ -120,30 +120,30 @@ public class HtspSession extends TvInputService.Session implements Player.Listen
     @Override
     public boolean onSetSurface(Surface surface) {
         Log.d(TAG, "Session onSetSurface (" + mSessionNumber + ")");
-        mPlayer.setSurface(surface);
+        mTvheadendPlayer.setSurface(surface);
         return true;
     }
 
     @Override
     public void onSetStreamVolume(float volume) {
         Log.d(TAG, "Session onSetStreamVolume: " + volume + " (" + mSessionNumber + ")");
-        mPlayer.setVolume(volume);
+        mTvheadendPlayer.setVolume(volume);
     }
 
     @Override
     public View onCreateOverlayView() {
         Log.d(TAG, "Session onCreateOverlayView (" + mSessionNumber + ")");
-        return mPlayer.getOverlayView(
+        return mTvheadendPlayer.getOverlayView(
                 mCaptioningManager.getUserStyle(), mCaptioningManager.getFontScale());
     }
 
     @Override
     public boolean onSelectTrack(int type, String trackId) {
         Log.d(TAG, "Session selectTrack: " + type + " / " + trackId + " (" + mSessionNumber + ")");
-        return mPlayer.selectTrack(type, trackId);
+        return mTvheadendPlayer.selectTrack(type, trackId);
     }
 
-    // Player.Listener Methods
+    // TvheadendPlayer.Listener Methods
     @Override
     public void onTracksChanged(List<TvTrackInfo> tracks, SparseArray<String> selectedTracks) {
         Log.d(TAG, "Session : " + tracks.size() + " (" + mSessionNumber + ")");
@@ -183,20 +183,20 @@ public class HtspSession extends TvInputService.Session implements Player.Listen
     @Override
     public void onTimeShiftPause() {
         Log.d(TAG, "onTimeShiftPause");
-        mPlayer.pause();
+        mTvheadendPlayer.pause();
     }
 
     @Override
     public void onTimeShiftResume() {
         Log.d(TAG, "onTimeShiftResume");
-        mPlayer.resume();
+        mTvheadendPlayer.resume();
     }
 
     @Override
     public void onTimeShiftSeekTo(long timeMs) {
         Log.d(TAG, "onTimeShiftSeekTo: " + timeMs);
 
-        mPlayer.seek(timeMs);
+        mTvheadendPlayer.seek(timeMs);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -210,13 +210,13 @@ public class HtspSession extends TvInputService.Session implements Player.Listen
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public long onTimeShiftGetStartPosition() {
-        return mPlayer.getTimeshiftStartPosition();
+        return mTvheadendPlayer.getTimeshiftStartPosition();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public long onTimeShiftGetCurrentPosition() {
-        return mPlayer.getTimeshiftCurrentPosition();
+        return mTvheadendPlayer.getTimeshiftCurrentPosition();
     }
 
     // Inner Classes
@@ -231,8 +231,8 @@ public class HtspSession extends TvInputService.Session implements Player.Listen
             Log.i(TAG, "Start playback of channel");
             Uri channelUri = Uri.parse("htsp://channel/" + tvhChannelId);
 
-            mPlayer.open(channelUri);
-            mPlayer.play();
+            mTvheadendPlayer.open(channelUri);
+            mTvheadendPlayer.play();
 
             boolean timeshiftEnabled = mSharedPreferences.getBoolean(
                     Constants.KEY_TIMESHIFT_ENABLED,
@@ -268,8 +268,8 @@ public class HtspSession extends TvInputService.Session implements Player.Listen
             Log.i(TAG, "Start playback of DVR entry");
             Uri recordedProgramUri = Uri.parse("htsp://dvrfile/" + dvrEntryId);
 
-            mPlayer.open(recordedProgramUri);
-            mPlayer.play();
+            mTvheadendPlayer.open(recordedProgramUri);
+            mTvheadendPlayer.play();
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 notifyTimeShiftStatusChanged(TvInputManager.TIME_SHIFT_STATUS_AVAILABLE);
