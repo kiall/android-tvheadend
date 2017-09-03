@@ -74,9 +74,9 @@ public class TvInputService extends android.media.tv.TvInputService {
     @Nullable
     @Override
     public Session onCreateSession(String inputId) {
-        Log.d(TAG, "Creating new TvInputService LiveSession for input ID: " + inputId + ".");
+        Log.d(TAG, "Creating new TvInputService HtspSession for input ID: " + inputId + ".");
 
-        return new LiveSession(this, mConnection);
+        return new HtspSession(this, mConnection);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)

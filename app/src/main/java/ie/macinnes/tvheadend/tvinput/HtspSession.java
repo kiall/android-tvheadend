@@ -44,8 +44,8 @@ import ie.macinnes.tvheadend.TvContractUtils;
 import ie.macinnes.tvheadend.player.Player;
 
 // TODO: Rename?
-public class LiveSession extends TvInputService.Session implements Player.Listener {
-    private static final String TAG = LiveSession.class.getName();
+public class HtspSession extends TvInputService.Session implements Player.Listener {
+    private static final String TAG = HtspSession.class.getName();
     private static final AtomicInteger sSessionCounter = new AtomicInteger();
 
     private final Context mContext;
@@ -58,7 +58,7 @@ public class LiveSession extends TvInputService.Session implements Player.Listen
 
     protected Runnable mPlayChannelRunnable;
 
-    public LiveSession(Context context, SimpleHtspConnection connection) {
+    public HtspSession(Context context, SimpleHtspConnection connection) {
         super(context);
 
         mContext = context;
@@ -69,7 +69,7 @@ public class LiveSession extends TvInputService.Session implements Player.Listen
         mSharedPreferences = mContext.getSharedPreferences(
                 Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
 
-        Log.d(TAG, "LiveSession created (" + mSessionNumber + ")");
+        Log.d(TAG, "HtspSession created (" + mSessionNumber + ")");
 
         mPlayer = new Player(mContext, connection, this);
 
