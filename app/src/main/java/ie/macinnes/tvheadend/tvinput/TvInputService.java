@@ -94,6 +94,8 @@ public class TvInputService extends android.media.tv.TvInputService {
                 getResources().getBoolean(R.bool.pref_default_dvr_enabled));
 
         if (dvrEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            Log.i(TAG, "Enabling DVR Support");
+
             TvInputManager tim = (TvInputManager) getSystemService(Context.TV_INPUT_SERVICE);
             ComponentName componentName = new ComponentName(this, TvInputService.class);
             TvInputInfo tvInputInfo = new TvInputInfo.Builder(this, componentName)
