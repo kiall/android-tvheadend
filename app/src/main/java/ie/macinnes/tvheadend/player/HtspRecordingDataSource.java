@@ -61,7 +61,7 @@ public class HtspRecordingDataSource extends HtspDataSource {
 
         mDataSourceNumber = sDataSourceCount.incrementAndGet();
 
-        Log.d(TAG, "New HtspChannelDataSource instantiated ("+mDataSourceNumber+")");
+        Log.d(TAG, "New HtspSubscriptionDataSource instantiated ("+mDataSourceNumber+")");
     }
 
     @Override

@@ -41,8 +41,8 @@ import ie.macinnes.tvheadend.Application;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.R;
 
-public class HtspChannelDataSource extends HtspDataSource implements Subscriber.Listener {
-    private static final String TAG = HtspChannelDataSource.class.getName();
+public class HtspSubscriptionDataSource extends HtspDataSource implements Subscriber.Listener {
+    private static final String TAG = HtspSubscriptionDataSource.class.getName();
     private static final AtomicInteger sDataSourceCount = new AtomicInteger();
     private static final int BUFFER_SIZE = 10*1024*1024;
     public static final byte[] HEADER = new byte[] {0,1,0,1,0,1,0,1};
@@ -62,7 +62,7 @@ public class HtspChannelDataSource extends HtspDataSource implements Subscriber.
 
         @Override
         public HtspDataSource createDataSourceInternal() {
-            return new HtspChannelDataSource(mContext, mConnection, mStreamProfile);
+            return new HtspSubscriptionDataSource(mContext, mConnection, mStreamProfile);
         }
 
     }
@@ -81,7 +81,7 @@ public class HtspChannelDataSource extends HtspDataSource implements Subscriber.
     private boolean mIsOpen = false;
     private boolean mIsSubscribed = false;
 
-    public HtspChannelDataSource(Context context, SimpleHtspConnection connection, String streamProfile) {
+    public HtspSubscriptionDataSource(Context context, SimpleHtspConnection connection, String streamProfile) {
         super(context, connection);
 
         mStreamProfile = streamProfile;
@@ -100,10 +100,10 @@ public class HtspChannelDataSource extends HtspDataSource implements Subscriber.
 
         mDataSourceNumber = sDataSourceCount.incrementAndGet();
 
-        Log.d(TAG, "New HtspChannelDataSource instantiated ("+mDataSourceNumber+")");
+        Log.d(TAG, "New HtspSubscriptionDataSource instantiated ("+mDataSourceNumber+")");
 
         try {
-            // Create the buffer, and place the HTSPChannelDataSource header in place.
+            // Create the buffer, and place the HtspSubscriptionDataSource header in place.
             mBuffer = ByteBuffer.allocate(BUFFER_SIZE);
             mBuffer.limit(HEADER.length);
             mBuffer.put(HEADER);
@@ -113,7 +113,7 @@ public class HtspChannelDataSource extends HtspDataSource implements Subscriber.
             // enough memory to catch and throw this exception. We do this, as each OOM exception
             // message is unique (lots of #'s of bytes available/used/etc) and means crash reporting
             // doesn't group things nicely.
-            throw new RuntimeException("OutOfMemoryError when allocating HtspChannelDataSource buffer ("+mDataSourceNumber+")", e);
+            throw new RuntimeException("OutOfMemoryError when allocating HtspSubscriptionDataSource buffer ("+mDataSourceNumber+")", e);
         }
 
         mSubscriber = new Subscriber(mConnection);
@@ -145,7 +145,7 @@ public class HtspChannelDataSource extends HtspDataSource implements Subscriber.
     // DataSource Methods
     @Override
     public long open(DataSpec dataSpec) throws IOException {
-        Log.i(TAG, "Opening HtspChannelDataSource ("+mDataSourceNumber+")");
+        Log.i(TAG, "Opening HtspSubscriptionDataSource ("+mDataSourceNumber+")");
         mDataSpec = dataSpec;
 
         if (!mIsSubscribed) {
@@ -154,7 +154,7 @@ public class HtspChannelDataSource extends HtspDataSource implements Subscriber.
                 mSubscriber.subscribe(channelId, mStreamProfile, mTimeshiftPeriod);
                 mIsSubscribed = true;
             } catch (HtspNotConnectedException e) {
-                throw new IOException("Failed to open HtspChannelDataSource, HTSP not connected (" + mDataSourceNumber + ")", e);
+                throw new IOException("Failed to open HtspSubscriptionDataSource, HTSP not connected (" + mDataSourceNumber + ")", e);
             }
         }
 

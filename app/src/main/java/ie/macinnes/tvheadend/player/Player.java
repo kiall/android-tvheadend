@@ -118,7 +118,7 @@ public class Player implements ExoPlayer.EventListener {
     private TvheadendTrackSelector mTrackSelector;
     private LoadControl mLoadControl;
     private EventLogger mEventLogger;
-    private HtspDataSource.Factory mChannelDataSourceFactory;
+    private HtspDataSource.Factory mHtspSubscriptionDataSourceFactory;
     private HtspDataSource.Factory mRecordingDataSourceFactory;
     private HtspDataSource mDataSource;
     private ExtractorsFactory mExtractorsFactory;
@@ -280,7 +280,7 @@ public class Player implements ExoPlayer.EventListener {
     public void stop() {
         mExoPlayer.stop();
         mTrackSelector.clearSelectionOverrides();
-        mChannelDataSourceFactory.releaseCurrentDataSource();
+        mHtspSubscriptionDataSourceFactory.releaseCurrentDataSource();
         mRecordingDataSourceFactory.releaseCurrentDataSource();
 
         if (mMediaSource != null) {
@@ -409,7 +409,7 @@ public class Player implements ExoPlayer.EventListener {
         );
 
         // Produces DataSource instances through which media data is loaded.
-        mChannelDataSourceFactory = new HtspChannelDataSource.Factory(mContext, mConnection, streamProfile);
+        mHtspSubscriptionDataSourceFactory = new HtspSubscriptionDataSource.Factory(mContext, mConnection, streamProfile);
         mRecordingDataSourceFactory = new HtspRecordingDataSource.Factory(mContext, mConnection);
 
         // Produces Extractor instances for parsing the media data.
@@ -454,7 +454,7 @@ public class Player implements ExoPlayer.EventListener {
     private void buildHtspChannelMediaSource(Uri channelUri) {
         // This is the MediaSource representing the media to be played.
         mMediaSource = new ExtractorMediaSource(channelUri,
-                mChannelDataSourceFactory, mExtractorsFactory, null, mEventLogger);
+                mHtspSubscriptionDataSourceFactory, mExtractorsFactory, null, mEventLogger);
     }
 
     private void buildHtspRecordingMediaSource(Uri recordingUri) {
@@ -589,7 +589,7 @@ public class Player implements ExoPlayer.EventListener {
             // Fetch the current DataSource for later use
             // TODO: Hold a WeakReference to the DataSource instead...
             // TODO: We should know if we're playing a channel or a recording...
-            mDataSource = mChannelDataSourceFactory.getCurrentDataSource();
+            mDataSource = mHtspSubscriptionDataSourceFactory.getCurrentDataSource();
             if (mDataSource == null) {
                 mDataSource = mRecordingDataSourceFactory.getCurrentDataSource();
             }

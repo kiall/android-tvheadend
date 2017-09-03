@@ -25,7 +25,6 @@ import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.extractor.Extractor;
 import com.google.android.exoplayer2.extractor.ExtractorInput;
 import com.google.android.exoplayer2.extractor.ExtractorOutput;
-import com.google.android.exoplayer2.extractor.ExtractorsFactory;
 import com.google.android.exoplayer2.extractor.PositionHolder;
 import com.google.android.exoplayer2.extractor.SeekMap;
 import com.google.android.exoplayer2.util.ParsableByteArray;
@@ -77,12 +76,12 @@ public class HtspExtractor implements Extractor {
     public boolean sniff(ExtractorInput input) throws IOException, InterruptedException {
         long inputLength = input.getLength();
 
-        ParsableByteArray scratch = new ParsableByteArray(HtspChannelDataSource.HEADER.length);
+        ParsableByteArray scratch = new ParsableByteArray(HtspSubscriptionDataSource.HEADER.length);
 
         // Find 8 bytes equal to HEADER at the start of the input.
-        input.peekFully(scratch.data, 0, HtspChannelDataSource.HEADER.length);
+        input.peekFully(scratch.data, 0, HtspSubscriptionDataSource.HEADER.length);
 
-        if (Arrays.equals(scratch.data, HtspChannelDataSource.HEADER)) {
+        if (Arrays.equals(scratch.data, HtspSubscriptionDataSource.HEADER)) {
             return true;
         }
 
