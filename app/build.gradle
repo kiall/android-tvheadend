@@ -58,7 +58,6 @@ dependencies {
 //    compile(name: 'library-core-release', ext: 'aar')
 //    compile(name: 'library-ui-release', ext: 'aar')
 //    compile(name: 'extension-ffmpeg-release', ext: 'aar')
-    compile 'ch.acra:acra:4.9.2'
 
     debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5'
     releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5'
