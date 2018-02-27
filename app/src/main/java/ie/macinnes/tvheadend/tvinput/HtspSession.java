@@ -203,7 +203,7 @@ public class HtspSession extends TvInputService.Session implements TvheadendPlay
     @Override
     public void onTimeShiftSetPlaybackParams(PlaybackParams params) {
         Log.d(TAG, "onTimeShiftSetPlaybackParams: " + params);
-
+        // TODO: Use a custom renderer to adjust playback speed. This is likely where the thing happens
         Toast.makeText(mContext, "Unsupported", Toast.LENGTH_SHORT).show();
     }
 
