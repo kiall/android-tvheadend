@@ -205,7 +205,11 @@ public class HtspSession extends TvInputService.Session implements TvheadendPlay
         Log.d(TAG, "onTimeShiftSetPlaybackParams: " + params);
         // TODO: Use a custom renderer to adjust playback speed. This is likely where the thing happens
         // https://gist.github.com/jmgirven/4e0ba2c7d584c8695549
-        Toast.makeText(mContext, "Unsupported", Toast.LENGTH_SHORT).show();
+        
+        //Toast.makeText(mContext, "Unsupported", Toast.LENGTH_SHORT).show();
+        
+        // may or may not work. Could break something idk
+        mTvheadendPlayer.setPlaybackParams(params);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
