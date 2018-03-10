@@ -257,13 +257,13 @@ public class TvheadendPlayer implements Player.EventListener {
             case 2:
                 translatedSpeed = 200;
                 break;
-            case 3:
+            case 8:
                 translatedSpeed = 300;
                 break;
-            case 4:
+            case 32:
                 translatedSpeed = 400;
                 break;
-            case 5:
+            case 128:
                 translatedSpeed = 500;
                 break;
             default:
