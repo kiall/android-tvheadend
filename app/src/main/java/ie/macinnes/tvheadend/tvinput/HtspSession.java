@@ -204,6 +204,12 @@ public class HtspSession extends TvInputService.Session implements TvheadendPlay
     @Override
     public void onTimeShiftSetPlaybackParams(PlaybackParams params) {
         Log.d(TAG, "onTimeShiftSetPlaybackParams: " + params);
+        if (params.getSpeed() == 1) {
+            mTvheadendPlayer.setVolume(1.0f);
+        }
+        else {
+            mTvheadendPlayer.setVolume(0f);
+        }
         mTvheadendPlayer.setPlaybackParams(params);
     }
 
