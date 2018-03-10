@@ -237,7 +237,6 @@ public class TvheadendPlayer implements Player.EventListener {
         int speed = (int) rawSpeed;
 
         Log.d(TAG, "Speed: " + params.getSpeed());
-
         if (mDataSource != null) {
             mDataSource.setSpeed(speed);
             mExoPlayer.setPlaybackParameters(new PlaybackParameters(speed, 1));
