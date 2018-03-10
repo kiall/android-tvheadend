@@ -95,12 +95,21 @@ public class TvInputService extends android.media.tv.TvInputService {
 
         if (dvrEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             Log.i(TAG, "Enabling DVR Support");
+            int tuners;
+            try {
+                tuners = Integer.parseInt(mSharedPreferences.getString(
+                        Constants.KEY_TUNER_COUNT,
+                        getResources().getString(R.string.pref_default_tuner_count)));
+            }
+            catch (NumberFormatException e) {
+                tuners = 10;
+            }
 
             TvInputManager tim = (TvInputManager) getSystemService(Context.TV_INPUT_SERVICE);
             ComponentName componentName = new ComponentName(this, TvInputService.class);
             TvInputInfo tvInputInfo = new TvInputInfo.Builder(this, componentName)
                     .setCanRecord(true)
-                    .setTunerCount(10)
+                    .setTunerCount(tuners)
                     .build();
             tim.updateTvInputInfo(tvInputInfo);
         }
