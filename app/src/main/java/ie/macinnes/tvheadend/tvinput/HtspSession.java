@@ -133,6 +133,7 @@ public class HtspSession extends TvInputService.Session implements TvheadendPlay
     @Override
     public View onCreateOverlayView() {
         Log.d(TAG, "Session onCreateOverlayView (" + mSessionNumber + ")");
+
         return mTvheadendPlayer.getOverlayView(
                 mCaptioningManager.getUserStyle(), mCaptioningManager.getFontScale());
     }
@@ -203,12 +204,6 @@ public class HtspSession extends TvInputService.Session implements TvheadendPlay
     @Override
     public void onTimeShiftSetPlaybackParams(PlaybackParams params) {
         Log.d(TAG, "onTimeShiftSetPlaybackParams: " + params);
-        // TODO: Use a custom renderer to adjust playback speed. This is likely where the thing happens
-        // https://gist.github.com/jmgirven/4e0ba2c7d584c8695549
-        
-        //Toast.makeText(mContext, "Unsupported", Toast.LENGTH_SHORT).show();
-        
-        // may or may not work. Could break something idk
         mTvheadendPlayer.setPlaybackParams(params);
     }
 
