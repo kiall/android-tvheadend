@@ -34,5 +34,6 @@
     <bool name="pref_default_timeshift_enabled">false</bool>
     <bool name="pref_default_dvr_enabled">false</bool>
     <string name="pref_default_htsp_stream_profile">htsp</string>
+    <string name="pref_default_tuner_count">10</string>
 
 </resources>
