@@ -236,9 +236,44 @@ public class TvheadendPlayer implements Player.EventListener {
         float rawSpeed = params.getSpeed();
         int speed = (int) rawSpeed;
 
-        Log.d(TAG, "Speed: " + params.getSpeed());
+        int translatedSpeed;
+
+        switch(speed) {
+            case 1:
+                translatedSpeed = 100;
+                break;
+            case -2:
+                translatedSpeed = -200;
+                break;
+            case -3:
+                translatedSpeed = -300;
+                break;
+            case -4:
+                translatedSpeed = -400;
+                break;
+            case -5:
+                translatedSpeed = -500;
+                break;
+            case 2:
+                translatedSpeed = 200;
+                break;
+            case 3:
+                translatedSpeed = 300;
+                break;
+            case 4:
+                translatedSpeed = 400;
+                break;
+            case 5:
+                translatedSpeed = 500;
+                break;
+            default:
+                Log.d(TAG, "Unknown speed??? " + rawSpeed);
+                return;
+        }
+
+        Log.d(TAG, "Speed: " + params.getSpeed() + " / " + translatedSpeed);
         if (mDataSource != null) {
-            mDataSource.setSpeed(speed);
+            mDataSource.setSpeed(translatedSpeed);
             mExoPlayer.setPlaybackParameters(new PlaybackParameters(speed, 1));
         }
     }
