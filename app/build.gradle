@@ -47,9 +47,9 @@ dependencies {
     // Used for testing local HTSP lib builds
 //    compile(name: 'library-debug', ext: 'aar')
 
-    compile 'com.android.support:support-v4:26.0.1'
-    compile 'com.android.support:leanback-v17:26.0.1'
-    compile 'com.android.support:preference-leanback-v17:26.0.1'
+    compile 'com.android.support:support-v4:27.1.0'
+    compile 'com.android.support:leanback-v17:27.1.0'
+    compile 'com.android.support:preference-leanback-v17:27.1.0'
 
     compile 'com.google.android.exoplayer:exoplayer-core:r2.5.1k1'
     compile 'com.google.android.exoplayer:exoplayer-ui:r2.5.1k1'
@@ -59,7 +59,7 @@ dependencies {
 //    compile(name: 'library-ui-release', ext: 'aar')
 //    compile(name: 'extension-ffmpeg-release', ext: 'aar')
 
-    debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5'
-    releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5'
-    testCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5'
+    debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5.4'
+    releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.4'
+    testCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.4'
 }
