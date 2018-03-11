@@ -37,6 +37,7 @@ import android.view.accessibility.CaptioningManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
@@ -75,6 +76,7 @@ import ie.macinnes.htsp.SimpleHtspConnection;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.R;
 import ie.macinnes.tvheadend.TvContractUtils;
+import ie.macinnes.tvheadend.TvhMappings;
 
 public class TvheadendPlayer implements Player.EventListener {
     private static final String TAG = TvheadendPlayer.class.getName();
@@ -233,48 +235,23 @@ public class TvheadendPlayer implements Player.EventListener {
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void setPlaybackParams(PlaybackParams params) {
-        float rawSpeed = params.getSpeed();
-        int speed = (int) rawSpeed;
+        Log.d(TAG, "setPlaybackParams: Speed: " + params.getSpeed());
 
-        int translatedSpeed;
+        float speed = params.getSpeed();
 
-        switch(speed) {
-            case 1:
-                translatedSpeed = 100;
-                break;
-            case -2:
-                translatedSpeed = -200;
-                break;
-            case -3:
-                translatedSpeed = -300;
-                break;
-            case -4:
-                translatedSpeed = -400;
-                break;
-            case -5:
-                translatedSpeed = -500;
-                break;
-            case 2:
-                translatedSpeed = 200;
-                break;
-            case 8:
-                translatedSpeed = 300;
-                break;
-            case 32:
-                translatedSpeed = 400;
-                break;
-            case 128:
-                translatedSpeed = 500;
-                break;
-            default:
-                Log.d(TAG, "Unknown speed??? " + rawSpeed);
-                return;
-        }
+        if (speed > 0) {
+            // Forward Playback
+            if (mDataSource != null) {
+                // Convert from TIF speed format, over to TVH and ExoPlayer formats
+                int tvhSpeed = TvhMappings.androidSpeedToTvhSpeed(speed);
+                float exoSpeed = ExoPlayerUtils.androidSpeedToExoPlayerSpeed(speed);
 
-        Log.d(TAG, "Speed: " + params.getSpeed() + " / " + translatedSpeed);
-        if (mDataSource != null) {
-            mDataSource.setSpeed(translatedSpeed);
-            mExoPlayer.setPlaybackParameters(new PlaybackParameters(speed, 1));
+                mDataSource.setSpeed(tvhSpeed);
+                mExoPlayer.setPlaybackParameters(new PlaybackParameters(exoSpeed, 1));
+            }
+        } else {
+            // Reverse Playback
+            Toast.makeText(mContext, "Rewind unsupported", Toast.LENGTH_SHORT).show();
         }
     }
 

@@ -328,7 +328,9 @@ public class HtspSubscriptionDataSource extends HtspDataSource implements Subscr
 
     @Override
     public void setSpeed(int speed) {
-
+        if (mSubscriber != null) {
+            mSubscriber.setSpeed(speed);
+        }
     }
 
     // Misc Internal Methods

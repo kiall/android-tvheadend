@@ -191,6 +191,12 @@ public class HtspSession extends TvInputService.Session implements TvheadendPlay
     public void onTimeShiftResume() {
         Log.d(TAG, "onTimeShiftResume");
         mTvheadendPlayer.resume();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            PlaybackParams normalParams = new PlaybackParams();
+            normalParams.setSpeed(1);
+            onTimeShiftSetPlaybackParams(normalParams);
+        }
     }
 
     @Override
@@ -203,13 +209,14 @@ public class HtspSession extends TvInputService.Session implements TvheadendPlay
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void onTimeShiftSetPlaybackParams(PlaybackParams params) {
-        Log.d(TAG, "onTimeShiftSetPlaybackParams: " + params);
+        Log.d(TAG, "onTimeShiftSetPlaybackParams: Speed: " + params.getSpeed());
+
         if (params.getSpeed() == 1) {
             mTvheadendPlayer.setVolume(1.0f);
-        }
-        else {
+        } else {
             mTvheadendPlayer.setVolume(0f);
         }
+
         mTvheadendPlayer.setPlaybackParams(params);
     }
 
