@@ -25,6 +25,7 @@ import android.media.tv.TvContract;
 import android.media.tv.TvTrackInfo;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
 import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.util.SparseArray;
@@ -70,11 +71,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import ie.macinnes.htsp.SimpleHtspConnection;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.R;
 import ie.macinnes.tvheadend.TvContractUtils;
+import ie.macinnes.tvheadend.TvhMappings;
 
 public class TvheadendPlayer implements Player.EventListener {
     private static final String TAG = TvheadendPlayer.class.getName();
@@ -112,6 +116,8 @@ public class TvheadendPlayer implements Player.EventListener {
     private final SimpleHtspConnection mConnection;
     private final Listener mListener;
 
+    private final Handler mHandler;
+    private final Timer mTimer;
     private final SharedPreferences mSharedPreferences;
 
     private SimpleExoPlayer mExoPlayer;
@@ -133,11 +139,16 @@ public class TvheadendPlayer implements Player.EventListener {
 
     private Uri mCurrentChannelUri;
 
+    private float mSpeed = 1.0f;
+    private TimerTask mRewindTimerTask;
+
     public TvheadendPlayer(Context context, SimpleHtspConnection connection, Listener listener) {
         mContext = context;
         mConnection = connection;
         mListener = listener;
 
+        mHandler = new Handler();
+        mTimer = new Timer();
         mSharedPreferences = mContext.getSharedPreferences(
                 Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
 
@@ -193,10 +204,12 @@ public class TvheadendPlayer implements Player.EventListener {
     public void play() {
         // Start playback when ready
         mExoPlayer.setPlayWhenReady(true);
+        cancelRewind();
     }
 
     public void resume() {
         mExoPlayer.setPlayWhenReady(true);
+        cancelRewind();
 
         if (mDataSource != null) {
             Log.d(TAG, "Resuming HtspDataSource");
@@ -208,6 +221,7 @@ public class TvheadendPlayer implements Player.EventListener {
 
     public void pause() {
         mExoPlayer.setPlayWhenReady(false);
+        cancelRewind();
 
         if (mDataSource != null) {
             Log.d(TAG, "Pausing HtspDataSource");
@@ -233,49 +247,78 @@ public class TvheadendPlayer implements Player.EventListener {
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void setPlaybackParams(PlaybackParams params) {
-        float rawSpeed = params.getSpeed();
-        int speed = (int) rawSpeed;
-        int translatedSpeed;
-
-        switch(speed) {
-            case 0:
-                translatedSpeed = 100;
-                break;
-            case -2:
-                translatedSpeed = -200;
-                break;
-            case -4:
-                translatedSpeed = -300;
-                break;
-            case -12:
-                translatedSpeed = -400;
-                break;
-            case -48:
-                translatedSpeed = -500;
-                break;
-            case 2:
-                translatedSpeed = 200;
-                break;
-            case 4:
-                translatedSpeed = 300;
-                break;
-            case 12:
-                translatedSpeed = 400;
-                break;
-            case 48:
-                translatedSpeed = 500;
-                break;
-            default:
-                Log.d(TAG, "Unknown speed??? " + rawSpeed);
-            return;
-        }
-
-        Log.d(TAG, "Speed: " + params.getSpeed() + " / " + translatedSpeed);
+        Log.d(TAG, "setPlaybackParams: Speed: " + params.getSpeed());
 
         if (mDataSource != null) {
-            mDataSource.setSpeed(translatedSpeed);
-            mExoPlayer.setPlaybackParameters(new PlaybackParameters(translatedSpeed, 0));
+            mSpeed = params.getSpeed();
+
+            if (mSpeed == 1.0f) {
+                setVolume(1.0f);
+            } else {
+                setVolume(0f);
+            }
+
+            if (mSpeed > 0) {
+                // Forward Playback
+                // Convert from TIF speed format, over to TVH and ExoPlayer formats
+                int tvhSpeed = TvhMappings.androidSpeedToTvhSpeed(mSpeed);
+                float exoSpeed = ExoPlayerUtils.androidSpeedToExoPlayerSpeed(mSpeed);
+
+                mDataSource.setSpeed(tvhSpeed);
+                mExoPlayer.setPlaybackParameters(new PlaybackParameters(exoSpeed, 1));
+            } else {
+                // Reverse Playback
+                rewind();
+            }
         }
+    }
+
+    private void rewind() {
+        cancelRewind();
+
+        mExoPlayer.setPlayWhenReady(false);
+
+        mRewindTimerTask = new TimerTask() {
+            @Override
+            public void run() {
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        int seekSize;
+
+                        switch((int) mSpeed) {
+                            case -2: // 2x Rewind
+                                seekSize = -2000;
+                                break;
+                            case -4: // 3x Rewind
+                                seekSize = -3000;
+                                break;
+                            case -12: // 4x Rewind
+                                seekSize = -4000;
+                                break;
+                            case -48: // 5x Rewind
+                                seekSize = -5000;
+                                break;
+
+                            default:
+                                throw new IllegalArgumentException("Unknown speed: " + mSpeed);
+                        }
+
+                        seek(Math.max(getTimeshiftCurrentPosition() - seekSize, getTimeshiftStartPosition()));
+                    }
+                });
+            }
+        };
+
+        mTimer.scheduleAtFixedRate(mRewindTimerTask, 0, 1000);
+    }
+
+    private void cancelRewind() {
+        if (mRewindTimerTask != null) {
+            mRewindTimerTask.cancel();
+        }
+
+        mExoPlayer.setPlayWhenReady(true);
     }
 
     private void stop() {
@@ -545,7 +588,7 @@ public class TvheadendPlayer implements Player.EventListener {
             }
         }
 
-        if(hasVideoTrack) {
+        if (hasVideoTrack) {
             disableRadioInfoScreen();
         } else {
             enableRadioInfoScreen();
