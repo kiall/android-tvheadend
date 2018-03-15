@@ -99,18 +99,28 @@ import java.util.Locale;
   }
 
   @Override
-  public void onPositionDiscontinuity() {
-    Log.d(TAG, "positionDiscontinuity");
-  }
-
-  @Override
   public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
     Log.d(TAG, "playbackParameters " + String.format(
             "[speed=%.2f, pitch=%.2f]", playbackParameters.speed, playbackParameters.pitch));
   }
 
   @Override
-  public void onTimelineChanged(Timeline timeline, Object manifest) {
+  public void onSeekProcessed() {
+
+  }
+
+  @Override
+  public void onPlayerError(ExoPlaybackException e) {
+    Log.e(TAG, "playerFailed [" + getSessionTimeString() + "]", e);
+  }
+
+  @Override
+  public void onPositionDiscontinuity(int reason) {
+    Log.d(TAG, "positionDiscontinuity");
+  }
+
+  @Override
+  public void onTimelineChanged(Timeline timeline, Object manifest, int reason) {
     if (timeline == null) {
       return;
     }
@@ -127,17 +137,12 @@ import java.util.Locale;
     for (int i = 0; i < Math.min(windowCount, MAX_TIMELINE_ITEM_LINES); i++) {
       timeline.getWindow(i, window);
       Log.d(TAG, "  " +  "window [" + getTimeString(window.getDurationMs()) + ", "
-          + window.isSeekable + ", " + window.isDynamic + "]");
+              + window.isSeekable + ", " + window.isDynamic + "]");
     }
     if (windowCount > MAX_TIMELINE_ITEM_LINES) {
       Log.d(TAG, "  ...");
     }
     Log.d(TAG, "]");
-  }
-
-  @Override
-  public void onPlayerError(ExoPlaybackException e) {
-    Log.e(TAG, "playerFailed [" + getSessionTimeString() + "]", e);
   }
 
   @Override
@@ -211,6 +216,11 @@ import java.util.Locale;
     Log.d(TAG, "repeatModeChanged [" + getSessionTimeString() + "]");
   }
 
+  @Override
+  public void onShuffleModeEnabledChanged(boolean shuffleModeEnabled) {
+
+  }
+
   // MetadataRenderer.Output
 
   @Override
@@ -245,15 +255,15 @@ import java.util.Locale;
   }
 
   @Override
+  public void onAudioSinkUnderrun(int bufferSize, long bufferSizeMs, long elapsedSinceLastFeedMs) {
+
+  }
+
+  @Override
   public void onAudioDisabled(DecoderCounters counters) {
     Log.d(TAG, "audioDisabled [" + getSessionTimeString() + "]");
   }
 
-  @Override
-  public void onAudioTrackUnderrun(int bufferSize, long bufferSizeMs, long elapsedSinceLastFeedMs) {
-    printInternalError("audioTrackUnderrun [" + bufferSize + ", " + bufferSizeMs + ", "
-        + elapsedSinceLastFeedMs + "]", null);
-  }
 
   // VideoRendererEventListener
 

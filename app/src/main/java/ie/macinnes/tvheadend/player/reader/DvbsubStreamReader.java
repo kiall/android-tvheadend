@@ -28,6 +28,8 @@ import java.util.List;
 
 import ie.macinnes.htsp.HtspMessage;
 
+import static com.google.android.exoplayer2.C.SELECTION_FLAG_DEFAULT;
+
 class DvbsubStreamReader extends PlainStreamReader {
     private static final String TAG = DvbsubStreamReader.class.getName();
 
@@ -53,6 +55,7 @@ class DvbsubStreamReader extends PlainStreamReader {
                 MimeTypes.APPLICATION_DVBSUBS,
                 null,
                 Format.NO_VALUE,
+                SELECTION_FLAG_DEFAULT,
                 initializationData,
                 stream.getString("language", "und"),
                 null);
