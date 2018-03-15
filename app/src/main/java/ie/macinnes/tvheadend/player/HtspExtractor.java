@@ -55,9 +55,10 @@ class HtspExtractor implements Extractor {
         }
 
         @Override
-        public long getPosition(long timeUs) {
-            return timeUs;
+        public SeekPoints getSeekPoints(long timeUs) {
+            return null;
         }
+
     }
 
     private final Context mContext;

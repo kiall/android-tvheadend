@@ -25,6 +25,9 @@ import android.media.tv.TvContract;
 import android.media.tv.TvTrackInfo;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
+import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.util.SparseArray;
@@ -47,6 +50,7 @@ import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
+import com.google.android.exoplayer2.PlayerMessage;
 import com.google.android.exoplayer2.RendererCapabilities;
 import com.google.android.exoplayer2.RenderersFactory;
 import com.google.android.exoplayer2.SimpleExoPlayer;
@@ -71,6 +75,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import ie.macinnes.htsp.HtspMessage;
+import ie.macinnes.htsp.HtspNotConnectedException;
 import ie.macinnes.htsp.SimpleHtspConnection;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.R;
@@ -448,20 +454,22 @@ public class TvheadendPlayer implements Player.EventListener {
                 DefaultLoadControl.DEFAULT_MIN_BUFFER_MS,
                 DefaultLoadControl.DEFAULT_MAX_BUFFER_MS,
                 bufferForPlaybackMs,
-                DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS
+                DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS,
+                C.DEFAULT_BUFFER_SEGMENT_SIZE,
+                true
         );
     }
 
     private void buildHtspChannelMediaSource(Uri channelUri) {
         // This is the MediaSource representing the media to be played.
         mMediaSource = new ExtractorMediaSource(channelUri,
-                mHtspSubscriptionDataSourceFactory, mExtractorsFactory, null, mEventLogger);
+                mHtspSubscriptionDataSourceFactory, mExtractorsFactory, new Handler(), mEventLogger);
     }
 
     private void buildHtspRecordingMediaSource(Uri recordingUri) {
         // This is the MediaSource representing the media to be played.
         mMediaSource = new ExtractorMediaSource(recordingUri,
-                mHtspFileInputStreamDataSourceFactory, mExtractorsFactory, null, mEventLogger);
+                mHtspFileInputStreamDataSourceFactory, mExtractorsFactory, new Handler(), mEventLogger);
     }
 
     private float getCaptionFontSize() {
@@ -479,15 +487,21 @@ public class TvheadendPlayer implements Player.EventListener {
                 && selection.indexOf(trackIndex) != C.INDEX_UNSET;
     }
 
-    // ExoPlayer.EventListener Methods
     @Override
-    public void onTimelineChanged(Timeline timeline, Object manifest) {
+    public void onRepeatModeChanged(int i) {
         // Don't care about this event here
     }
 
     @Override
-    public void onRepeatModeChanged(int i) {
+    public void onShuffleModeEnabledChanged(boolean shuffleModeEnabled) {
         // Don't care about this event here
+
+    }
+
+    @Override
+    public void onTimelineChanged(Timeline timeline, Object manifest, int reason) {
+        // Don't care about this event here
+
     }
 
     @Override
@@ -608,12 +622,17 @@ public class TvheadendPlayer implements Player.EventListener {
     }
 
     @Override
-    public void onPositionDiscontinuity() {
-        // Don't care about this event here
+    public void onPositionDiscontinuity(int reason) {
+
     }
 
     @Override
     public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
         // Don't care about this event here
+    }
+
+    @Override
+    public void onSeekProcessed() {
+
     }
 }

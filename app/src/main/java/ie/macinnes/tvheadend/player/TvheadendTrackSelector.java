@@ -148,7 +148,11 @@ class TvheadendTrackSelector extends DefaultTrackSelector {
 
         // If we haven't explicitly chosen a track, defer to the DefaultTrackSelector implementation.
         if (mAudioTrackId == null) {
-            return super.selectAudioTrack(groups, formatSupport, params, adaptiveTrackSelectionFactory);
+            try {
+                return super.selectAudioTrack(groups, formatSupport, params, adaptiveTrackSelectionFactory);
+            } catch (ExoPlaybackException e) {
+                return null;
+            }
         } else {
             for (int groupIndex = 0; groupIndex < groups.length; groupIndex++) {
                 TrackGroup trackGroup = groups.get(groupIndex);
@@ -179,7 +183,11 @@ class TvheadendTrackSelector extends DefaultTrackSelector {
 
         // If we haven't explicitly chosen a track, defer to the DefaultTrackSelector implementation.
         if (mSubtitleTrackId == null) {
-            return super.selectTextTrack(groups, formatSupport, params);
+            try {
+                return super.selectTextTrack(groups, formatSupport, params);
+            } catch (ExoPlaybackException e) {
+                return null;
+            }
         } else {
             for (int groupIndex = 0; groupIndex < groups.length; groupIndex++) {
                 TrackGroup trackGroup = groups.get(groupIndex);
