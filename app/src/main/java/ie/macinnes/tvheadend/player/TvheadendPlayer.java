@@ -26,8 +26,6 @@ import android.media.tv.TvTrackInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
-import android.os.Looper;
-import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.util.SparseArray;
@@ -50,7 +48,6 @@ import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
-import com.google.android.exoplayer2.PlayerMessage;
 import com.google.android.exoplayer2.RendererCapabilities;
 import com.google.android.exoplayer2.RenderersFactory;
 import com.google.android.exoplayer2.SimpleExoPlayer;
@@ -75,8 +72,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import ie.macinnes.htsp.HtspMessage;
-import ie.macinnes.htsp.HtspNotConnectedException;
 import ie.macinnes.htsp.SimpleHtspConnection;
 import ie.macinnes.tvheadend.Constants;
 import ie.macinnes.tvheadend.R;
@@ -118,6 +113,7 @@ public class TvheadendPlayer implements Player.EventListener {
     private final SimpleHtspConnection mConnection;
     private final Listener mListener;
 
+    private final Handler mHandler;
     private final SharedPreferences mSharedPreferences;
 
     private SimpleExoPlayer mExoPlayer;
@@ -144,6 +140,7 @@ public class TvheadendPlayer implements Player.EventListener {
         mConnection = connection;
         mListener = listener;
 
+        mHandler = new Handler();
         mSharedPreferences = mContext.getSharedPreferences(
                 Constants.PREFERENCE_TVHEADEND, Context.MODE_PRIVATE);
 
@@ -347,7 +344,7 @@ public class TvheadendPlayer implements Player.EventListener {
             mSubtitleView = getSubtitleView(captionStyle, fontScale);
 
             if (mSubtitleView != null) {
-                mExoPlayer.setTextOutput(mSubtitleView);
+                mExoPlayer.addTextOutput(mSubtitleView);
             }
         }
 
@@ -407,8 +404,8 @@ public class TvheadendPlayer implements Player.EventListener {
         // Add the EventLogger
         mEventLogger = new EventLogger(mTrackSelector);
         mExoPlayer.addListener(mEventLogger);
-        mExoPlayer.setAudioDebugListener(mEventLogger);
-        mExoPlayer.setVideoDebugListener(mEventLogger);
+        mExoPlayer.addAudioDebugListener(mEventLogger);
+        mExoPlayer.addVideoDebugListener(mEventLogger);
 
         final String streamProfile = mSharedPreferences.getString(
                 Constants.KEY_HTSP_STREAM_PROFILE,
@@ -462,14 +459,16 @@ public class TvheadendPlayer implements Player.EventListener {
 
     private void buildHtspChannelMediaSource(Uri channelUri) {
         // This is the MediaSource representing the media to be played.
-        mMediaSource = new ExtractorMediaSource(channelUri,
-                mHtspSubscriptionDataSourceFactory, mExtractorsFactory, new Handler(), mEventLogger);
+        mMediaSource = new ExtractorMediaSource.Factory(mHtspSubscriptionDataSourceFactory)
+                .setExtractorsFactory(mExtractorsFactory)
+                .createMediaSource(channelUri, mHandler, mEventLogger);
     }
 
     private void buildHtspRecordingMediaSource(Uri recordingUri) {
         // This is the MediaSource representing the media to be played.
-        mMediaSource = new ExtractorMediaSource(recordingUri,
-                mHtspFileInputStreamDataSourceFactory, mExtractorsFactory, new Handler(), mEventLogger);
+        mMediaSource = new ExtractorMediaSource.Factory(mHtspFileInputStreamDataSourceFactory)
+                .setExtractorsFactory(mExtractorsFactory)
+                .createMediaSource(recordingUri, mHandler, mEventLogger);
     }
 
     private float getCaptionFontSize() {
