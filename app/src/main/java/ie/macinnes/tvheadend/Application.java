@@ -17,6 +17,9 @@
 package ie.macinnes.tvheadend;
 
 import android.content.Context;
+import android.net.TrafficStats;
+import android.os.Build;
+import android.os.StrictMode;
 import android.util.Log;
 
 import com.squareup.leakcanary.LeakCanary;
@@ -75,5 +78,35 @@ public class Application extends android.app.Application {
 
         // TODO: Find a better (+ out of UI thread) way to do this.
         MigrateUtils.doMigrate(getBaseContext());
+
+        if (BuildConfig.DEBUG) {
+            // StrictMode Setup
+            Log.i(TAG, "Initializing Android StrictMode");
+            StrictMode.ThreadPolicy.Builder threadPolicy = new StrictMode.ThreadPolicy.Builder()
+                    .detectAll()
+                    .penaltyLog()
+                    .penaltyDeath();
+
+            StrictMode.setThreadPolicy(threadPolicy.build());
+
+            StrictMode.VmPolicy.Builder vmPolicy = new StrictMode.VmPolicy.Builder()
+                    .detectAll()
+                    .detectActivityLeaks()
+                    .detectLeakedClosableObjects()
+                    .detectLeakedRegistrationObjects()
+                    .detectLeakedSqlLiteObjects()
+                    .detectFileUriExposure()
+//                    .detectUntaggedSockets()  // Skipped as our HTSP lib does not tag its sockets yet
+//                    .detectCleartextNetwork() // Skipped as HTSP is not encrypted....
+                    .penaltyLog()
+                    .penaltyDeath();
+
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vmPolicy.detectContentUriWithoutPermission();
+            }
+
+            StrictMode.setVmPolicy(vmPolicy.build());
+        }
     }
 }
