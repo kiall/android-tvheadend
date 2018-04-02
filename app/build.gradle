@@ -43,23 +43,23 @@ repositories {
 }
 
 dependencies {
-    compile 'ie.macinnes.htsp:android-htsp:v0.0.2'
+    implementation 'ie.macinnes.htsp:android-htsp:v0.0.2'
     // Used for testing local HTSP lib builds
-//    compile(name: 'library-debug', ext: 'aar')
+//    implementation(name: 'library-debug', ext: 'aar')
 
-    compile 'com.android.support:support-v4:27.1.0'
-    compile 'com.android.support:leanback-v17:27.1.0'
-    compile 'com.android.support:preference-leanback-v17:27.1.0'
+    implementation 'com.android.support:support-v4:27.1.0'
+    implementation 'com.android.support:leanback-v17:27.1.0'
+    implementation 'com.android.support:preference-leanback-v17:27.1.0'
 
-    compile 'com.google.android.exoplayer:exoplayer-core:2.7.1k1'
-    compile 'com.google.android.exoplayer:exoplayer-ui:2.7.1k1'
-    compile 'com.google.android.exoplayer:extension-ffmpeg:2.7.1k1'
+    implementation 'com.google.android.exoplayer:exoplayer-core:2.7.1k1'
+    implementation 'com.google.android.exoplayer:exoplayer-ui:2.7.1k1'
+    implementation 'com.google.android.exoplayer:extension-ffmpeg:2.7.1k1'
     // Used for testing local exoplayer builds
-//    compile(name: 'library-core-release', ext: 'aar')
-//    compile(name: 'library-ui-release', ext: 'aar')
-//    compile(name: 'extension-ffmpeg-release', ext: 'aar')
+//    implementation(name: 'library-core-release', ext: 'aar')
+//    implementation(name: 'library-ui-release', ext: 'aar')
+//    implementation(name: 'extension-ffmpeg-release', ext: 'aar')
 
-    debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5.4'
-    releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.4'
-    testCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.4'
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.5.4'
+    releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.4'
+    testImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.4'
 }
