@@ -133,6 +133,7 @@ public class HtspSession extends TvInputService.Session implements TvheadendPlay
     @Override
     public View onCreateOverlayView() {
         Log.d(TAG, "Session onCreateOverlayView (" + mSessionNumber + ")");
+
         return mTvheadendPlayer.getOverlayView(
                 mCaptioningManager.getUserStyle(), mCaptioningManager.getFontScale());
     }
@@ -203,8 +204,13 @@ public class HtspSession extends TvInputService.Session implements TvheadendPlay
     @Override
     public void onTimeShiftSetPlaybackParams(PlaybackParams params) {
         Log.d(TAG, "onTimeShiftSetPlaybackParams: " + params);
-
-        Toast.makeText(mContext, "Unsupported", Toast.LENGTH_SHORT).show();
+        if (params.getSpeed() == 1) {
+            mTvheadendPlayer.setVolume(1.0f);
+        }
+        else {
+            mTvheadendPlayer.setVolume(0f);
+        }
+        mTvheadendPlayer.setPlaybackParams(params);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
